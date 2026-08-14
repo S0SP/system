@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Slack Architecture - System Design</title><meta content="building the real-time chat service" name="Description"/><meta content="Slack Architecture" property="og:title"/>
+<meta content="building the real-time chat service" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/slack-architecture/" property="og:url"/><meta content="https://systemdesign.one/slack-architecture/slack.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-05-28T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-05-28T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/slack-architecture/slack.webp" name="twitter:image"/>
+<meta content="Slack Architecture" name="twitter:title"/>
+<meta content="building the real-time chat service" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/slack-architecture/" rel="canonical"/><link href="https://systemdesign.one/back-of-the-envelope/" rel="prev"/><link href="https://systemdesign.one/what-is-service-discovery/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/slack-architecture</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./slack-architecture.html#what-isslack">What is Slack?</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#questions-to-ask-the-interviewer">Questions to ask the Interviewer</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#candidate">Candidate</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#interviewer">Interviewer</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#slack-api">Slack API</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#how-does-the-client-publish-a-chat-message-onslack">How does the client publish a chat message on Slack?</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#how-does-the-slack-client-fetch--the-initialscreen">How does the Slack client fetch  the initial screen?</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#how-does-the-slack-client-display-typing-indicators">How does the Slack client display typing indicators?</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#api-design-principles">API Design Principles</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#types-of-pagination">Types of Pagination</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#offset-pagination">Offset Pagination</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#cursor-based-pagination">Cursor-based Pagination</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#slack-database">Slack Database</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#database-schema">Database Schema</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#write-a-sql-query-to-fetch-the-recent-20-chat-messages">Write a SQL query to fetch the recent 20 chat messages</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#type-ofdatabase">Type of Database</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#back-of-the-envelopeslack">Back of the Envelope Slack</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#traffic">Traffic</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#storage">Storage</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#bandwidth">Bandwidth</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#slack-architecture">Slack Architecture</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#prototyping-slack">Prototyping Slack</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#building-the-minimum-viable-product-forslack">Building the Minimum Viable Product for Slack</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#scaling-slack">Scaling Slack</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#further-system-design-learning-resources-2">Further system design learning resources</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#slack-architecture-deepdive">Slack Architecture Deep Dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./slack-architecture.html#presence-status">Presence Status</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#message-ordering">Message Ordering</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#low-latency">Low Latency</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#high-availability">High Availability</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#fault-tolerance">Fault Tolerance</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#client-support">Client Support</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#security">Security</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./slack-architecture.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Slack Architecture</h1><h2 class="single-subtitle">Slack System Design</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/deep-dive/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Deep Dive</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-05-28">2023-05-28</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 7928 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 38 minutes </div>
+</div><div class="featured-image"><img alt="/slack-architecture/slack.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack.webp, /slack-architecture/slack.webp 1.5x, /slack-architecture/slack.webp 2x" height="298" sizes="699px" src="../assets/images/img_f8a2e11176bf.webp" title="building the real-time chat service" width="1006"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<p>You can read the TL;DR on <a class="offline-link" href="../fundamentals/system-design-interview-cheatsheet.html#chat-service" rel="noopener noreffer">Cheatsheet</a>. The system design of Slack depends on the design of the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">Real-Time Platform</a> and <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">Real-Time Presence Platform</a>. I highly recommend reading the related articles to improve your system design skills.</p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-isslack"><a class="header-mark offline-link" href="./slack-architecture.html#what-isslack"></a>What is Slack?</h2>
+<p>Slack is a real-time messaging platform used by organizations for communication between team members <sup id="fnref:1"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:1" role="doc-noteref">1</a></sup>. Slack can be considered a hybrid between E-Mail and Internet Relay Chat (<strong>IRC</strong>) because of the persistence of the chat messages <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>At a high level, <a href="https://newsletter.systemdesign.one/p/messaging-architecture" rel="noopener noreferrer" target="_blank">Slack</a> is organized into workspaces, where a user can interact with oneself. Each workspace can contain multiple Slack channels and every Slack channel could accommodate multiple users. A user is allowed to join multiple workspaces. The user can send chat messages inside the Slack channels. A Slack channel is a group of users interested in a specific topic. The users are also allowed to share media files and search for particular content.</p>
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+
+</div>
+<div id="id-1">What is Slack?; Source: video by <a href="https://www.youtube.com/@Slackhq" rel="noopener noreferrer" target="_blank">Slack</a> from <a href="https://www.youtube.com/watch?v=q19RtuCHt1Q" rel="noopener noreferrer" target="_blank">YouTube</a></div>
+<p>At its inception, Slack customers were from small organizations with a few hundred users. The software architecture of Slack had to evolve significantly to scale for supporting customers from giant organizations. Slack sends billions of messages daily across millions of channels in real-time across the globe. The typical traffic pattern of Slack shows that Slack users are active between 9 hours and 17 hours on weekdays while the peak traffic is between 11 hours and 14 hours <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./slack-architecture.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>Data replication: a technique of storing multiple copies of the same data on different nodes to improve the availability and durability of the system</li>
+<li>Data partitioning: a technique of distributing data across multiple nodes to improve the performance and scalability of the system</li>
+<li>Fault tolerance: the ability of a service to recover from a failure without losing data</li>
+<li>High availability: the ability of a service to remain reachable and not lose data even when a failure has occurred</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-to-ask-the-interviewer"><a class="header-mark offline-link" href="./slack-architecture.html#questions-to-ask-the-interviewer"></a>Questions to ask the Interviewer</h2>
+<p>You should discuss the system requirements with your interviewer to narrow down the use cases of the system as the time window is limited <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<h3 class="headerLink" id="candidate"><a class="header-mark offline-link" href="./slack-architecture.html#candidate"></a>Candidate</h3>
+<ol>
+<li>Should the chat service support both one-on-one and group chat?</li>
+<li>What is the count of daily active users (<strong>DAU</strong>) and the read: write ratio?</li>
+<li>What is the anticipated number of concurrent users?</li>
+<li>How many users can you include in a Slack channel?</li>
+<li>How many users can you include in a Slack workspace?</li>
+<li>Should Slack support multiple types of clients?</li>
+<li>Should the chat history be persisted?</li>
+<li>Is the Slack user base globally distributed?</li>
+<li>How many organizations do you expect to use Slack?</li>
+<li>What is the anticipated traffic pattern?</li>
+</ol>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="interviewer"><a class="header-mark offline-link" href="./slack-architecture.html#interviewer"></a>Interviewer</h3>
+<ol>
+<li>Yes, the chat service should support both one-on-one and group chat functionality in real-time</li>
+<li>The DAU is 10 million and the read: write ratio is 10: 1</li>
+<li>Approximately 7 million simultaneously connected users</li>
+<li>At most 10,000 users can be included in a Slack channel</li>
+<li>At most 200 thousand users can be included in a Slack workspace</li>
+<li>Yes, there should be support for the mobile device, desktop, and the web client</li>
+<li>Yes, the chat history should be persisted</li>
+<li>Yes, there will be a globally distributed user base with more than half the traffic coming from outside the United States</li>
+<li>You can assume that around 500 thousand organizations will use Slack</li>
+<li>2 hours per weekday for an active user and 10 hours per weekday for every client connection</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./slack-architecture.html#requirements"></a>Requirements</h2>
+<p>The system requirements can be summarized as follows.</p>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./slack-architecture.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>The user can send real-time messages to another user and within a channel (group messaging)</li>
+<li>The chat messages should be persisted and displayed in chronological order to keep the total order of messages</li>
+<li>The user can send media files such as pictures or short audio files</li>
+<li>The chat service should display the online presence status of the users</li>
+<li>A chat message must be received by a user at most once to preserve message integrity</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./slack-architecture.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>Low latency</li>
+<li>Highly reliable</li>
+<li>Highly available</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="slack-api"><a class="header-mark offline-link" href="./slack-architecture.html#slack-api"></a>Slack API</h2>
+<p>Slack Application Programming Interface (<strong>API</strong>) can be classified into <a href="https://api.slack.com/web" rel="noopener noreferrer" target="_blank">web API</a> and <a href="https://api.slack.com/rtm" rel="noopener noreferrer" target="_blank">real-time API</a>. The web API provides Hypertext Transfer Protocol (<strong>HTTP</strong>) API endpoints to send messages, execute user login, and perform actions such as creating a new Slack channel <sup id="fnref:7"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:7" role="doc-noteref">7</a></sup>. The OAuth token can be used for secure user authorization on private Slack channels <sup id="fnref:8"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<p>The real-time API provides <a href="https://datatracker.ietf.org/doc/html/rfc6455" rel="noopener noreferrer" target="_blank">WebSockets</a> for latency-sensitive full duplex communication between the client and the server. The real-time API can be used for typing indicators, chat message delivery, and displaying <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">online presence status</a> <sup id="fnref:9"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:9" role="doc-noteref">9</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Slack; WebSocket connection through real-time API&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-websocket.webp" href="https://systemdesign.one/slack-architecture/slack-websocket.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Slack; WebSocket connection through real-time API">
+<img alt="Figure 1: Slack; WebSocket connection through real-time API" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-websocket.webp, /slack-architecture/slack-websocket.webp 1.5x, /slack-architecture/slack-websocket.webp 2x" height="484" sizes="683px" src="../assets/images/img_32d91637a98c.webp" width="782"/>
+</a><figcaption class="image-caption">Figure 1: Slack; WebSocket connection through real-time API</figcaption>
+</figure>
+<p>The WebSocket protocol keeps the communication channel open for active users. The client performs a protocol switch request to upgrade the client connection to a WebSocket connection. Slack offers dedicated real-time API endpoints for multiple services such as typing indicators and <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">online presence status</a> for reliability and failure isolation <sup id="fnref:9"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:9" role="doc-noteref">9</a></sup>. The following are the limitations of the WebSocket protocol <sup id="fnref:10"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ul>
+<li>potential compatibility issues with the existing web infrastructure</li>
+<li>web components such as firewalls and load balancers are built and maintained around HTTP</li>
+</ul>
+<p>Although HTTP/2 is not a replacement for push technologies such as WebSocket, combining HTTP/2 with Server-Sent Events (<strong>SSE</strong>) offers an efficient HTTP-based bidirectional communication channel. HTTP/2 allows multiplexing through the reuse of the same TCP connection for multiple SSE streams and several client requests <sup id="fnref:10"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:10" role="doc-noteref">10</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-the-client-publish-a-chat-message-onslack"><a class="header-mark offline-link" href="./slack-architecture.html#how-does-the-client-publish-a-chat-message-onslack"></a>How does the client publish a chat message on Slack?</h3>
+<p>The client executes an HTTP POST request to the web API to send a chat message on Slack <sup id="fnref:7"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='/chat/:channel-id
+content-type: application/json
+authorization: Bearer &lt;xyz&gt;
+method: POST
+
+{
+  "message":"Breaking Bad can be considered as the greatest TV show",
+  "attachments":[{"text":"Breaking Bad set an unprecedented bar for drama entertainment"}]
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/chat/</span><span class="o">:</span><span class="nx">channel</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">xyz</span><span class="o">&gt;</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">POST</span>
+
+<span class="p">{</span>
+  <span class="s2">"message"</span><span class="o">:</span><span class="s2">"Breaking Bad can be considered as the greatest TV show"</span><span class="p">,</span>
+  <span class="s2">"attachments"</span><span class="o">:</span><span class="p">[{</span><span class="s2">"text"</span><span class="o">:</span><span class="s2">"Breaking Bad set an unprecedented bar for drama entertainment"</span><span class="p">}]</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success. The server includes the timestamp of the message in the response and the links will be sanitized.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+content-encoding: gzip
+content-type: application/json
+
+{
+    "channel-id": "XYZabcd123",
+    "ts": "2893675999.000223",
+    "message": {
+        "text": "Breaking Bad",
+        "user": "Jessie",
+        "attachments": [
+            {
+                "text": "Here is an attachment",
+                "id": 41,
+            }
+        ],
+        "type": "message"
+    }
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+
+<span class="p">{</span>
+    <span class="s2">"channel-id"</span><span class="o">:</span> <span class="s2">"XYZabcd123"</span><span class="p">,</span>
+    <span class="s2">"ts"</span><span class="o">:</span> <span class="s2">"2893675999.000223"</span><span class="p">,</span>
+    <span class="s2">"message"</span><span class="o">:</span> <span class="p">{</span>
+        <span class="s2">"text"</span><span class="o">:</span> <span class="s2">"Breaking Bad"</span><span class="p">,</span>
+        <span class="s2">"user"</span><span class="o">:</span> <span class="s2">"Jessie"</span><span class="p">,</span>
+        <span class="s2">"attachments"</span><span class="o">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">"text"</span><span class="o">:</span> <span class="s2">"Here is an attachment"</span><span class="p">,</span>
+                <span class="s2">"id"</span><span class="o">:</span> <span class="mi">41</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">"type"</span><span class="o">:</span> <span class="s2">"message"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-the-slack-client-fetch--the-initialscreen"><a class="header-mark offline-link" href="./slack-architecture.html#how-does-the-slack-client-fetch--the-initialscreen"></a>How does the Slack client fetch  the initial screen?</h3>
+<p>The client performs an HTTP POST request to the web API for login on Slack. The server returns the snapshot of the entire workspace to display the initial screen on the Slack client <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>. The snapshot is a keyframe of the team state such as the users, profiles, channels, and membership <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>The client should perform lazy loading of the workspace by fetching the snapshot partially to improve the latency. The server response should also include the WebSocket URL to the real-time API to establish a WebSocket connection with the client <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+content-encoding: gzip
+content-type: application/json
+
+{
+  "url": "wss:\/\/ms42.slack-msgs.com\/websocket\/8I3yRmcfb", //websocket URL
+  "self": {
+    "user": 52135,
+    "name": "Walter White"
+  },
+  "channels": [{...}],  //snapshot
+  "team": {...},
+  "users": [...],
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+
+<span class="p">{</span>
+  <span class="s2">"url"</span><span class="o">:</span> <span class="s2">"wss:\/\/ms42.slack-msgs.com\/websocket\/8I3yRmcfb"</span><span class="p">,</span> <span class="c1">//websocket URL
+</span><span class="c1"></span>  <span class="s2">"self"</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">"user"</span><span class="o">:</span> <span class="mi">52135</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="o">:</span> <span class="s2">"Walter White"</span>
+  <span class="p">},</span>
+  <span class="s2">"channels"</span><span class="o">:</span> <span class="p">[{...}],</span>  <span class="c1">//snapshot
+</span><span class="c1"></span>  <span class="s2">"team"</span><span class="o">:</span> <span class="p">{...},</span>
+  <span class="s2">"users"</span><span class="o">:</span> <span class="p">[...],</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-the-slack-client-display-typing-indicators"><a class="header-mark offline-link" href="./slack-architecture.html#how-does-the-slack-client-display-typing-indicators"></a>How does the Slack client display typing indicators?</h3>
+<p>The real-time API makes use of the WebSocket channel to display the typing indicators <sup id="fnref:7"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='{
+  "user": 42,
+  "type": "typing",
+  "channel": "FB23AVK456"
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span>
+  <span class="s2">"user"</span><span class="o">:</span> <span class="mi">42</span><span class="p">,</span>
+  <span class="s2">"type"</span><span class="o">:</span> <span class="s2">"typing"</span><span class="p">,</span>
+  <span class="s2">"channel"</span><span class="o">:</span> <span class="s2">"FB23AVK456"</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="api-design-principles"><a class="header-mark offline-link" href="./slack-architecture.html#api-design-principles"></a>API Design Principles</h3>
+<p>The following API design principles can be used to build a reliable API <sup id="fnref:12"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>follow the single responsibility principle to build the API and paginate the API response by default</li>
+<li>simplify the API by reducing the number of API parameters and define  default parameter values on heavily used API</li>
+<li>provide consistent API endpoints through naming conventions, input parameters, and output responses</li>
+<li>include meaningful error messages in the API response for the ease of troubleshooting</li>
+<li><a class="offline-link" href="./rate-limiter.html" rel="noopener noreffer">rate limit</a> the API and design for <a class="offline-link" href="./scalable-software-architecture.html" rel="noopener noreffer">scale</a></li>
+<li>avoid breaking changes to the API</li>
+</ul>
+<p>The <a href="https://json-schema.org/" rel="noopener noreferrer" target="_blank">JSON schema</a> validation of the API must be performed through automated tests for increased reliability as the API evolves <sup id="fnref:8"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="types-of-pagination"><a class="header-mark offline-link" href="./slack-architecture.html#types-of-pagination"></a>Types of Pagination</h3>
+<p>Slack API must be paginated for <a class="offline-link" href="../fundamentals/micro-frontends.html" rel="noopener noreffer">scalability</a>. Slack clients should fetch only a limited number of chat messages that fit the viewport of the client while scrolling through the chat history to improve latency and reduce unnecessary bandwidth usage. The different strategies to paginate the API are the following <sup id="fnref:13"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ul>
+<li>offset pagination</li>
+<li>cursor-based pagination</li>
+</ul>
+<hr/>
+<h4 class="headerLink" id="offset-pagination"><a class="header-mark offline-link" href="./slack-architecture.html#offset-pagination"></a>Offset Pagination</h4>
+<p>The most popular pagination technique is the offset pagination. The client must provide an API request parameter to denote the number of results per page and the page number. The offset pagination performs the following operations at a high-level <sup id="fnref:13"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ol>
+<li>The database is queried to fetch the total count of all the results to determine the total number of pages</li>
+<li>The database is queried with the count and page number parameters provided in the API request to fetch the items for the requested page</li>
+</ol>
+<p>The following Structured Query Language (<strong>SQL</strong>) is executed to fetch the total count of all the results to determine the total number of pages:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT COUNT(*) AS total
+FROM chat
+WHERE channel_id = %channel_id;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">total</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">chat</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">channel_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">%</span><span class="n">channel_id</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<p>The count and page number parameters in the API request are used to query the items from the database for the requested page. The following SQL will query the database with the API request parameters <em>page number</em> = 3 and <em>count</em> = 20 to return the next 20 items by skipping the initial 40 items:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT *
+FROM chat
+WHERE channel_id = %channel_id
+ORDER BY created_at DESC
+LIMIT 20 OFFSET 40;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">chat</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">channel_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">%</span><span class="n">channel_id</span><span class="w">
+</span><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="k">OFFSET</span><span class="w"> </span><span class="mi">40</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<p>The server response contains the following data schema:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='{  
+    "messages": [{...}],
+    "paging": {
+        "total": 300, //total count of items on all pages
+        "page": 3,    //current page number
+        "pages": 10   //total number of pages available
+    }
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span>  
+    <span class="s2">"messages"</span><span class="o">:</span> <span class="p">[{...}],</span>
+    <span class="s2">"paging"</span><span class="o">:</span> <span class="p">{</span>
+        <span class="s2">"total"</span><span class="o">:</span> <span class="mi">300</span><span class="p">,</span> <span class="c1">//total count of items on all pages
+</span><span class="c1"></span>        <span class="s2">"page"</span><span class="o">:</span> <span class="mi">3</span><span class="p">,</span>    <span class="c1">//current page number
+</span><span class="c1"></span>        <span class="s2">"pages"</span><span class="o">:</span> <span class="mi">10</span>   <span class="c1">//total number of pages available
+</span><span class="c1"></span>    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The advantages of using offset pagination are the following <sup id="fnref:13"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ul>
+<li>the user can view the total count of pages and their current progress through the results</li>
+<li>the user can navigate to a particular page</li>
+<li>the implementation of offset pagination is relatively trivial</li>
+</ul>
+<p>However, the offset pagination is a suboptimal approach for displaying the chat messages due to the following drawbacks:</p>
+<ul>
+<li>not scalable for large datasets because the database must read upto the offset and count rows from the disk only to discard the offset and return the limit rows</li>
+<li>the page window is unreliable when items are written to the database at a high frequency causing duplicate results or even skipping some results</li>
+</ul>
+<p>In conclusion, do not use offset pagination to display the chat history.</p>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="cursor-based-pagination"><a class="header-mark offline-link" href="./slack-architecture.html#cursor-based-pagination"></a>Cursor-based Pagination</h4>
+<p>The cursor-based pagination makes use of an offset (<strong>pointer</strong>) to a particular item in the dataset. The server returns the result set after the provided pointer in the subsequent API requests. The following operations are executed in cursor-based pagination <sup id="fnref:13"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ol>
+<li>A sequential unique column is chosen for pagination</li>
+<li>The API request will include a parameter known as the cursor parameter to indicate the offset of the results</li>
+<li>The cursor parameter is used by the server to paginate through the result dataset</li>
+</ol>
+<p>The client obtains the cursor (<strong>pointer</strong>) parameter from the server response of the previous API request. I will walk you through an example of the implementation of cursor-based pagination for scrolling through the chat history from the most recent to the oldest chat message. The following SQL will fetch the recent chat messages that will fit the viewport of the client:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT *
+FROM chat
+WHERE channel_id = %channel_id
+ORDER BY created_at DESC
+-- limit = count+1
+LIMIT %limit;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">chat</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">channel_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">%</span><span class="n">channel_id</span><span class="w">
+</span><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span><span class="w"></span><span class="c1">-- limit = count+1
+</span><span class="c1"></span><span class="k">LIMIT</span><span class="w"> </span><span class="o">%</span><span class="k">limit</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<p>The limit parameter in SQL is set to the count of results to be shown on page + 1. The count of results to be displayed on the page depends on the viewport of the client. The additional record that was queried is not returned in the API response but instead used to identify the value of the next cursor.</p>
+<p>The Base64 encoded value of the additional record ID can be returned as the next cursor value to prevent the client from implying the next record and also to enable the server to include supplemental information within the cursor. On top of that, Base64 encoding the cursor provides the flexibility to implement different pagination schemes behind a consistent interface for multiple API endpoints.</p>
+<p>The client must provide the value of the cursor in the subsequent API request for pagination <sup id="fnref:13"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:13" role="doc-noteref">13</a></sup>. The API response from cursor-based pagination will contain the following data schema:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='{
+    "messages": [{...}],
+    "cursor": "dN315642McETHw"     //Base64 encoded next record ID
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span>
+    <span class="s2">"messages"</span><span class="o">:</span> <span class="p">[{...}],</span>
+    <span class="s2">"cursor"</span><span class="o">:</span> <span class="s2">"dN315642McETHw"</span>     <span class="c1">//Base64 encoded next record ID
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The following SQL will fetch the recent chat messages before the cursor parameter, which will fit within the viewport of the client:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT *
+FROM chat
+WHERE channel_id = %channel_id
+AND created_at &lt;= %cursor
+ORDER BY created_at DESC
+-- limit = count+1
+LIMIT %limit;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">chat</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">channel_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">%</span><span class="n">channel_id</span><span class="w">
+</span><span class="w"></span><span class="k">AND</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="o">%</span><span class="k">cursor</span><span class="w">
+</span><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span><span class="w"></span><span class="c1">-- limit = count+1
+</span><span class="c1"></span><span class="k">LIMIT</span><span class="w"> </span><span class="o">%</span><span class="k">limit</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<p>The limit parameter in SQL is set to the count of results to be displayed on the page + 1 to determine the next cursor. The cursor is set to empty when the client reaches the last page. The following summarizes the benefits of cursor-based pagination <sup id="fnref:13"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ul>
+<li>scalable for large datasets because the database index is leveraged to prevent a full table scan</li>
+<li>pagination window is not affected when high-frequency writes to the database occur as the next cursor remains the same</li>
+</ul>
+<p>There are no solutions, but only tradeoffs. The limitations of cursor-based pagination are the following <sup id="fnref:13"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ul>
+<li>the cursor must be based on a unique and sequential column in the table</li>
+<li>the client will not be able to navigate to a particular page</li>
+</ul>
+<p>The verdict is to use the cursor-based pagination for an efficient display of the chat history on Slack.</p>
+<hr/>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./slack-architecture.html#further-system-design-learning-resources"></a>Further system design learning resources</h4>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="slack-database"><a class="header-mark offline-link" href="./slack-architecture.html#slack-database"></a>Slack Database</h2>
+<p>Slack is a read-heavy chat service. Put another way, the typical usage pattern is the client reading the chat messages in a Slack channel.</p>
+<h3 class="headerLink" id="database-schema"><a class="header-mark offline-link" href="./slack-architecture.html#database-schema"></a>Database Schema</h3>
+<p>The major entities of the relational data schema for Slack are shown in Figure 2.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Slack Database schema&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-database-schema.webp" href="https://systemdesign.one/slack-architecture/slack-database-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Slack Database schema">
+<img alt="Figure 2: Slack Database schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-database-schema.webp, /slack-architecture/slack-database-schema.webp 1.5x, /slack-architecture/slack-database-schema.webp 2x" height="756" sizes="683px" src="../assets/images/img_b827fe5e8485.webp" width="1337"/>
+</a><figcaption class="image-caption">Figure 2: Slack Database schema</figcaption>
+</figure>
+<p>A relational database such as MySQL supports JSON data type columns in the relational table. The <em>chat</em> table can be used to persist the emojis in a <a class="offline-link" href="./protocol-buffers-vs-json.html" rel="noopener noreffer">JSON</a> data type column instead of generating a dedicated <a class="offline-link" href="./hotstar-architecture.html" rel="noopener noreffer">emojis</a> table. The write-behind cache pattern can be enforced to store the emojis with high performance and low latency.</p>
+<p>A <a href="https://slack.com/blog/collaboration/slack-shared-channels" rel="noopener noreferrer" target="_blank">shared channel</a> is similar to a normal Slack channel but acts as a connecting bridge between multiple organizations. A single copy of the shared channel data should be persisted and the data access requests must be routed to the database <a class="offline-link" href="./mysql-sharding.html" rel="noopener noreffer">shard</a> hosting the channel for scalability and performance. The <em>shared_channels</em> table can be used to bridge the workspaces in a shared channel <sup id="fnref:14"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:14" role="doc-noteref">14</a></sup>.</p>
+<hr/>
+<h4 class="headerLink" id="write-a-sql-query-to-fetch-the-recent-20-chat-messages"><a class="header-mark offline-link" href="./slack-architecture.html#write-a-sql-query-to-fetch-the-recent-20-chat-messages"></a>Write a SQL query to fetch the recent 20 chat messages</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT *
+FROM chat
+WHERE channel_id = 4286
+ORDER BY created_at DESC
+LIMIT 20;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">chat</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">channel_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4286</span><span class="w">
+</span><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<p>The database index can be initialized to read the chat messages with low latency at the expense of increased storage and elevated latency on write operations.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="type-ofdatabase"><a class="header-mark offline-link" href="./slack-architecture.html#type-ofdatabase"></a>Type of Database</h3>
+<p>The type of database to build the data storage layer for Slack can be decided by inspecting the data types and user traffic patterns. A relational database such as MySQL can be used to build Slack due to the following reasons <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>mature technology</li>
+<li>the relational data model is a good discipline</li>
+<li>strong support for tooling</li>
+<li>a large talent pool of experienced engineers is available</li>
+</ul>
+<p>The relational database should be configured as an eventually consistent data store to favor high availability over strong <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="back-of-the-envelopeslack"><a class="header-mark offline-link" href="./slack-architecture.html#back-of-the-envelopeslack"></a>Back of the Envelope Slack</h2>
+<p>The frequency of clients reading the chat messages is significantly higher than the frequency of clients writing chat messages on Slack. The calculated numbers are approximations. A few helpful tips on <a class="offline-link" href="../fundamentals/back-of-the-envelope.html" rel="noopener noreffer">capacity planning</a> during the system design interview are the following:</p>
+<ul>
+<li>1 million requests/day = 12 requests/second</li>
+<li>round off the numbers for quicker calculations</li>
+<li>write down the units while doing conversions</li>
+</ul>
+<h3 class="headerLink" id="traffic"><a class="header-mark offline-link" href="./slack-architecture.html#traffic"></a>Traffic</h3>
+<p>Slack is a read-heavy chat service. The Daily Active Users (<strong>DAU</strong>) count is 10 million. The number of peak <a class="offline-link" href="./shopify-flash-sale.html" rel="noopener noreffer">concurrent</a> users is 7 million according to the historical data. You can assume that a user sends 100 chat messages on average each day.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DAU (write)</td>
+<td>1 billion</td>
+</tr>
+<tr>
+<td>QPS (write)</td>
+<td>12 thousand</td>
+</tr>
+<tr>
+<td>read: write</td>
+<td>10: 1</td>
+</tr>
+<tr>
+<td>QPS (read)</td>
+<td>120 thousand</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="storage"><a class="header-mark offline-link" href="./slack-architecture.html#storage"></a>Storage</h3>
+<p>The chat messages can be archived and kept in a cold store to reduce storage costs. Besides, chat messages older than a specific time frame should be removed to reduce storage costs. The storage size of each character on a chat message is assumed to be 1 byte. An average chat message is assumed to consume 100 bytes of storage.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>storage for a day</td>
+<td>12k messages/sec * 100 bytes/message * 86400 sec/day</td>
+<td>100 GB/day</td>
+</tr>
+<tr>
+<td>storage for 5 years</td>
+<td>100 GB/day * 5 * 300</td>
+<td>150 TB</td>
+</tr>
+</tbody>
+</table></div>
+<p>The replication factor of the storage server should be set to at least three for improved durability and disaster recovery.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="bandwidth"><a class="header-mark offline-link" href="./slack-architecture.html#bandwidth"></a>Bandwidth</h3>
+<p><strong>Ingress</strong> is the network traffic that enters the service when chat messages are being written. <strong>Egress</strong> is the network traffic that exits the service when chat messages are being read by the users. The network bandwidth is spread out across the globe depending on the location of the users.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ingress</td>
+<td>12k message/sec * 100 byte/message</td>
+<td>1.2 MB/sec</td>
+</tr>
+<tr>
+<td>Egress</td>
+<td>120k message/sec * 100 byte/message</td>
+<td>12 MB/sec</td>
+</tr>
+</tbody>
+</table></div>
+<p>The majority of the network traffic is caused by transient events such as <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">online presence status</a> changes. The metadata of the user profile and chat messages were intentionally skipped during the capacity planning analysis to keep the calculations simple. The performed calculations should give you a rough idea of the <a class="offline-link" href="../fundamentals/back-of-the-envelope.html" rel="noopener noreffer">back-of-the-envelope</a> analysis in a system design interview.</p>
+<hr/>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./slack-architecture.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h4>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="slack-architecture"><a class="header-mark offline-link" href="./slack-architecture.html#slack-architecture"></a>Slack Architecture</h2>
+<h3 class="headerLink" id="prototyping-slack"><a class="header-mark offline-link" href="./slack-architecture.html#prototyping-slack"></a>Prototyping Slack</h3>
+<p>Slack can be implemented with a client-server architecture. The chat service identifies the type of event and communicates with the chat database via create, read, update, and delete (<strong>CRUD</strong>) operations <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>. For instance, the media files should be persisted in object storage, and the links to access the media files can be stored in the chat database. In addition, the chat service returns the JavaScript code for the initial render of the Slack client <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>The gateway server broadcasts the chat messages to the subscribed clients over the WebSocket channel <sup id="fnref:14"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:14" role="doc-noteref">14</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. The WebSocket channel handles multiple event types such as chat messages, typing indicators, and <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">user presence status</a> changes.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Slack Prototype&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-prototype.webp" href="https://systemdesign.one/slack-architecture/slack-prototype.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Slack Prototype">
+<img alt="Figure 3: Slack Prototype" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-prototype.webp, /slack-architecture/slack-prototype.webp 1.5x, /slack-architecture/slack-prototype.webp 2x" height="537" sizes="683px" src="../assets/images/img_b8271eeafb48.webp" width="727"/>
+</a><figcaption class="image-caption">Figure 3: Slack Prototype</figcaption>
+</figure>
+<p>The following operations are executed when the user launches Slack client and publishes a chat message <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:14"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:14" role="doc-noteref">14</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>:</p>
+<ol>
+<li>The Slack client executes an HTTP POST request to the web API for user authorization</li>
+<li>The server sends a snapshot of the workspace and the WebSocket URL to establish a WebSocket channel</li>
+<li>The client sends a chat message to the chat service over HTTP</li>
+<li>The chat service persists the chat message in the chat database and delegates the chat message to the subscribed gateway servers over HTTP</li>
+<li>The gateway server broadcasts the chat message to the subscribed users over WebSocket</li>
+</ol>
+<p>The client will establish a connection to the nearest data center using GeoDNS <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>. The snapshot makes the user experience seamless when Slack is initially launched by returning the metadata of subscribed Slack channels and the list of users subscribed to the respective Slack channels <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>. However, the snapshot size increases linearly with the increase in the number of users. The snapshot size can easily grow up to a few dozen megabytes for large organizations resulting in a dreadful latency <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>An additional <a class="offline-link" href="../fundamentals/caching-patterns.html" rel="noopener noreffer">cache</a> server such as Redis can be provisioned around the chat database for improved read performance. The materialized views of SQL queries can be provided by the cache server to achieve low latency <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. The benefits of the Slack prototype architecture are as follows <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>data model offers a rich real-time client experience at the cost of increased memory usage by the client</li>
+<li>trivial implementation model and horizontally scalable</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Database sharding in Slack prototype&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-prototype-database-sharding.webp" href="https://systemdesign.one/slack-architecture/slack-prototype-database-sharding.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Database sharding in Slack prototype">
+<img alt="Figure 4: Database sharding in Slack prototype" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-prototype-database-sharding.webp, /slack-architecture/slack-prototype-database-sharding.webp 1.5x, /slack-architecture/slack-prototype-database-sharding.webp 2x" height="497" sizes="683px" src="../assets/images/img_8f49d7e79c36.webp" width="680"/>
+</a><figcaption class="image-caption">Figure 4: Database sharding in Slack prototype</figcaption>
+</figure>
+<p>The metadata store is a dedicated database containing details about chat database shards. The chat database is the source of truth for chat messages, comments, <a class="offline-link" href="./hotstar-architecture.html" rel="noopener noreffer">emojis</a>, and metadata of Slack channels <sup id="fnref:16"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:16" role="doc-noteref">16</a></sup>. Every data access operation must query the metadata store to identify the chat database shard before interacting with the respective chat database shard <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>. The database can be configured in an active-active replication topology across distinct data centers for improved performance, fault tolerance, and scalability <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:14"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:14" role="doc-noteref">14</a></sup>. The following are the benefits of active-active database replication topology <sup id="fnref:16"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:16" role="doc-noteref">16</a></sup>:</p>
+<ul>
+<li>provides high availability through multiple leaders</li>
+<li>high product development velocity with a simple data shard model</li>
+<li>easiness in debugging the customer database</li>
+<li>easy to scale out by adding more database shards</li>
+</ul>
+<p>The limitations of the active-active database replication topology are the following <sup id="fnref:16"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:16" role="doc-noteref">16</a></sup>:</p>
+<ul>
+<li>scaling limitations on a single host</li>
+<li>inflexible data model</li>
+<li>hot spots and underutilization of shards due to the difficulty in re-sharding</li>
+<li>degraded service availability due to dependency on the database shard and difficulty to configure replicas</li>
+<li>increased operational complexity</li>
+</ul>
+<p>The sharding logic should be implemented on the chat service with the current architecture <sup id="fnref:16"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:16" role="doc-noteref">16</a></sup>. A channel in Slack is an abstract keyword whose identifier (<strong>ID</strong>) is assigned to an entity such as a user, team, or a regular Slack channel <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>. The chat database should be partitioned with <em>channel_id</em> as the shard key for scalability and reduced hot spots. A naive approach to partitioning the database is to perform an arbitrary sharding with support for manual re-sharding and automatic re-sharding on the occurrence of a hot spot <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>When the leader instance of the metadata store crashes, an automated failover can be performed to the remaining available leader instance for high availability <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>. When both leader instances of the metadata store fail simultaneously, the users can continue to use Slack by querying the cache server, but with limited functionality <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. The database nodes can be addressed in a configuration file for <a class="offline-link" href="../fundamentals/what-is-service-discovery.html" rel="noopener noreffer">service discovery</a> and must be manually replaced for improved availability <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs" rel="noopener noreferrer" target="_blank">Command and Query Responsibility Segregation</a> (<strong>CQRS</strong>) pattern can be implemented by routing the read requests to the follower database instances and routing the write requests to the leader database instance. The CQRS pattern offers high performance and high availability at the cost of stale reads. The read your writes semantics can be implemented on top of CQRS to achieve strong consistency <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>The current architecture is a functional prototype of Slack. However, the current architecture will not satisfy  the scalability requirements of Slack.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="building-the-minimum-viable-product-forslack"><a class="header-mark offline-link" href="./slack-architecture.html#building-the-minimum-viable-product-forslack"></a>Building the Minimum Viable Product for Slack</h3>
+<p>The requirements for building Slack demand an implementation of <a href="https://en.wikipedia.org/wiki/Atomic_broadcast" rel="noopener noreferrer" target="_blank">atomic broadcast</a> in distributed systems. The following criteria should be satisfied to implement atomic broadcast:</p>
+<ul>
+<li>validity: all users will eventually receive the message published by a user in a Slack channel</li>
+<li>integrity: a published chat message is received by each user not more than once</li>
+<li>total order: all users receive the chat messages in the identical order</li>
+</ul>
+<p>The atomic broadcast in distributed systems is equivalent to consensus <sup id="fnref:17"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:17" role="doc-noteref">17</a></sup> and distributed system consensus in general is impossible <sup id="fnref:18"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:18" role="doc-noteref">18</a></sup>. The key to building Slack is relaxing some constraints to satisfy the system requirements <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>. The constraint that should be dropped is an end-to-end property <sup id="fnref:19"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:19" role="doc-noteref">19</a></sup> of the system and depends on the requirements and usage patterns <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Slack; Minimum Viable Product&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-minimum-viable-product.webp" href="https://systemdesign.one/slack-architecture/slack-minimum-viable-product.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Slack; Minimum Viable Product">
+<img alt="Figure 5: Slack; Minimum Viable Product" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-minimum-viable-product.webp, /slack-architecture/slack-minimum-viable-product.webp 1.5x, /slack-architecture/slack-minimum-viable-product.webp 2x" height="593" sizes="683px" src="../assets/images/img_22d9e6d0876c.webp" width="830"/>
+</a><figcaption class="image-caption">Figure 5: Slack; Minimum Viable Product</figcaption>
+</figure>
+<p>The <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> is one of the crucial components to  build Slack. Both the sender and the receiver (clients) should maintain a WebSocket connection to the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> <sup id="fnref:20"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:20" role="doc-noteref">20</a></sup>. The real-time WebSocket connection can be used to broadcast chat message updates and initiate API calls to fetch the channel chat history <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The chat messages should be persisted in the chat database before broadcasting to the users for improved durability and fault tolerance. The relational database must be configured to prioritize availability over consistency and support an automatic leader promotion on failure. The relational database produces a statement-based log on every write operation for improved fault tolerance <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>The active-active database replication topology comes with a limitation of the possibility of conflicts. The conflicts can either be resolved automatically through application logic or manually through the operator action. The sharding by <em>channel_id</em> as the shard key reduces the probability of conflicts as teams cannot overlap <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Scaling the Slack minimum viable product with an edge proxy and snapshot service&lt;/h2&gt;" data-thumbnail="/slack-architecture/scaling-slack-mvp.webp" href="https://systemdesign.one/slack-architecture/scaling-slack-mvp.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Scaling the Slack minimum viable product with an edge proxy and snapshot service">
+<img alt="Figure 6: Scaling the Slack minimum viable product with an edge proxy and snapshot service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/scaling-slack-mvp.webp, /slack-architecture/scaling-slack-mvp.webp 1.5x, /slack-architecture/scaling-slack-mvp.webp 2x" height="536" sizes="683px" src="../assets/images/img_13280d6a1f85.webp" width="895"/>
+</a><figcaption class="image-caption">Figure 6: Scaling the Slack minimum viable product with an edge proxy and snapshot service</figcaption>
+</figure>
+<p>The gateway server is a component of the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> <sup id="fnref:20"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:20" role="doc-noteref">20</a></sup>. The gateway server is a stateful and in-memory service that maintains the mapping between the <em>channel_id</em> and client connections <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>. The gateway server also stores some amount of chat history temporarily.</p>
+<p>An edge proxy such as <a href="https://www.envoyproxy.io/" rel="noopener noreferrer" target="_blank">Envoy</a> can be introduced between the gateway server and the client for SSL termination and proxying the WebSocket connections <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:9" role="doc-noteref">9</a></sup>. The edge proxy delegates the client requests to the gateway server. <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">Consistent hashing</a> can be used as the load-balancing algorithm to map the channels to the gateway server <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p><a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/operations/hot_restart" rel="noopener noreferrer" target="_blank">Hot restarts</a> can be enabled on the edge proxy for scalability, reduced operational complexity, and high availability. Hot restarts prevent dropping any client connections when dynamic changes to the cluster and endpoints occur. The advantages of an edge proxy are the following <sup id="fnref:9"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ul>
+<li>enable passive health checking through <a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/outlier#arch-overview-outlier-detection" rel="noopener noreferrer" target="_blank">outlier detection</a></li>
+<li>provides <a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/panic_threshold" rel="noopener noreferrer" target="_blank">panic routing</a> to handle traffic spikes</li>
+</ul>
+<p>The snapshot service is an application-level edge query engine backed by a cache server and stores the bootstrap payload for Slack client <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:14"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:14" role="doc-noteref">14</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. The snapshot service will return a slimmed-down version of the bootstrap payload for reduced latency and high performance <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>. The snapshot service offers HTTP API endpoints to the client for fetching data <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>The client can query the snapshot service directly to identify the list of users in a particular Slack channel or to fetch the metadata of a particular user <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. On top of that, the snapshot service supports the autocomplete queries on Slack <a href="https://slack.engineering/a-faster-smarter-quick-switcher/" rel="noopener noreferrer" target="_blank">quick-switcher</a> <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>The snapshot service is an application-aware microservice to reduce the server load <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>. The snapshot service can utilize the <a href="https://en.wikipedia.org/wiki/Adaptive_replacement_cache" rel="noopener noreferrer" target="_blank">adaptive replacement cache</a> (<strong>ARC</strong>) cache eviction policy on the internal cache for high performance. The snapshot service supports lazy loading of the bootstrap payload when the Slack client is launched for improved latency. The snapshot service comes with the challenge of cache coherency and reconciling business logic.</p>
+<p>The client is not allowed to update the snapshot service. The gateway server and chat service can update the snapshot service when new events are received. The in-memory snapshot service should be able to handle approximately 1 million queries per second according to the historical data and load test results from Slack <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>The snapshot service generates a response to client requests by querying the internal cache. The snapshot for a particular team can be kept up-to-date as long as there is at least one user from the specific team connected to Slack. The snapshot service flushes the cache only when the last user of the specific team disconnects from Slack. The snapshot service should be prewarmed by leveraging the publish-subscribe technique offered by the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> to improve the user experience (latency) of the first user from the specific team.</p>
+<p>The snapshot service should store a data object only once in the internal cache and keep references to the particular data object to save memory <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. The snapshot service can subscribe to the relevant Slack channels on the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> and keep the internal cache updated without duplicates.</p>
+<p>The snapshot service provides <strong>just-in-time annotation</strong> by predicting the data objects that the client might query next and pushing the predicted data objects to the clients proactively in the same response to reduce latency by preventing unnecessary network round trips <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. For example, the snapshot service will send the metadata object of an inactive user along with the chat message that mentioned the inactive user because the metadata of the inactive user might not be cached by other users <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>The circuit breaker pattern can be implemented for improved fault tolerance of the snapshot service. The snapshot service must reject the incoming traffic when the upstream services indicate an increasing failure rate.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Gateway server; Actor model&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-gateway-server-actor-model.webp" href="https://systemdesign.one/slack-architecture/slack-gateway-server-actor-model.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Gateway server; Actor model">
+<img alt="Figure 7: Gateway server; Actor model" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-gateway-server-actor-model.webp, /slack-architecture/slack-gateway-server-actor-model.webp 1.5x, /slack-architecture/slack-gateway-server-actor-model.webp 2x" height="443" sizes="683px" src="../assets/images/img_a3b928086e61.webp" width="603"/>
+</a><figcaption class="image-caption">Figure 7: Gateway server; Actor model</figcaption>
+</figure>
+<p>The <a href="https://en.wikipedia.org/wiki/Actor_model" rel="noopener noreferrer" target="_blank">actor programming model</a> is used to implement the gateway server for improved performance and high throughput. An actor is an extremely lightweight object that can receive chat messages and execute actions to handle the messages using an event handler. A thread will be assigned to an actor when a chat message should be processed. The thread is released once the message is processed and the thread is subsequently assigned to the next actor. Further explanation of the <a class="offline-link" href="../fundamentals/actor-model.html" rel="noopener noreffer">actor model</a> implementation of the gateway server is included in the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> article.</p>
+<p>The client (mobile device) is allowed to send a chat message such as replying to a Slack notification without establishing a WebSocket connection. The client can make an HTTP request to the chat service for improved performance and low bandwidth <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>The client should <a href="https://en.wikipedia.org/wiki/Salt_%28cryptography%29" rel="noopener noreferrer" target="_blank">salt</a> the received chat messages to prevent displaying the same message twice. The salt is a random unique token that should be stored with every chat message. The server should not perform deduplication of the chat messages because it is likely that the sender might publish the same chat message twice <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Slack; Publish-subscribe pattern&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-publish-subscribe.webp" href="https://systemdesign.one/slack-architecture/slack-publish-subscribe.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Slack; Publish-subscribe pattern">
+<img alt="Figure 8: Slack; Publish-subscribe pattern" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-publish-subscribe.webp, /slack-architecture/slack-publish-subscribe.webp 1.5x, /slack-architecture/slack-publish-subscribe.webp 2x" height="805" sizes="683px" src="../assets/images/img_12203e6c74c1.webp" width="1050"/>
+</a><figcaption class="image-caption">Figure 8: Slack; Publish-subscribe pattern</figcaption>
+</figure>
+<p>A further optimization is to push updates only to the active channels and users in the client’s viewport for improved performance and reduced bandwidth usage <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. The clients can subscribe to the events relevant to the current viewport and change subscriptions whenever the user switches to another screen for improved performance <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>The publish-subscribe (<strong>pub-sub</strong>) pattern to broadcast events can be built by leveraging the dispatcher service and the endpoint store of the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a>. A message broker such as Apache Kafka is not used to build the pub-sub server for reducing operational complexity.</p>
+<p>The gateway server subscribes to the endpoint store with all the active channels based on <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> asynchronously <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>. The snapshot service should also subscribe to the relevant channels to receive updates <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>. The dispatcher queries the endpoint store to identify the list of subscribed gateway servers and snapshot service instances for a particular Slack channel <sup id="fnref:20"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:20" role="doc-noteref">20</a></sup>.</p>
+<p>The subscription workflow of the gateway server and endpoint store in Slack is similar to the subscription workflow in the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> <sup id="fnref:20"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:20" role="doc-noteref">20</a></sup>. You can read the related article to explore the subscription workflow in more detail.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scaling-slack"><a class="header-mark offline-link" href="./slack-architecture.html#scaling-slack"></a>Scaling Slack</h3>
+<p>Load balancers must be provisioned between different components of <a href="https://newsletter.systemdesign.one/p/messaging-architecture" rel="noopener noreferrer" target="_blank">Slack</a> to improve the performance and availability of the system. Object storage such as Amazon Web Services Simple Storage Service (<strong>AWS S3</strong>) can be used to store the media files that are shared in a Slack channel. The <a class="offline-link" href="./cdn-explained.html" rel="noopener noreffer">content delivery network</a> (<strong>CDN</strong>) should be used to cache frequently accessed media assets to achieve low latency.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: Scaling Slack&lt;/h2&gt;" data-thumbnail="/slack-architecture/scaling-slack.webp" href="https://systemdesign.one/slack-architecture/scaling-slack.webp" rel="noopener noreferrer" target="_blank" title="Figure 9: Scaling Slack">
+<img alt="Figure 9: Scaling Slack" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/scaling-slack.webp, /slack-architecture/scaling-slack.webp 1.5x, /slack-architecture/scaling-slack.webp 2x" height="594" sizes="683px" src="../assets/images/img_0885f0bf871f.webp" width="907"/>
+</a><figcaption class="image-caption">Figure 9: Scaling Slack</figcaption>
+</figure>
+<p>The service registry such as the <a href="https://www.consul.io/" rel="noopener noreferrer" target="_blank">consul</a> enables service discovery through self-registration of services and automated cluster repair <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. The topology management is automated through the usage of a service registry. The service registry must be queried to identify the service instances available in the system <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>The job queue is used to defer non-critical tasks such as indexing chat messages to provide chat search functionality <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:14"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:14" role="doc-noteref">14</a></sup>. The job queue can be provisioned using Redis streams or Apache Kafka <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. The job workers will asynchronously poll the tasks from the job queue <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>The chat messages are persisted in the chat database before being sent to the users over WebSocket <sup id="fnref:16"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:16" role="doc-noteref">16</a></sup>. The data storage layer of Slack must be highly available, reliable, and scalable to fulfill the system requirements.</p>
+<p>The database shards will exhaust and require frequent re-partitioning in gigantic organizations. <a href="https://vitess.io/docs/16.0/overview/architecture/" rel="noopener noreferrer" target="_blank">Vitess</a> can be used for partitioning the chat database. Vitess offers a shard topology management service on top of MySQL database for easier horizontal scaling. Vitess allows application code and database queries to remain oblivious to the data distribution among multiple database shards by encapsulation of shard routing logic. Vitess makes it trivial to re-partition a database shard or merge shards according to the evolving system requirements <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The database can be partitioned with <em>channel_id</em> as the shard key to reduce the occurrence of hot spots. The sharding by <em>channel_id</em> spreads out the load but introduces the need for the scatter-gather pattern for teams in an organization. The teams are relatively less isolated with the <em>channel_id</em> key partitioning approach, so there must be additional performance protective measures implemented against noisy neighbors in the database shards.</p>
+<p>The client should be tolerant to partial failures and retry on scatter-gather for improved high availability <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>. The scatter-gather pattern can be used with Vitess for multiple shards to reduce hot spots. Vitess replaces the leader-leader database replication topology with a single leader and an <a href="https://github.com/openark/orchestrator" rel="noopener noreferrer" target="_blank">orchestrator</a> to execute the automated failover. The following are the benefits of using Vitess to shard the chat database <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:16"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:16" role="doc-noteref">16</a></sup>:</p>
+<ul>
+<li>flexible sharding through per-table sharding policy</li>
+<li>mature topology management through database self-registration</li>
+<li>supports a single leader with semi-synchronous replication</li>
+<li>reduced operational complexity through an automated failover with the orchestrator</li>
+<li>automatic re-sharding for cluster expansion</li>
+<li>keeps MySQL at the core of development and operations</li>
+<li>offers scalability through built-in sharding features</li>
+<li>provides an extensible <a class="offline-link" href="./open-source-guidelines.html" rel="noopener noreffer">open-source</a> project</li>
+</ul>
+<p>The search database such as Apache Solr should also be partitioned based on <em>channel_id</em> as the shard key for scalability <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Slack; Scaling the snapshot service&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-scaling-snapshot.webp" href="https://systemdesign.one/slack-architecture/slack-scaling-snapshot.webp" rel="noopener noreferrer" target="_blank" title="Figure 10: Slack; Scaling the snapshot service">
+<img alt="Figure 10: Slack; Scaling the snapshot service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-scaling-snapshot.webp, /slack-architecture/slack-scaling-snapshot.webp 1.5x, /slack-architecture/slack-scaling-snapshot.webp 2x" height="454" sizes="683px" src="../assets/images/img_a3cf79fd04d4.webp" width="746"/>
+</a><figcaption class="image-caption">Figure 10: Slack; Scaling the snapshot service</figcaption>
+</figure>
+<p>The snapshot service must be deployed across multiple edge data centers for scalability and low latency. Team affinity on the snapshot service can be implemented at a data center level by routing all the users in a specific team to the same snapshot service instance. Team affinity is enforced to achieve optimal cache efficiency <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>Alternatively, the scatter-gather pattern can be used to improve the cache efficiency of the snapshot service at the cost of elevated latency <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>An edge proxy can be provisioned in front of the snapshot service to load balance the traffic among snapshot service instances using <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> using <em>channel_id</em> as the key <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>. Put another way, <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> is used to identify the snapshot service instance for a particular Slack channel <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Slack; Publish workflow of a chat message across multiple data centers&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-publish-workflow-multiple-data-centers.webp" href="https://systemdesign.one/slack-architecture/slack-publish-workflow-multiple-data-centers.webp" rel="noopener noreferrer" target="_blank" title="Figure 11: Slack; Publish workflow of a chat message across multiple data centers">
+<img alt="Figure 11: Slack; Publish workflow of a chat message across multiple data centers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-publish-workflow-multiple-data-centers.webp, /slack-architecture/slack-publish-workflow-multiple-data-centers.webp 1.5x, /slack-architecture/slack-publish-workflow-multiple-data-centers.webp 2x" height="1372" sizes="683px" src="../assets/images/img_2ddfcc2443c5.webp" width="2001"/>
+</a><figcaption class="image-caption">Figure 11: Slack; Publish workflow of a chat message across multiple data centers</figcaption>
+</figure>
+<p>The users of an organization typically do not change their physical location quite often. A dedicated endpoint store could be used to persist the data center ID of each client connection and channel subscription. The published chat messages should be published only to the set of data centers that are in the subscriber list to reduce bandwidth usage.</p>
+<p>The cross-data center subscription model can be used to implement Slack to reduce unnecessary bandwidth usage, unlike the broadcast model in the implementation of the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> <sup id="fnref:20"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:20" role="doc-noteref">20</a></sup>. Alternatively, the Conflict-free Replicated Data Type (<strong>CRDT</strong>) database can be used to implement cross-data center subscriptions without executing a cross-data center request at the expense of degraded latency. The endpoint store will contain the following data model <sup id="fnref:20"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:20" role="doc-noteref">20</a></sup>:</p>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>Data Model of Endpoint Store<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">{ channel_id : set (data_center_id) }</div>
+</div>
+</div>
+<p>The following operations are performed by Slack to publish a chat message across multiple data centers <sup id="fnref:20"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:20" role="doc-noteref">20</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>:</p>
+<ol>
+<li>The client makes an HTTP request to the web API of the chat service to publish the message</li>
+<li>The chat service persists the message in the chat database and delegates the message to the dispatcher service</li>
+<li>The chat service updates the snapshot service</li>
+<li>The dispatcher queries the local endpoint store to identify the data centers of the subscribed clients</li>
+<li>The dispatcher broadcasts the chat message only to the set of subscribed peer data centers over the HTTP</li>
+<li>The dispatcher in the peer data center queries the local endpoint store to identify the list of subscribed gateway servers</li>
+<li>The gateway server queries the local in-memory subscription store to identify the list of subscribed clients and fans out the chat message over WebSocket</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="further-system-design-learning-resources-2"><a class="header-mark offline-link" href="./slack-architecture.html#further-system-design-learning-resources-2"></a>Further system design learning resources</h4>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="slack-architecture-deepdive"><a class="header-mark offline-link" href="./slack-architecture.html#slack-architecture-deepdive"></a>Slack Architecture Deep Dive</h2>
+<p>The microservice architecture can be used for service decomposition and scalability. The service mesh is used for <a class="offline-link" href="../fundamentals/what-is-service-discovery.html" rel="noopener noreffer">service discovery</a> as the system scales out <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: Slack; Timeline diagram for chat message send-receive workflow&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-timeline-diagram-workflow.webp" href="https://systemdesign.one/slack-architecture/slack-timeline-diagram-workflow.webp" rel="noopener noreferrer" target="_blank" title="Figure 12: Slack; Timeline diagram for chat message send-receive workflow">
+<img alt="Figure 12: Slack; Timeline diagram for chat message send-receive workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-timeline-diagram-workflow.webp, /slack-architecture/slack-timeline-diagram-workflow.webp 1.5x, /slack-architecture/slack-timeline-diagram-workflow.webp 2x" height="739" sizes="683px" src="../assets/images/img_31800d44e5a0.webp" width="1250"/>
+</a><figcaption class="image-caption">Figure 12: Slack; Timeline diagram for chat message send-receive workflow</figcaption>
+</figure>
+<p>The clients can publish chat messages without establishing a WebSocket connection at the cost of an additional network hop between the clients. The latency of the system can be reduced by deferring the expensive computations using the job queue <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. The unread notifications and user reactions in Slack can be implemented using a <a class="offline-link" href="./distributed-counter-system-design.html" rel="noopener noreffer">distributed counter</a> at the expense of increased operational complexity.</p>
+<p>The push notifications in Slack can be enabled through third-party service integrations. The push notification allows notifying an inactive user, for example, when the inactive user is mentioned in a chat message. Some of the extremely popular push notification services are the Apple push notification service and Firebase cloud messaging. The <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> data structure can be employed to prevent the duplication of notifications to the same user in a space-efficient approach <sup id="fnref:21"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:21" role="doc-noteref">21</a></sup>.</p>
+<p>The client can store the timestamp of the last read message to identify the offset of messages to be retrieved. However, this approach will highly likely result in an erratic user experience due to the usage of multiple devices by the same user. As an alternative, the client can use the user’s last seen timestamp stored in the server to fetch the newer chat messages <sup id="fnref:22"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:22" role="doc-noteref">22</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="presence-status"><a class="header-mark offline-link" href="./slack-architecture.html#presence-status"></a>Presence Status</h3>
+<p>The events such as a user reaction to a message, bookmarking, or a member joining a channel follow a similar workflow as publishing a chat message. The transient events such as typing indicators and presence status changes can be sent through the WebSocket channel instead of communicating with the chat service <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>The majority of the events occurring on Slack are user presence status change <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:6" role="doc-noteref">6</a></sup>. The publish-subscribe technique can be used for an efficient implementation of the user presence status <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. The Slack client should display the presence status only for the subset of users that are currently visible on the viewport of the client for improved performance <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>. The <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">real-time presence platform</a> article describes in detail the implementation of the user presence status feature <sup id="fnref:23"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:23" role="doc-noteref">23</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="message-ordering"><a class="header-mark offline-link" href="./slack-architecture.html#message-ordering"></a>Message Ordering</h3>
+<p>The server timestamp can be used as the chat message ID to order the messages in chronological order. However, the message ordering with the server timestamp will yield inaccurate results in a distributed system due to the occurrence of the clock skew and network delays. On the other hand, the client timestamp cannot be used due to the possibility of an incorrect time set and difficulty in synchronizing time across clients.</p>
+<p>An alternative approach is to use a unique sequence number generator such as <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake" rel="noopener noreferrer" target="_blank">Twitter Snowflake</a> for ordering the chat messages. However, this approach also suffers from the clock skew problem in a distributed system and will not result in accurate message ordering.</p>
+<p>The precise timestamp of the messages is not crucial but only the causality of the messages is important for proper message ordering. As a result, the optimal approach is to use a <a href="https://en.wikipedia.org/wiki/Logical_clock" rel="noopener noreferrer" target="_blank">logical clock</a> such as the Lamport clock or a Vector clock for message ordering. The logical clock is a mechanism for capturing chronological and causal relationships within a distributed system. The key concept is to annotate every chat message request with an incremented count of the previous chat message response received by the client.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="low-latency"><a class="header-mark offline-link" href="./slack-architecture.html#low-latency"></a>Low Latency</h3>
+<p>The client persists the timestamp of the last synchronization with the snapshot service to enable incremental updates of the snapshot <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. The service workers in the web client can be used to fetch only the incremental updates from the snapshot service <sup id="fnref:22"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:22" role="doc-noteref">22</a></sup>. The session objects can be loaded asynchronously in parallel by the client to maintain low latency. The hashcode of the media file URLs should be shared with the clients for reduced bandwidth <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>The mobile clients should load only a single Slack channel and load other channels in the background to accomplish low latency. The JSON events can be replaced with Thrift events for ease of maintenance and improved performance  <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. The snapshot size can be further reduced by removing some of the data fields from the initial payload.</p>
+<p>The cache server can hold the unread messages and their count for rapid retrieval. The mobile client should poll the API endpoint to keep the sidebar updated <sup id="fnref:24"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:24" role="doc-noteref">24</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Slack; Smart edge cache&lt;/h2&gt;" data-thumbnail="/slack-architecture/slack-smart-edge-cache.webp" href="https://systemdesign.one/slack-architecture/slack-smart-edge-cache.webp" rel="noopener noreferrer" target="_blank" title="Figure 13: Slack; Smart edge cache">
+<img alt="Figure 13: Slack; Smart edge cache" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/slack-architecture/slack-smart-edge-cache.webp, /slack-architecture/slack-smart-edge-cache.webp 1.5x, /slack-architecture/slack-smart-edge-cache.webp 2x" height="793" sizes="683px" src="../assets/images/img_0a024eab7ab1.webp" width="1092"/>
+</a><figcaption class="image-caption">Figure 13: Slack; Smart edge cache</figcaption>
+</figure>
+<p>An edge cache be used to reduce the network round trip to improve the latency. The libchat is an internal service used by different components to query their local cache.</p>
+<p>The network round-trip time on the desktop and mobile clients can be reduced by querying the local cache in the client via the libchat service. The libchat service and local cache can run as distinct processes on the desktop client for improved performance <sup id="fnref:7"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<p>The users of the web client often have stable, and high bandwidth internet connections like the office internet or wired ethernet. The libslack service cannot be initialized on a web client due to the difficulty in injecting native code on the web browser. Therefore, the web client can execute  requests to the snapshot service provisioned on the edge data centers <sup id="fnref:7"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<p>The communication between the components of Slack occurs through the libchat service. This method provides an opportunity to experiment with different network protocols and wire formats with changes to a single codebase <sup id="fnref:7"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="high-availability"><a class="header-mark offline-link" href="./slack-architecture.html#high-availability"></a>High Availability</h3>
+<p>An organization reconnecting to the Slack network after an outage could cause a thundering herd <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. There should be multiple countermeasures in place to tackle the thundering herd problem. The in-memory snapshot service can reduce the server load and offers a straightforward approach to mitigate the thundering herd problem <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:15"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>Jitter must be added to client connection request time intervals to spread out the load and reduce the thundering herd problem. The partitioning of stateful services of Slack with <em>channel_id</em> as the shard key can also prevent a thundering herd <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>An active-active load balancer should be provisioned to handle traffic spikes for high availability. Rate limiting should be configured on the services and API endpoints to attain high availability and fault tolerance. The requests can be dropped when a particular service instance reaches its threshold for memory, concurrent connections, or throughput <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. The rate limiter will also alleviate the thundering herd problem <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>The load testing frameworks such as <a href="https://locust.io/" rel="noopener noreferrer" target="_blank">locust</a> can be used for identifying the service limits to prevent cascading failures and improve fault tolerance <sup id="fnref:11"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:11" role="doc-noteref">11</a></sup>. There should be cluster orchestration configured to self-heal for high availability <sup id="fnref:5"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The hot spots on the system can be handled by alerting and provisioning high-end hardware for critical services <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>. A dedicated monitoring service should be provisioned to check the health status of the critical services and replace the unhealthy services quickly <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="fault-tolerance"><a class="header-mark offline-link" href="./slack-architecture.html#fault-tolerance"></a>Fault Tolerance</h3>
+<p>A draining mechanism should be implemented to route the users to a working data center when the data center fails for improved fault tolerance and high availability <sup id="fnref:3"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:3" role="doc-noteref">3</a></sup>. A dead letter queue can be provisioned to log the errors while writing to the chat database.</p>
+<p>The gateway server maintains an in-memory queue of uncommitted sends for transient events. The events should be replayed when a gateway server fails. The gateway server should automatically retry when the chat service is unavailable for improved fault tolerance <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>. The depth of the in-memory queue must be monitored for asserting the system’s health <sup id="fnref:4"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./slack-architecture.html#scalability"></a>Scalability</h3>
+<p>The developer’s productivity can be increased by provisioning a remote development environment <sup id="fnref:25"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:25" role="doc-noteref">25</a></sup>. The infrastructure can leverage services offered by the hyperscalers such as AWS for rapid growth and scalability. The resources can be provisioned and disaster recovery scenarios can be practiced with ease on the hyperscaler infrastructure <sup id="fnref:26"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:26" role="doc-noteref">26</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="client-support"><a class="header-mark offline-link" href="./slack-architecture.html#client-support"></a>Client Support</h3>
+<p>The desktop Slack client can be built with <a href="https://www.electronjs.org/" rel="noopener noreferrer" target="_blank">ElectronJS</a> for cross-platform support. The web client can be created with any modern JavaScript framework such as ReactJS <sup id="fnref:22"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:22" role="doc-noteref">22</a></sup>. The mobile client can be built with either <a href="https://reactnative.dev/" rel="noopener noreferrer" target="_blank">React Native</a> or native mobile technologies.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="security"><a class="header-mark offline-link" href="./slack-architecture.html#security"></a>Security</h3>
+<p>Security issues must be proactively detected through static code analysis. Static code analysis is a tool that inspects the code for security vulnerabilities and insecure programming practices without code execution. The static code analysis is based on a list of security rules. Some of the popular static code analysis tools are checkmarx and <a href="https://semgrep.dev/" rel="noopener noreferrer" target="_blank">semgrep</a> <sup id="fnref:27"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:27" role="doc-noteref">27</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./slack-architecture.html#summary"></a>Summary</h2>
+<p>The key takeaway from building Slack is that optimality is contingent and should be adapted with growth. It is crucial to identify the end-to-end part of the problem to build a distributed system <sup id="fnref:2"><a class="footnote-ref offline-link" href="./slack-architecture.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./slack-architecture.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./slack-architecture.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./slack-architecture.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="https://slack.com/help/articles/115004071768-What-is-Slack-" rel="noopener noreferrer" target="_blank">What is Slack?</a>, slack.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Keith Adams, <a href="https://gotoams.nl/2018/sessions/440/scaling-slack" rel="noopener noreferrer" target="_blank">Scaling Slack</a> (2020), gotoams.nl <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Sameera Thangudu, <a href="https://slack.engineering/real-time-messaging/" rel="noopener noreferrer" target="_blank">Real-time Messaging</a> (2023), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Keith Adams, <a href="https://www.infoq.com/presentations/slack-infrastructure/" rel="noopener noreferrer" target="_blank">How Slack Works</a> (2016), infoq.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Mike Demmer, <a href="https://www.infoq.com/presentations/slack-scalability-2018/" rel="noopener noreferrer" target="_blank">Scaling Slack - The Good, the Unexpected, and the Road Ahead</a> (2018), infoq.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Julia Grace, <a href="https://www.infoq.com/presentations/slack-scaling-infrastructure/" rel="noopener noreferrer" target="_blank">Scaling Infrastructure Engineering at Slack</a> (2019), infoq.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Keith Adams, Mike Fleming, Haim Grosman, <a href="https://slack.engineering/making-slack-feel-like-slack/" rel="noopener noreferrer" target="_blank">Making Slack Feel Like Slack</a> (2017), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Brenda Jin, <a href="https://slack.engineering/evolving-the-slack-api/" rel="noopener noreferrer" target="_blank">Evolving the Slack API</a> (2018), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p>Ariane van der Steldt, Radha Kumari, <a href="https://slack.engineering/migrating-millions-of-concurrent-websockets-to-envoy/" rel="noopener noreferrer" target="_blank">Migrating Millions of Concurrent Websockets to Envoy</a> (2021), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Allan Denis, <a href="https://www.infoq.com/articles/websocket-and-http2-coexist/" rel="noopener noreferrer" target="_blank">Will WebSocket survive HTTP/2?</a> (2016), infoq.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Bing Wei, <a href="https://www.infoq.com/presentations/slack-scalability/" rel="noopener noreferrer" target="_blank">Scaling Slack</a> (2018), infoq.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p>Saurabh Sahni, Taylor Singletary, <a href="https://slack.engineering/how-we-design-our-apis-at-slack/" rel="noopener noreferrer" target="_blank">How We Design Our APIs at Slack</a> (2022), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Michael Hahn, <a href="https://slack.engineering/evolving-api-pagination-at-slack/" rel="noopener noreferrer" target="_blank">Evolving API Pagination at Slack</a> (2018), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p>Yingyu Sun, Mike Demmer, <a href="https://slack.engineering/how-slack-built-shared-channels/" rel="noopener noreferrer" target="_blank">How Slack Built Shared Channels</a> (2020), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:15" role="doc-endnote">
+<p>Bing Wei, <a href="https://slack.engineering/flannel-an-application-level-edge-cache-to-make-slack-scale/" rel="noopener noreferrer" target="_blank">Flannel: An Application-Level Edge Cache to Make Slack Scale</a> (2018), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:15" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:16" role="doc-endnote">
+<p>Guido Iaquinti et al., <a href="https://slack.engineering/scaling-datastores-at-slack-with-vitess/" rel="noopener noreferrer" target="_blank">Scaling Datastores at Slack with Vitess</a> (2021), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:16" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:17" role="doc-endnote">
+<p>Tushar Deepak Chandra et al., <a href="https://dl.acm.org/doi/10.1145/226643.226647" rel="noopener noreferrer" target="_blank">Unreliable failure detectors for reliable distributed systems</a> (1996), dl.acm.org <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:17" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:18" role="doc-endnote">
+<p>Michael J. Fischer et al., <a href="https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf" rel="noopener noreferrer" target="_blank">Impossibility of Distributed Consensus with One Faulty Process</a> (1985), groups.csail.mit.edu <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:18" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:19" role="doc-endnote">
+<p>J.H. Saltzer et al., <a href="https://web.mit.edu/Saltzer/www/publications/endtoend/endtoend.pdf" rel="noopener noreferrer" target="_blank">End-to-End Arguments in System Design</a>, web.mit.edu <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:19" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:20" role="doc-endnote">
+<p>Neo Kim, <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">Live Comment System Design</a> (2023), systemdesign.one <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:20" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:21" role="doc-endnote">
+<p>Suresh Kondamudi, <a href="http://highscalability.com/blog/2016/4/4/how-to-remove-duplicates-in-a-large-dataset-reducing-memory.html" rel="noopener noreferrer" target="_blank">How To Remove Duplicates In A Large Dataset Reducing Memory Requirements By 99%</a> (2016), highscalability.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:21" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:22" role="doc-endnote">
+<p><a href="https://softwareengineeringdaily.com/2020/02/27/slack-frontend-architecture-with-anuj-nair/" rel="noopener noreferrer" target="_blank">Slack Frontend Architecture with Anuj Nair</a> (2020), softwareengineeringdaily.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:22" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:23" role="doc-endnote">
+<p>Neo Kim, <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">Real-Time Presence Platform System Design</a> (2023), systemdesign.one <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:23" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:24" role="doc-endnote">
+<p>Johnny Rodgers et al., <a href="https://slack.engineering/reducing-slacks-memory-footprint/" rel="noopener noreferrer" target="_blank">Reducing Slack’s memory footprint</a> (2017), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:24" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:25" role="doc-endnote">
+<p>Sylvestor George, <a href="https://slack.engineering/remote-development-at-slack/" rel="noopener noreferrer" target="_blank">Remote Development at Slack</a> (2022), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:25" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:26" role="doc-endnote">
+<p><a href="https://aws.amazon.com/solutions/case-studies/slack/" rel="noopener noreferrer" target="_blank">Slack Case Study</a> (2015), aws.amazon.com <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:26" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:27" role="doc-endnote">
+<p><a href="https://slack.engineering/how-two-interns-are-helping-secure-millions-of-lines-of-code/" rel="noopener noreferrer" target="_blank">How Two Interns Are Helping Secure Millions of Lines of Code</a> (2022), slack.engineering <a class="footnote-backref offline-link" href="./slack-architecture.html#fnref:27" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-05-28</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Slack Architecture" data-url="https://systemdesign.one/slack-architecture/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/slack-architecture/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/slack-architecture/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Slack Architecture" data-url="https://systemdesign.one/slack-architecture/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="building the real-time chat service" data-image="slack-architecture/slack.webp" data-sharer="pinterest" data-url="https://systemdesign.one/slack-architecture/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="building the real-time chat service" data-sharer="tumblr" data-title="Slack Architecture" data-url="https://systemdesign.one/slack-architecture/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Slack Architecture" data-url="https://systemdesign.one/slack-architecture/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/slack-architecture/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="building the real-time chat service" data-image="slack-architecture/slack.webp" data-sharer="vk" data-title="Slack Architecture" data-url="https://systemdesign.one/slack-architecture/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="../fundamentals/back-of-the-envelope.html" rel="prev" title="Back of the Envelope"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Back of the Envelope</a>
+<a class="next offline-link" href="../fundamentals/what-is-service-discovery.html" rel="next" title="What Is Service Discovery?">What Is Service Discovery?<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./slack-architecture.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./slack-architecture.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/><link href="../assets/css/style_ae0d28207a26.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

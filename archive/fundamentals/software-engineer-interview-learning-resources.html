@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Software Engineer Interview Learning Resources - System Design</title><meta content="software engineer interview questions and answers" name="Description"/><meta content="Software Engineer Interview Learning Resources" property="og:title"/>
+<meta content="software engineer interview questions and answers" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/software-engineer-interview-learning-resources/" property="og:url"/><meta content="https://systemdesign.one/learning-resources/software-engineer-interview-learning-resources.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-02-28T19:03:58+01:00" property="article:published_time"/>
+<meta content="2023-03-24T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/learning-resources/software-engineer-interview-learning-resources.webp" name="twitter:image"/>
+<meta content="Software Engineer Interview Learning Resources" name="twitter:title"/>
+<meta content="software engineer interview questions and answers" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/software-engineer-interview-learning-resources/" rel="canonical"/><link href="https://systemdesign.one/system-design-interview-cheatsheet/" rel="prev"/><link href="https://systemdesign.one/bloom-filters-explained/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/software-engineer-interview-learning-resources</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./software-engineer-interview-learning-resources.html#task-list">Task List</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#system-design-interview">System Design Interview</a></li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#coding-interview">Coding Interview</a></li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#behavioral-interview">Behavioral Interview</a></li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#object-oriented-programming">Object Oriented Programming</a></li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#concurrency">Concurrency</a></li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#distributed-systems">Distributed Systems</a></li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#site-reliability-engineering">Site Reliability Engineering</a></li>
+<li class=""><a class="offline-link" href="./software-engineer-interview-learning-resources.html#salary-negotiation">Salary Negotiation</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Software Engineer Interview Learning Resources</h1><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-02-28">2023-02-28</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 157 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> One minute </div>
+</div><div class="featured-image"><img alt="/learning-resources/software-engineer-interview-learning-resources.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/learning-resources/software-engineer-interview-learning-resources.webp, /learning-resources/software-engineer-interview-learning-resources.webp 1.5x, /learning-resources/software-engineer-interview-learning-resources.webp 2x" height="674" sizes="699px" src="../assets/images/img_bd639489758b.webp" title="software engineer interview questions and answers" width="1062"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<h3 class="headerLink" id="task-list"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#task-list"></a>Task List</h3>
+<ul>
+<li><i aria-hidden="true" class="far fa-square fa-fw"></i> API Design</li>
+<li><i aria-hidden="true" class="far fa-square fa-fw"></i> Database</li>
+</ul>
+<hr/>
+<h2 class="headerLink" id="system-design-interview"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#system-design-interview"></a>System Design Interview</h2>
+<ul>
+<li><a href="https://amzn.to/40tlRDt" rel="noopener noreferrer" target="_blank">Designing Data-Intensive Applications</a> by Martin Kleppmann</li>
+<li><a href="https://amzn.to/3FGPjft" rel="noopener noreferrer" target="_blank">Hacking the System Design Interview</a> by Stanley Chiang</li>
+</ul>
+<h2 class="headerLink" id="coding-interview"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#coding-interview"></a>Coding Interview</h2>
+<ul>
+<li><a href="https://amzn.to/3YdxWuq" rel="noopener noreferrer" target="_blank">Cracking the Coding Interview</a> by Gayle Laakmann McDowell</li>
+<li><a href="https://amzn.to/3jcWSUl" rel="noopener noreferrer" target="_blank">Elements of Programming Interviews</a> by Adnan Aziz</li>
+<li><a href="https://amzn.to/3HMScOs" rel="noopener noreferrer" target="_blank">Programming Interviews Exposed</a> by John Mongan</li>
+</ul>
+<h2 class="headerLink" id="behavioral-interview"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#behavioral-interview"></a>Behavioral Interview</h2>
+<ul>
+<li><a href="https://amzn.to/3XxHsI8" rel="noopener noreferrer" target="_blank">The No Asshole Rule</a> by Robert I. Sutton PhD</li>
+<li><a href="https://amzn.to/3Ywigmx" rel="noopener noreferrer" target="_blank">60 Seconds and You’re Hired!</a> by Robin Ryan</li>
+</ul>
+<h2 class="headerLink" id="object-oriented-programming"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#object-oriented-programming"></a>Object Oriented Programming</h2>
+<ul>
+<li><a href="https://amzn.to/3E9y4U7" rel="noopener noreferrer" target="_blank">Head First Object-Oriented Analysis and Design</a> by Dave West</li>
+</ul>
+<h2 class="headerLink" id="concurrency"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#concurrency"></a>Concurrency</h2>
+<ul>
+<li><a href="https://amzn.to/40yYSpL" rel="noopener noreferrer" target="_blank">Java Concurrency in Practice</a> by Brian Goetz</li>
+<li><a href="https://amzn.to/3ZfUs6j" rel="noopener noreferrer" target="_blank">Concurrency in Go</a> by Katherine Cox-Buday</li>
+</ul>
+<h2 class="headerLink" id="distributed-systems"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#distributed-systems"></a>Distributed Systems</h2>
+<ul>
+<li><a href="https://amzn.to/3D8fZW4" rel="noopener noreferrer" target="_blank">Understanding Distributed Systems</a> by Roberto Vitillo</li>
+<li><a href="https://amzn.to/3kGCw5S" rel="noopener noreferrer" target="_blank">Distributed Systems</a> by Maarten van Steen</li>
+</ul>
+<h2 class="headerLink" id="site-reliability-engineering"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#site-reliability-engineering"></a>Site Reliability Engineering</h2>
+<ul>
+<li><a href="https://amzn.to/3JYU9Zl" rel="noopener noreferrer" target="_blank">Building Secure and Reliable Systems</a> by Betsy Beyer</li>
+<li><a href="https://amzn.to/3YrC4Yf" rel="noopener noreferrer" target="_blank">The Site Reliability Workbook</a> by Stephen Thorne</li>
+<li><a href="https://amzn.to/3XFLe2t" rel="noopener noreferrer" target="_blank">Site Reliability Engineering</a> by Chris Jones</li>
+</ul>
+<h2 class="headerLink" id="salary-negotiation"><a class="header-mark offline-link" href="./software-engineer-interview-learning-resources.html#salary-negotiation"></a>Salary Negotiation</h2>
+<ul>
+<li><a href="https://amzn.to/3YUyhT5" rel="noopener noreferrer" target="_blank">Never Split the Difference</a> by Chris Voss</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-03-24</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Software Engineer Interview Learning Resources" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Software Engineer Interview Learning Resources" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="software engineer interview questions and answers" data-image="learning-resources/software-engineer-interview-learning-resources.webp" data-sharer="pinterest" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="software engineer interview questions and answers" data-sharer="tumblr" data-title="Software Engineer Interview Learning Resources" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Software Engineer Interview Learning Resources" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="software engineer interview questions and answers" data-image="learning-resources/software-engineer-interview-learning-resources.webp" data-sharer="vk" data-title="Software Engineer Interview Learning Resources" data-url="https://systemdesign.one/software-engineer-interview-learning-resources/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="./system-design-interview-cheatsheet.html" rel="prev" title="System Design Interview Cheat Sheet"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>System Design Interview Cheat Sheet</a>
+<a class="next offline-link" href="./bloom-filters-explained.html" rel="next" title="Bloom Filters Explained">Bloom Filters Explained<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./software-engineer-interview-learning-resources.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./software-engineer-interview-learning-resources.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>URL Shortening System Design - System Design</title><meta content="1. create a unique short URL 2. encode the short URL 3. persist short URL 4. redirect the short URL to a long URL" name="Description"/><meta content="URL Shortening System Design" property="og:title"/>
+<meta content="1. create a unique short URL 2. encode the short URL 3. persist short URL 4. redirect the short URL to a long URL" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/url-shortening-system-design/" property="og:url"/><meta content="https://systemdesign.one/url-shortening-system-design/how-to-build-a-url-shortener.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2022-12-02T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-03-03T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/url-shortening-system-design/how-to-build-a-url-shortener.webp" name="twitter:image"/>
+<meta content="URL Shortening System Design" name="twitter:title"/>
+<meta content="1. create a unique short URL 2. encode the short URL 3. persist short URL 4. redirect the short URL to a long URL" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/url-shortening-system-design/" rel="canonical"/><link href="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" rel="prev"/><link href="https://systemdesign.one/knowledge-test-url-shortening-system-design/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/url-shortening-system-design</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./url-shortening-system-design.html#how-does-a-url-shortener-work">How does a URL shortener work?</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#what-is-a-url-shortening-service">What is a URL shortening service?</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#questions-to-ask-the-interviewer">Questions to ask the Interviewer</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#candidate">Candidate</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#interviewer">Interviewer</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#non-functional-requirements">Non-Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#out-of-scope">Out of Scope</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#url-shortener-api">URL Shortener API</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#url-shortening">URL shortening</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#url-redirection">URL redirection</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#database">Database</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#database-schema-design">Database schema design</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#url-table">URL table</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#sample-data-of-url-table">Sample data of URL table</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#users-table">Users table</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#sample-data-of-users-table">Sample data of Users table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#type-of-data-store">Type of data store</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#capacity-planning">Capacity Planning</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#traffic">Traffic</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#storage">Storage</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#bandwidth">Bandwidth</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#memory">Memory</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#capacity-planning-summary">Capacity Planning Summary</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#high-level-design">High-Level Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#encoding">Encoding</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#write-path">Write path</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#random-id-generator-solution">Random ID Generator solution</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#hashing-function-solution">Hashing Function solution</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#token-range-solution">Token Range solution</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#read-path">Read path</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#design-deep-dive">Design Deep Dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#availability">Availability</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#rate-limiting">Rate Limiting</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#fault-tolerance">Fault tolerance</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#partitioning">Partitioning</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#concurrency">Concurrency</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#analytics">Analytics</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#database-cleanup">Database cleanup</a>
+<ul>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#lazy-removal">Lazy removal</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#dedicated-cleanup-service">Dedicated cleanup service</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#archive">Archive</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#monitoring">Monitoring</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#security">Security</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#questions-and-solutions">Questions and Solutions</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./url-shortening-system-design.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">URL Shortening System Design</h1><h2 class="single-subtitle">TinyURL Service</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/deep-dive/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Deep Dive</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2022-12-02">2022-12-02</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 6978 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 33 minutes </div>
+</div><div class="featured-image"><img alt="/url-shortening-system-design/how-to-build-a-url-shortener.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/how-to-build-a-url-shortener.webp, /url-shortening-system-design/how-to-build-a-url-shortener.webp 1.5x, /url-shortening-system-design/how-to-build-a-url-shortener.webp 2x" height="691" sizes="699px" src="../assets/images/img_7b095752610f.webp" title="1. create a unique short URL 2. encode the short URL 3. persist short URL 4. redirect the short URL to a long URL" width="1049"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<p>The system design of the URL shortener is similar to the design of <a class="offline-link" href="./system-design-pastebin.html" rel="noopener noreffer">Pastebin</a>. I highly recommend reading the related article to improve your system design skills.</p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-a-url-shortener-work"><a class="header-mark offline-link" href="./url-shortening-system-design.html#how-does-a-url-shortener-work"></a>How does a URL shortener work?</h2>
+<p>At a high level, the URL shortener executes the following operations:</p>
+<ol>
+<li>the server generates a unique short URL for each long URL</li>
+<li>the server encodes the short URL for readability</li>
+<li>the server persists the short URL in the data store</li>
+<li>the server redirects the client to the original long URL against the short URL</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./url-shortening-system-design.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be useful for you:</p>
+<ul>
+<li>Microservices: designing software that is made up of small independent services, which have a specific purpose</li>
+<li>Service Discovery: the process of automatically detecting devices and services on a network</li>
+<li><a class="offline-link" href="./cdn-explained.html" rel="noopener noreffer">CDN</a>: a group of geographically distributed servers that speed up the delivery of web content by bringing the content closer to the users</li>
+<li>API: a software intermediary that allows two applications or services to talk to each other</li>
+<li>Encoding: the process of converting data from one form to another to preserve the usability of data</li>
+<li>Encryption: secure encoding of data using a key to protect the confidentiality of data</li>
+<li>Hashing: a one-way summary of data that cannot be reversed and is used to validate the integrity of data</li>
+<li>Bloom filter: a memory-efficient probabilistic data structure to check whether an element is present in a set</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-a-url-shortening-service"><a class="header-mark offline-link" href="./url-shortening-system-design.html#what-is-a-url-shortening-service"></a>What is a URL shortening service?</h2>
+<p>A <a href="https://en.wikipedia.org/wiki/URL_shortening" rel="noopener noreferrer" target="_blank">URL shortening</a> service is a website that substantially shortens a Uniform Resource Locator (<strong>URL</strong>). The short URL redirects the client to the URL of the original website. Some popular public-facing URL shortening services are <a href="https://tinyurl.com/app" rel="noopener noreferrer" target="_blank">tinyurl.com</a> and <a href="https://app.bitly.com/" rel="noopener noreferrer" target="_blank">bitly.com</a><sup id="fnref:1"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: What is a URL shortening service?&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/what-is-url-shortening-service.webp" href="https://systemdesign.one/url-shortening-system-design/what-is-url-shortening-service.webp" rel="noopener noreferrer" target="_blank" title="What is a URL shortening service?">
+<img alt="What is a URL shortening service?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/what-is-url-shortening-service.webp, /url-shortening-system-design/what-is-url-shortening-service.webp 1.5x, /url-shortening-system-design/what-is-url-shortening-service.webp 2x" height="512" sizes="683px" src="../assets/images/img_f430e21405e5.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 1: What is a URL shortening service?</figcaption>
+</figure>
+<p>The reasons to shorten a URL are the following:</p>
+<ul>
+<li>track clicks for analytics</li>
+<li>beautify a URL</li>
+<li>disguise the underlying URL for affiliates</li>
+<li>some instant messaging services limit the count of characters on the URL</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-to-ask-the-interviewer"><a class="header-mark offline-link" href="./url-shortening-system-design.html#questions-to-ask-the-interviewer"></a>Questions to ask the Interviewer</h2>
+<h3 class="headerLink" id="candidate"><a class="header-mark offline-link" href="./url-shortening-system-design.html#candidate"></a>Candidate</h3>
+<ol>
+<li>What are the use cases of the system?</li>
+<li>What is the amount of Daily Active Users (<strong>DAU</strong>) for writes?</li>
+<li>How many years should we persist the short URL by default?</li>
+<li>What is the anticipated read: write ratio of the system?</li>
+<li>What is the usage pattern of the shortened URL?</li>
+<li>Who will use the URL shortener service?</li>
+<li>What is the reasonable length of a short URL?</li>
+</ol>
+<hr/>
+<h3 class="headerLink" id="interviewer"><a class="header-mark offline-link" href="./url-shortening-system-design.html#interviewer"></a>Interviewer</h3>
+<ol>
+<li>URL shortening and redirection to the original long URL</li>
+<li>100 million DAU</li>
+<li>5 years</li>
+<li>100: 1</li>
+<li>Most of the shortened URLs will be accessed only once after the creation</li>
+<li>General public</li>
+<li>At most 9 characters</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./url-shortening-system-design.html#requirements"></a>Requirements</h2>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./url-shortening-system-design.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>URL shortening Service similar to <a href="https://tinyurl.com/" rel="noopener noreferrer" target="_blank">TinyURL</a>, or <a href="https://bitly.com" rel="noopener noreferrer" target="_blank">Bitly</a></li>
+<li>A <strong>client</strong> (user) enters a long URL into the system and the system returns a shortened URL</li>
+<li>The client visiting the short URL must be redirected to the original long URL</li>
+<li>Multiple users entering the same long URL must receive the same short URL (1-to-1 mapping)</li>
+<li>The short URL should be readable</li>
+<li>The short URL should be collision-free</li>
+<li>The short URL should be non-predictable</li>
+<li>The client should be able to choose a custom short URL</li>
+<li>The short URL should be web-crawler friendly (<a href="https://en.wikipedia.org/wiki/Search_engine_optimization" rel="noopener noreferrer" target="_blank">SEO</a>)</li>
+<li>The short URL should support analytics (not real-time) such as the number of redirections from the shortened URL</li>
+<li>The client optionally defines the expiry time of the short URL</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./url-shortening-system-design.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>High Availability</li>
+<li>Low Latency</li>
+<li>High Scalability</li>
+<li>Durable</li>
+<li>Fault Tolerant</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="out-of-scope"><a class="header-mark offline-link" href="./url-shortening-system-design.html#out-of-scope"></a>Out of Scope</h3>
+<ul>
+<li>The user registers an account</li>
+<li>The user sets the visibility of the short URL</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="url-shortener-api"><a class="header-mark offline-link" href="./url-shortening-system-design.html#url-shortener-api"></a>URL Shortener API</h2>
+<p>The components in the system expose the Application Programming Interface (<strong>API</strong>) endpoints through Representational State Transfer (<a href="https://en.wikipedia.org/wiki/Representational_state_transfer" rel="noopener noreferrer" target="_blank">REST</a>) or Remote Procedure Call (<a href="https://en.wikipedia.org/wiki/Remote_procedure_call" rel="noopener noreferrer" target="_blank">RPC</a>). The best practice to expose public APIs is through REST because of loose coupling and easiness to debug <sup id="fnref:2"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>Once the services have hardened and performance should be tuned further, switch to RPC for internal communications between services. The tradeoffs of RPC are tight coupling and difficulty to debug<sup id="fnref:4"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="url-shortening"><a class="header-mark offline-link" href="./url-shortening-system-design.html#url-shortening"></a>URL shortening</h3>
+<p>The client executes an HTTP PUT request to the server to shorten a URL. The HTTP PUT method is used because the PUT is idempotent and the idempotency quality resonates with the given requirement of 1-to-1 mapping between the long and short URL.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='/url
+method: PUT
+accept: application/JSON
+accept-encoding: gzip, deflate, br
+accept-language: en-us
+authorization: Bearer &lt;JWT&gt;
+content-length: 150
+content-type: application/JSON
+content-encoding: gzip
+cookie: id=xyz;
+user-agent: Chrome
+
+{
+    long-url: "https://en.wikipedia.org/wiki/URL_shortening",
+    tags: ["productivity"],
+    expires: "datetime",
+    custom: "short-id" (optional)
+
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/url</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">PUT</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">JSON</span>
+<span class="nx">accept</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span><span class="p">,</span> <span class="nx">deflate</span><span class="p">,</span> <span class="nx">br</span>
+<span class="nx">accept</span><span class="o">-</span><span class="nx">language</span><span class="o">:</span> <span class="nx">en</span><span class="o">-</span><span class="nx">us</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">150</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">JSON</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">cookie</span><span class="o">:</span> <span class="nx">id</span><span class="o">=</span><span class="nx">xyz</span><span class="p">;</span>
+<span class="nx">user</span><span class="o">-</span><span class="nx">agent</span><span class="o">:</span> <span class="nx">Chrome</span>
+
+<span class="p">{</span>
+    <span class="kr">long</span><span class="o">-</span><span class="nx">url</span><span class="o">:</span> <span class="s2">"https://en.wikipedia.org/wiki/URL_shortening"</span><span class="p">,</span>
+    <span class="nx">tags</span><span class="o">:</span> <span class="p">[</span><span class="s2">"productivity"</span><span class="p">],</span>
+    <span class="nx">expires</span><span class="o">:</span> <span class="s2">"datetime"</span><span class="p">,</span>
+    <span class="nx">custom</span><span class="o">:</span> <span class="s2">"short-id"</span> <span class="p">(</span><span class="nx">optional</span><span class="p">)</span>
+
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The description of URL shortening HTTP request headers is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: URL shortening request headers&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortening-request-headers.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortening-request-headers.webp" rel="noopener noreferrer" target="_blank" title="URL shortening request headers">
+<img alt="URL shortening request headers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortening-request-headers.webp, /url-shortening-system-design/url-shortening-request-headers.webp 1.5x, /url-shortening-system-design/url-shortening-request-headers.webp 2x" height="320" sizes="683px" src="../assets/images/img_0fafa1b78468.webp" width="1354"/>
+</a><figcaption class="image-caption">Figure 2: URL shortening request headers</figcaption>
+</figure>
+<p>The description of URL shortening HTTP request body parameters is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: URL shortening request payload&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortening-request-payload.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortening-request-payload.webp" rel="noopener noreferrer" target="_blank" title="URL shortening request payload">
+<img alt="URL shortening request payload" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortening-request-payload.webp, /url-shortening-system-design/url-shortening-request-payload.webp 1.5x, /url-shortening-system-design/url-shortening-request-payload.webp 2x" height="238" sizes="683px" src="../assets/images/img_db80e86864d8.webp" width="1360"/>
+</a><figcaption class="image-caption">Figure 3: URL shortening request payload</figcaption>
+</figure>
+<p>The server responds with a status code of <em>200 OK</em> for success. The HTTP response payload contains the shortened URL and related metadata <sup id="fnref:5"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+cache-control: no-cache, private
+content-encoding: gzip
+content-language: en-us
+content-type: application/JSON
+date: server-datetime
+set-cookie: x=abc; expires=datetime;
+           SameSite=strict; HttpOnly; secure
+
+{
+    long-url: "https://en.wikipedia.org/wiki/URL_shortening",
+    short-url: "xy725ab",
+    created-at: datetime,
+    is-active: True
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="nx">no</span><span class="o">-</span><span class="nx">cache</span><span class="p">,</span> <span class="kr">private</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">language</span><span class="o">:</span> <span class="nx">en</span><span class="o">-</span><span class="nx">us</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">JSON</span>
+<span class="nx">date</span><span class="o">:</span> <span class="nx">server</span><span class="o">-</span><span class="nx">datetime</span>
+<span class="nx">set</span><span class="o">-</span><span class="nx">cookie</span><span class="o">:</span> <span class="nx">x</span><span class="o">=</span><span class="nx">abc</span><span class="p">;</span> <span class="nx">expires</span><span class="o">=</span><span class="nx">datetime</span><span class="p">;</span>
+           <span class="nx">SameSite</span><span class="o">=</span><span class="nx">strict</span><span class="p">;</span> <span class="nx">HttpOnly</span><span class="p">;</span> <span class="nx">secure</span>
+
+<span class="p">{</span>
+    <span class="kr">long</span><span class="o">-</span><span class="nx">url</span><span class="o">:</span> <span class="s2">"https://en.wikipedia.org/wiki/URL_shortening"</span><span class="p">,</span>
+    <span class="kr">short</span><span class="o">-</span><span class="nx">url</span><span class="o">:</span> <span class="s2">"xy725ab"</span><span class="p">,</span>
+    <span class="nx">created</span><span class="o">-</span><span class="nx">at</span><span class="o">:</span> <span class="nx">datetime</span><span class="p">,</span>
+    <span class="nx">is</span><span class="o">-</span><span class="nx">active</span><span class="o">:</span> <span class="nx">True</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The description of URL shortening HTTP Response headers is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: URL shortening response headers&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortening-response-headers.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortening-response-headers.webp" rel="noopener noreferrer" target="_blank" title="URL shortening response headers">
+<img alt="URL shortening response headers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortening-response-headers.webp, /url-shortening-system-design/url-shortening-response-headers.webp 1.5x, /url-shortening-system-design/url-shortening-response-headers.webp 2x" height="278" sizes="683px" src="../assets/images/img_d314d668822d.webp" width="1356"/>
+</a><figcaption class="image-caption">Figure 4: URL shortening response headers</figcaption>
+</figure>
+<p>The description of URL shortening HTTP Response payload parameters is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: URL shortening response payload&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortening-response-payload.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortening-response-payload.webp" rel="noopener noreferrer" target="_blank" title="URL shortening response payload">
+<img alt="URL shortening response payload" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortening-response-payload.webp, /url-shortening-system-design/url-shortening-response-payload.webp 1.5x, /url-shortening-system-design/url-shortening-response-payload.webp 2x" height="234" sizes="683px" src="../assets/images/img_9782e1ccd64d.webp" width="1356"/>
+</a><figcaption class="image-caption">Figure 5: URL shortening response payload</figcaption>
+</figure>
+<p>The client receives a status code <em>401 unauthorized</em> if the client did not provide any credentials or does not have valid credentials.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 401 unauthorized
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">401</span> <span class="nx">unauthorized</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The client sees a status code <em>403 forbidden</em> if the client has valid credentials but not sufficient privileges to act on the resource.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 403 forbidden
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">403</span> <span class="nx">forbidden</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="url-redirection"><a class="header-mark offline-link" href="./url-shortening-system-design.html#url-redirection"></a>URL redirection</h3>
+<p>The client executes an HTTP GET request to redirect from the short URL to the original long URL. There is no request body for an HTTP GET request.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/:short-url
+method: GET
+authorization: Bearer &lt;JWT&gt;
+cookie: x=abc; y=def
+user-agent: Chrome
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/:short-url</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">cookie</span><span class="o">:</span> <span class="nx">x</span><span class="o">=</span><span class="nx">abc</span><span class="p">;</span> <span class="nx">y</span><span class="o">=</span><span class="nx">def</span>
+<span class="nx">user</span><span class="o">-</span><span class="nx">agent</span><span class="o">:</span> <span class="nx">Chrome</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The description of URL redirection HTTP request headers is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: URL redirection HTTP request headers&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection-http-request-headers.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection-http-request-headers.webp" rel="noopener noreferrer" target="_blank" title="URL redirection HTTP request headers">
+<img alt="URL redirection HTTP request headers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection-http-request-headers.webp, /url-shortening-system-design/url-redirection-http-request-headers.webp 1.5x, /url-shortening-system-design/url-redirection-http-request-headers.webp 2x" height="234" sizes="683px" src="../assets/images/img_47c411f50005.webp" width="1356"/>
+</a><figcaption class="image-caption">Figure 6: URL redirection HTTP request headers</figcaption>
+</figure>
+<p>The server responds with status code <em>301 Moved Permanently</em>. The status code 301 indicates that the short URL is permanently moved to the long URL. The web crawler updates its records when the status code 301 is received <sup id="fnref:5"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The 301 status code stores the <a class="offline-link" href="../fundamentals/caching-patterns.html" rel="noopener noreffer">cache</a> on the client by default. The URL redirection requests do not reach the server because of the cache on the client side. If the redirection requests do not reach the server, analytics data cannot be collected. The <em>cache-control</em> header on the HTTP response is set to public to prevent caching on the client side. The public cache lives on the content delivery network (<a href="https://en.wikipedia.org/wiki/Content_delivery_network" rel="noopener noreferrer" target="_blank">CDN</a>) or the reverse proxy servers. Analytics data is collected from the servers.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 301 Moved Permanently
+cache-control: public, expires=datetime
+location: &lt;long-url&gt;
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">301</span> <span class="nx">Moved</span> <span class="nx">Permanently</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="kr">public</span><span class="p">,</span> <span class="nx">expires</span><span class="o">=</span><span class="nx">datetime</span>
+<span class="nx">location</span><span class="o">:</span> <span class="o">&lt;</span><span class="kr">long</span><span class="o">-</span><span class="nx">url</span><span class="o">&gt;</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server sets the <em>location</em> HTTP header to the long URL. The browser then automatically makes another HTTP request to the received long URL. The original website (long URL) is displayed to the client.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: URL redirection workflow&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection-workflow.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection-workflow.webp" rel="noopener noreferrer" target="_blank" title="URL redirection workflow">
+<img alt="URL redirection workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection-workflow.webp, /url-shortening-system-design/url-redirection-workflow.webp 1.5x, /url-shortening-system-design/url-redirection-workflow.webp 2x" height="831" sizes="683px" src="../assets/images/img_acee3cda3dd5.webp" width="2081"/>
+</a><figcaption class="image-caption">Figure 7: URL redirection workflow</figcaption>
+</figure>
+<p>The description of URL redirection HTTP response headers is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: URL redirection HTTP response headers&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection-http-response-headers.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection-http-response-headers.webp" rel="noopener noreferrer" target="_blank" title="URL redirection HTTP response headers">
+<img alt="URL redirection HTTP response headers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection-http-response-headers.webp, /url-shortening-system-design/url-redirection-http-response-headers.webp 1.5x, /url-shortening-system-design/url-redirection-http-response-headers.webp 2x" height="136" sizes="683px" src="../assets/images/img_1370b83e8c65.webp" width="1356"/>
+</a><figcaption class="image-caption">Figure 8: URL redirection HTTP response headers</figcaption>
+</figure>
+<p>The HTTP response status code 302 is a <em>temporary redirect</em>. The server sets the location header value to the long URL. The 302 status code does not improve the SEO rankings of the original website.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 302 Found
+location: &lt;long-url&gt;
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">302</span> <span class="nx">Found</span>
+<span class="nx">location</span><span class="o">:</span> <span class="o">&lt;</span><span class="kr">long</span><span class="o">-</span><span class="nx">url</span><span class="o">&gt;</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The HTTP response status code 307 is a <em>temporary redirect</em>. The 307 status code lets the client reuse the HTTP method and the body of the original request on redirection. For instance, when the client received a 307 status code in response to a redirection request, the client can execute a PUT request against the original long URL. Contrarily, the status codes 301 and 302 automatically convert the HTTP requests to HTTP GET requests.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 307 Temporary Redirect
+location: &lt;long-url&gt;
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">307</span> <span class="nx">Temporary</span> <span class="nx">Redirect</span>
+<span class="nx">location</span><span class="o">:</span> <span class="o">&lt;</span><span class="kr">long</span><span class="o">-</span><span class="nx">url</span><span class="o">&gt;</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with the status code <em>404 Not Found</em> when the client executes a redirection request on the short URL that does not exist in the database.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 404 Not Found
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">404</span> <span class="nx">Not</span> <span class="nx">Found</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>In summary, use the 301 status code in the HTTP response to meet the system requirements.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./url-shortening-system-design.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="database"><a class="header-mark offline-link" href="./url-shortening-system-design.html#database"></a>Database</h2>
+<p>The URL shortener system is read-heavy. In other words, the dominant usage pattern is the redirection from short URLs to long URLs.</p>
+<h3 class="headerLink" id="database-schema-design"><a class="header-mark offline-link" href="./url-shortening-system-design.html#database-schema-design"></a>Database schema design</h3>
+<p>The major entities of the database (data store) are the Users table and the URL table. The relationship between the Users and the URL tables is <strong>1-to-many</strong>. A user might generate multiple short URLs but a short URL is generated only by a single user.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: URL shortener database schema&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-database-schema.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-database-schema.webp" rel="noopener noreferrer" target="_blank" title="URL shortener database schema">
+<img alt="URL shortener database schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-database-schema.webp, /url-shortening-system-design/url-shortener-database-schema.webp 1.5x, /url-shortening-system-design/url-shortener-database-schema.webp 2x" height="470" sizes="683px" src="../assets/images/img_62fa7ebb2076.webp" width="1119"/>
+</a><figcaption class="image-caption">Figure 9: URL shortener database schema</figcaption>
+</figure>
+<h4 class="headerLink" id="url-table"><a class="header-mark offline-link" href="./url-shortening-system-design.html#url-table"></a>URL table</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: URL shortener; Schema of URL table&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/schema-url-table.webp" href="https://systemdesign.one/url-shortening-system-design/schema-url-table.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Schema of URL table">
+<img alt="URL shortener; Schema of URL table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/schema-url-table.webp, /url-shortening-system-design/schema-url-table.webp 1.5x, /url-shortening-system-design/schema-url-table.webp 2x" height="324" sizes="683px" src="../assets/images/img_280d569fedfb.webp" width="1356"/>
+</a><figcaption class="image-caption">Figure 10: URL shortener; Schema of URL table</figcaption>
+</figure>
+<h5 class="headerLink" id="sample-data-of-url-table"><a class="header-mark offline-link" href="./url-shortening-system-design.html#sample-data-of-url-table"></a>Sample data of URL table</h5>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: URL shortener; Sample data of URL table&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/sample-data-url-table.webp" href="https://systemdesign.one/url-shortening-system-design/sample-data-url-table.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Sample data of URL table">
+<img alt="URL shortener; Sample data of URL table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/sample-data-url-table.webp, /url-shortening-system-design/sample-data-url-table.webp 1.5x, /url-shortening-system-design/sample-data-url-table.webp 2x" height="138" sizes="683px" src="../assets/images/img_3ea5fb805cc8.webp" width="1356"/>
+</a><figcaption class="image-caption">Figure 11: URL shortener; Sample data of URL table</figcaption>
+</figure>
+<h4 class="headerLink" id="users-table"><a class="header-mark offline-link" href="./url-shortening-system-design.html#users-table"></a>Users table</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: URL shortener; Schema of Users table&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/schema-users-table.webp" href="https://systemdesign.one/url-shortening-system-design/schema-users-table.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Schema of Users table">
+<img alt="URL shortener; Schema of Users table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/schema-users-table.webp, /url-shortening-system-design/schema-users-table.webp 1.5x, /url-shortening-system-design/schema-users-table.webp 2x" height="272" sizes="683px" src="../assets/images/img_dfb7839cdc61.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 12: URL shortener; Schema of Users table</figcaption>
+</figure>
+<h5 class="headerLink" id="sample-data-of-users-table"><a class="header-mark offline-link" href="./url-shortening-system-design.html#sample-data-of-users-table"></a>Sample data of Users table</h5>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: URL shortener; Sample data of Users table&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/sample-data-users-table.webp" href="https://systemdesign.one/url-shortening-system-design/sample-data-users-table.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Sample data of Users table">
+<img alt="URL shortener; Sample data of Users table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/sample-data-users-table.webp, /url-shortening-system-design/sample-data-users-table.webp 1.5x, /url-shortening-system-design/sample-data-users-table.webp 2x" height="142" sizes="683px" src="../assets/images/img_c18b647fbf07.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 13: URL shortener; Sample data of Users table</figcaption>
+</figure>
+<h3 class="headerLink" id="type-of-data-store"><a class="header-mark offline-link" href="./url-shortening-system-design.html#type-of-data-store"></a>Type of data store</h3>
+<p>A NoSQL data store such as <a href="https://aws.amazon.com/dynamodb/" rel="noopener noreferrer" target="_blank">DynamoDB</a> or <a href="https://www.mongodb.com/" rel="noopener noreferrer" target="_blank">MongoDB</a> is used to store the URL table. The reasons for choosing NoSQL for storing the URL table are the following:</p>
+<ul>
+<li>Non-relational data</li>
+<li>Dynamic or flexible schema</li>
+<li>No need for complex joins</li>
+<li>Store many TB (or PB) of data</li>
+<li>Very data-intensive workload</li>
+<li>Very high throughput for IOPS</li>
+<li>Easy horizontal scaling</li>
+</ul>
+<p>A SQL database such as Postgres or MySQL is used to store the Users table. The reasons to choose a SQL store for storing the Users table are the following:</p>
+<ul>
+<li>Strict schema</li>
+<li>Relational data</li>
+<li>Need for complex joins</li>
+<li>Lookups by index are pretty fast</li>
+<li><a href="https://en.wikipedia.org/wiki/ACID" rel="noopener noreferrer" target="_blank">ACID</a> compliance</li>
+</ul>
+<p>When the client requests to identify the owner of a short URL, the server queries the Users table and the URL table from different data stores and joins the tables at the application level.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="capacity-planning"><a class="header-mark offline-link" href="./url-shortening-system-design.html#capacity-planning"></a>Capacity Planning</h2>
+<p>The number of registered users is relatively limited compared to the number of short URLs generated. The <a class="offline-link" href="../fundamentals/back-of-the-envelope.html" rel="noopener noreffer">capacity planning</a> (back of the envelope) calculations focus on the URL data. However, the calculated numbers are approximations. A few helpful tips on <a class="offline-link" href="../fundamentals/back-of-the-envelope.html" rel="noopener noreffer">capacity planning</a> for a system design are the following:</p>
+<ul>
+<li>1 million request/day = 12 request/second</li>
+<li>round off the numbers for quicker calculations</li>
+<li>write down the units when you do conversions</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="traffic"><a class="header-mark offline-link" href="./url-shortening-system-design.html#traffic"></a>Traffic</h3>
+<p>The URL shortener is read-heavy. The Daily Active Users (<strong>DAU</strong>) for writes is 100 million. The Query Per Second (<strong>QPS</strong>) of reads is approximately 100 thousand.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 14: URL shortener traffic estimate&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-traffic-estimate.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-traffic-estimate.webp" rel="noopener noreferrer" target="_blank" title="URL shortener traffic estimate">
+<img alt="URL shortener traffic estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-traffic-estimate.webp, /url-shortening-system-design/url-shortener-traffic-estimate.webp 1.5x, /url-shortening-system-design/url-shortener-traffic-estimate.webp 2x" height="144" sizes="683px" src="../assets/images/img_cf9aec98a04b.webp" width="679"/>
+</a><figcaption class="image-caption">Figure 14: URL shortener traffic estimate</figcaption>
+</figure>
+<hr/>
+<h3 class="headerLink" id="storage"><a class="header-mark offline-link" href="./url-shortening-system-design.html#storage"></a>Storage</h3>
+<p>The shortened URL persists by default for 5 years in the data store. Each character size is assumed to be 1 byte.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 15: Storage size of a shortened URL record&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/storage-shortened-url-record.webp" href="https://systemdesign.one/url-shortening-system-design/storage-shortened-url-record.webp" rel="noopener noreferrer" target="_blank" title="Storage size of a shortened URL record">
+<img alt="Storage size of a shortened URL record" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/storage-shortened-url-record.webp, /url-shortening-system-design/storage-shortened-url-record.webp 1.5x, /url-shortening-system-design/storage-shortened-url-record.webp 2x" height="167" sizes="683px" src="../assets/images/img_a7ad0d7de079.webp" width="679"/>
+</a><figcaption class="image-caption">Figure 15: Storage size of a shortened URL record</figcaption>
+</figure>
+<p>In total, a URL record is approximately 2.5 KB in size.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 16: URL shortener total storage estimate&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-total-storage-estimate.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-total-storage-estimate.webp" rel="noopener noreferrer" target="_blank" title="URL shortener total storage estimate">
+<img alt="URL shortener total storage estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-total-storage-estimate.webp, /url-shortening-system-design/url-shortener-total-storage-estimate.webp 1.5x, /url-shortening-system-design/url-shortener-total-storage-estimate.webp 2x" height="72" sizes="683px" src="../assets/images/img_f6ea7851e1d6.webp" width="679"/>
+</a><figcaption class="image-caption">Figure 16: URL shortener total storage estimate</figcaption>
+</figure>
+<p>Set the <a href="https://en.wikipedia.org/wiki/Replication_%28computing%29" rel="noopener noreferrer" target="_blank">replication</a> factor of the storage to a value of at least three for improved durability and disaster recovery.</p>
+<hr/>
+<h3 class="headerLink" id="bandwidth"><a class="header-mark offline-link" href="./url-shortening-system-design.html#bandwidth"></a>Bandwidth</h3>
+<p><strong>Ingress</strong> is the network traffic that enters the server (client requests). <strong>Egress</strong> is the network traffic that exits the servers (server responses).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 17: URL shortener bandwidth estimate&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-bandwidth-estimate.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-bandwidth-estimate.webp" rel="noopener noreferrer" target="_blank" title="URL shortener bandwidth estimate">
+<img alt="URL shortener bandwidth estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-bandwidth-estimate.webp, /url-shortening-system-design/url-shortener-bandwidth-estimate.webp 1.5x, /url-shortening-system-design/url-shortener-bandwidth-estimate.webp 2x" height="144" sizes="683px" src="../assets/images/img_5d57617e63da.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 17: URL shortener bandwidth estimate</figcaption>
+</figure>
+<hr/>
+<h3 class="headerLink" id="memory"><a class="header-mark offline-link" href="./url-shortening-system-design.html#memory"></a>Memory</h3>
+<p>The URL redirection traffic (egress) is cached to improve the latency. Following the <a href="https://en.wikipedia.org/wiki/Pareto_principle" rel="noopener noreferrer" target="_blank">80/20 rule</a>, 80% of egress is served by 20% of URL data stored on cache servers. The remaining 20% of the egress is served by the data store to improve the latency. A Time-to-live (<a href="https://en.wikipedia.org/wiki/Time_to_live" rel="noopener noreferrer" target="_blank">TTL</a>) of 1 day is reasonable.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 18: URL redirection memory estimate&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection-memory-estimate.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection-memory-estimate.webp" rel="noopener noreferrer" target="_blank" title="URL redirection memory estimate">
+<img alt="URL redirection memory estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection-memory-estimate.webp, /url-shortening-system-design/url-redirection-memory-estimate.webp 1.5x, /url-shortening-system-design/url-redirection-memory-estimate.webp 2x" height="98" sizes="683px" src="../assets/images/img_91f7f54da518.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 18: URL redirection memory estimate</figcaption>
+</figure>
+<hr/>
+<h3 class="headerLink" id="capacity-planning-summary"><a class="header-mark offline-link" href="./url-shortening-system-design.html#capacity-planning-summary"></a>Capacity Planning Summary</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 19: URL shortener; Capacity planning&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-capacity-planning.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-capacity-planning.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Capacity planning">
+<img alt="URL shortener; Capacity planning" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-capacity-planning.webp, /url-shortening-system-design/url-shortener-capacity-planning.webp 1.5x, /url-shortening-system-design/url-shortener-capacity-planning.webp 2x" height="324" sizes="683px" src="../assets/images/img_a058dbc354ac.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 19: URL shortener; Capacity planning</figcaption>
+</figure>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./url-shortening-system-design.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="high-level-design"><a class="header-mark offline-link" href="./url-shortening-system-design.html#high-level-design"></a>High-Level Design</h2>
+<h3 class="headerLink" id="encoding"><a class="header-mark offline-link" href="./url-shortening-system-design.html#encoding"></a>Encoding</h3>
+<p>Encoding is the process of converting data from one form to another. The following are the reasons to encode a shortened URL:</p>
+<ul>
+<li>improve the readability of the short URL</li>
+<li>make short URLs less error-prone</li>
+</ul>
+<p>The encoding format to be used in the URL shortener must yield a deterministic (no randomness) output. The potential data encoding formats that satisfy the URL shortening use case are the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 20: URL shortener; Encoding formats&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-encoding-formats.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-encoding-formats.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Encoding formats">
+<img alt="URL shortener; Encoding formats" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-encoding-formats.webp, /url-shortening-system-design/url-shortener-encoding-formats.webp 1.5x, /url-shortening-system-design/url-shortener-encoding-formats.webp 2x" height="186" sizes="683px" src="../assets/images/img_40bcd3318d0d.webp" width="979"/>
+</a><figcaption class="image-caption">Figure 20: URL shortener; Encoding formats</figcaption>
+</figure>
+<p>The <em>base58</em> encoding format is similar to <a href="https://en.wikipedia.org/wiki/Base62" rel="noopener noreferrer" target="_blank">base62</a> encoding except that <em>base58</em> avoids non-distinguishable characters such as O (uppercase O), 0 (zero), and I (capital I), l (lowercase L). The characters in <em>base62</em> encoding consume 6 bits (2⁶ = 64). A short URL of 7 characters in length in <em>base62</em> encoding consumes 42 bits.</p>
+<p>The following generic formula is used to count the total number of short URLs that are produced using a specific encoding format and the number of characters in the output:</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Short URL Generation<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p><strong>Total count of short URLs = branching factor ^ depth</strong></p>
+<p>where the <em>branching factor</em> is the base of the encoding format and <em>depth</em> is the length of characters.</p>
+</div>
+</div>
+</div>
+<p>The combination of encoding formats and the output length generates the following total count of short URLs:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 21: Total count of short URLs&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/total-count-short-url.webp" href="https://systemdesign.one/url-shortening-system-design/total-count-short-url.webp" rel="noopener noreferrer" target="_blank" title="Total count of short URLs">
+<img alt="Total count of short URLs" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/total-count-short-url.webp, /url-shortening-system-design/total-count-short-url.webp 1.5x, /url-shortening-system-design/total-count-short-url.webp 2x" height="160" sizes="683px" src="../assets/images/img_ac09fe4c04a8.webp" width="981"/>
+</a><figcaption class="image-caption">Figure 21: Total count of short URLs</figcaption>
+</figure>
+<p>The total count of short URLs is directly proportional to the length of the encoded output. However, the length of the short URL must be kept as short as possible for better readability. The <em>base62</em> encoded output of 7-character length generates 3.5 trillion short URLs. A total count of 3.5 trillion short URLs is exhausted in 100 years when 1000 short URLs are used per second. The guidelines on the encoded output format to improve the readability of a short URL are the following:</p>
+<ul>
+<li>the encoded output contains only alphanumeric characters</li>
+<li>the length of the short URL must not exceed 9 characters</li>
+</ul>
+<p>The <strong>time complexity</strong> of base conversion is O(k), where k is the number of characters (k = 7). The time complexity of base conversion is reduced to constant time O(1) because the number of characters is fixed<sup id="fnref:7"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<p>In summary, a 7-character <em>base62</em> encoded output satisfies the system requirement.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="write-path"><a class="header-mark offline-link" href="./url-shortening-system-design.html#write-path"></a>Write path</h3>
+<p>The server shortens the long URL entered by the client. The shortened URL is encoded for improved readability. The server persists the encoded short URL into the database. The simplified block diagram of a single-machine URL shortener is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 22: Simplified URL shortener&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/simplified-url-shortener.webp" href="https://systemdesign.one/url-shortening-system-design/simplified-url-shortener.webp" rel="noopener noreferrer" target="_blank" title="Simplified URL shortener">
+<img alt="Simplified URL shortener" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/simplified-url-shortener.webp, /url-shortening-system-design/simplified-url-shortener.webp 1.5x, /url-shortening-system-design/simplified-url-shortener.webp 2x" height="637" sizes="683px" src="../assets/images/img_dad61d168fb6.webp" width="897"/>
+</a><figcaption class="image-caption">Figure 22: Simplified URL shortener</figcaption>
+</figure>
+<p>The single-machine solution does not meet the scalability requirements of the URL shortener system. The key generation function is moved out of the server to a dedicated Key Generation Service (<strong>KGS</strong>) to <a href="https://en.wikipedia.org/wiki/Scalability" rel="noopener noreferrer" target="_blank">scale out</a> the system.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 23: URL shortener; Key Generation Service&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-key-generation-service.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-key-generation-service.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Key Generation Service">
+<img alt="URL shortener; Key Generation Service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-key-generation-service.webp, /url-shortening-system-design/url-shortener-key-generation-service.webp 1.5x, /url-shortening-system-design/url-shortener-key-generation-service.webp 2x" height="631" sizes="683px" src="../assets/images/img_bb65eb11f62e.webp" width="999"/>
+</a><figcaption class="image-caption">Figure 23: URL shortener; Key Generation Service</figcaption>
+</figure>
+<p>The different solutions to shortening a URL are the following:</p>
+<ul>
+<li>Random ID Generator</li>
+<li>Hashing Function</li>
+<li>Token Range</li>
+</ul>
+<hr/>
+<h4 class="headerLink" id="random-id-generator-solution"><a class="header-mark offline-link" href="./url-shortening-system-design.html#random-id-generator-solution"></a>Random ID Generator solution</h4>
+<p>The Key Generation Service (<strong>KGS</strong>) queries the random identifier (<strong>ID</strong>) generation service to shorten a URL. The service generates random IDs using a random function or Universally Unique Identifiers (<a href="https://en.wikipedia.org/wiki/Universally_unique_identifier" rel="noopener noreferrer" target="_blank">UUID</a>). Multiple instances of the random ID generation service must be provisioned to meet the demand for scalability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 24: URL shortener; Random ID Generator&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-random-id-generator.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-random-id-generator.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Random ID Generator">
+<img alt="URL shortener; Random ID Generator" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-random-id-generator.webp, /url-shortening-system-design/url-shortener-random-id-generator.webp 1.5x, /url-shortening-system-design/url-shortener-random-id-generator.webp 2x" height="694" sizes="683px" src="../assets/images/img_2a8f742b3c61.webp" width="1225"/>
+</a><figcaption class="image-caption">Figure 24: URL shortener; Random ID Generator</figcaption>
+</figure>
+<p>The random ID generation service must be stateless to easily replicate the service for scaling. The ingress is distributed to a random ID generation service using a <a href="https://en.wikipedia.org/wiki/Load_balancing_%28computing%29" rel="noopener noreferrer" target="_blank">load balancer</a>. The potential load-balancing algorithms to route the traffic are the following:</p>
+<ul>
+<li>round-robin</li>
+<li>least connection</li>
+<li>least bandwidth</li>
+<li><a href="https://www.cs.cornell.edu/courses/cs312/2008sp/lectures/lec21.html#:~:text=With%20modular%20hashing,%20the%20hash,lowest-order%20bits%20of%20k." rel="noopener noreferrer" target="_blank">modulo-hash</a> function</li>
+<li><a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a></li>
+</ul>
+<p>The <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> or the modulo-hash function-based load balancing algorithms might result in unbalanced (<strong>hot</strong>) replicas when the same long URL is entered by a large number of clients at the same time. The KGS must verify if the generated short URL already exists in the database because of the randomness in the output.</p>
+<p>The random ID generation solution has the following tradeoffs:</p>
+<ul>
+<li>the probability of collisions is high due to randomness</li>
+<li>breaks the 1-to-1 mapping between a short URL and a long URL</li>
+<li>coordination between servers is required to prevent a collision</li>
+<li>frequent verification of the existence of a short URL in the database is a bottleneck</li>
+</ul>
+<p>An <strong>alternative</strong> to the random ID generation solution is using Twitter’s <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake" rel="noopener noreferrer" target="_blank">Snowflake</a><sup id="fnref:8"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:8" role="doc-noteref">8</a></sup>. The length of the snowflake output is 64 bits. The <em>base62</em> encoding of snowflake output yields an 11-character output because each <em>base62</em> encoded character consumes 6 bits. The snowflake ID is generated by a combination of the following entities (real-world implementation might vary):</p>
+<ul>
+<li>Timestamp</li>
+<li><a href="https://en.wikipedia.org/wiki/Data_center" rel="noopener noreferrer" target="_blank">Data center</a> ID</li>
+<li>Worker node ID</li>
+<li>Sequence number</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 25: Twitter Snowflake ID&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/twitter-snowflake-id.webp" href="https://systemdesign.one/url-shortening-system-design/twitter-snowflake-id.webp" rel="noopener noreferrer" target="_blank" title="Twitter Snowflake ID">
+<img alt="Twitter Snowflake ID" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/twitter-snowflake-id.webp, /url-shortening-system-design/twitter-snowflake-id.webp 1.5x, /url-shortening-system-design/twitter-snowflake-id.webp 2x" height="558" sizes="683px" src="../assets/images/img_95257a144cbe.webp" width="1378"/>
+</a><figcaption class="image-caption">Figure 25: Twitter Snowflake ID</figcaption>
+</figure>
+<p>The downsides of using snowflake ID for URL shortening are the following:</p>
+<ul>
+<li>probability of collision is higher due to the overlapping bits</li>
+<li>generated short URL becomes predictable due to known bits</li>
+<li>increases the complexity of the system due to time synchronization between servers</li>
+</ul>
+<p>In summary, do not use the random ID generator solution for shortening a URL.</p>
+<hr/>
+<h4 class="headerLink" id="hashing-function-solution"><a class="header-mark offline-link" href="./url-shortening-system-design.html#hashing-function-solution"></a>Hashing Function solution</h4>
+<p>The KGS queries the <a href="https://en.wikipedia.org/wiki/Hash_function" rel="noopener noreferrer" target="_blank">hashing function</a> service to shorten a URL. The hashing function service accepts a long URL as an input and executes a hash function such as the message-digest algorithm (<a href="https://en.wikipedia.org/wiki/MD5" rel="noopener noreferrer" target="_blank">MD5</a>) to generate a short URL<sup id="fnref:9"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:9" role="doc-noteref">9</a></sup>. The length of the MD5 hash function output is 128 bits. The hashing function service is replicated to meet the <a class="offline-link" href="../fundamentals/micro-frontends.html" rel="noopener noreffer">scalability</a> demand of the system.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 26: URL shortener; Hashing the long URL&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-hashing-long-url.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-hashing-long-url.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Hashing the long URL">
+<img alt="URL shortener; Hashing the long URL" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-hashing-long-url.webp, /url-shortening-system-design/url-shortener-hashing-long-url.webp 1.5x, /url-shortening-system-design/url-shortener-hashing-long-url.webp 2x" height="183" sizes="683px" src="../assets/images/img_c53aadb973a9.webp" width="1326"/>
+</a><figcaption class="image-caption">Figure 26: URL shortener; Hashing the long URL</figcaption>
+</figure>
+<p>The hashing function service must be stateless to easily replicate the service for scaling. The ingress is distributed to the hashing function service using a load balancer. The potential load-balancing algorithms to route the traffic are the following:</p>
+<ul>
+<li>weighted round-robin</li>
+<li>least response time</li>
+<li>IP address hash</li>
+<li>modulo-hash function</li>
+<li><a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a></li>
+</ul>
+<p>The hash-based load balancing algorithms result in hot replicas when the same long URL is entered by a large number of clients at the same time. The non-hash-based load-balancing algorithms result in redundant operations because the MD5 hashing function produces the same output (short URL) for the same input (long URL).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 27: URL shortener; Hashing function service&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-hashing-function-service.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-hashing-function-service.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Hashing function service">
+<img alt="URL shortener; Hashing function service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-hashing-function-service.webp, /url-shortening-system-design/url-shortener-hashing-function-service.webp 1.5x, /url-shortening-system-design/url-shortener-hashing-function-service.webp 2x" height="710" sizes="683px" src="../assets/images/img_98fe2e109367.webp" width="1167"/>
+</a><figcaption class="image-caption">Figure 27: URL shortener; Hashing function service</figcaption>
+</figure>
+<p>The <em>base62</em> encoding of MD5 output yields 22 characters because each <em>base62</em> encoded character consumes 6 bits and MD5 output is 128 bits. The encoded output must be truncated by considering only the first 7 characters (42 bits) to keep the short URL readable. However, the encoded output of multiple long URLs might yield the same prefix (first 7 characters), resulting in a collision. Random bits are appended to the suffix of the encoded output to make it nonpredictable at the expense of short URL readability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 28: URL shortener; Truncating the encoded MD5 output&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-truncate-encoded-md5.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-truncate-encoded-md5.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Truncating the encoded MD5 output">
+<img alt="URL shortener; Truncating the encoded MD5 output" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-truncate-encoded-md5.webp, /url-shortening-system-design/url-shortener-truncate-encoded-md5.webp 1.5x, /url-shortening-system-design/url-shortener-truncate-encoded-md5.webp 2x" height="147" sizes="683px" src="../assets/images/img_81384043e5ee.webp" width="615"/>
+</a><figcaption class="image-caption">Figure 28: URL shortener; Truncating the encoded MD5 output</figcaption>
+</figure>
+<p>An alternative hashing function for URL shortening is <a href="https://en.wikipedia.org/wiki/SHA-2" rel="noopener noreferrer" target="_blank">SHA256</a>. However, the probability of a collision is higher due to an output length of 256 bits. The tradeoffs of the hashing function solution are the following:</p>
+<ul>
+<li>predictable output due to the hash function</li>
+<li>higher probability of a collision</li>
+</ul>
+<p>In summary, do not use the hashing function solution for shortening a URL.</p>
+<hr/>
+<h4 class="headerLink" id="token-range-solution"><a class="header-mark offline-link" href="./url-shortening-system-design.html#token-range-solution"></a>Token Range solution</h4>
+<p>The KGS queries the token service to shorten a URL. An internal counter function of the token service generates the short URL and the output is monotonically increasing.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 29: URL shortener; Token service in consistent hash ring&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-token-service-consistent-hash-ring.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-token-service-consistent-hash-ring.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Token service in consistent hash ring">
+<img alt="URL shortener; Token service in consistent hash ring" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-token-service-consistent-hash-ring.webp, /url-shortening-system-design/url-shortener-token-service-consistent-hash-ring.webp 1.5x, /url-shortening-system-design/url-shortener-token-service-consistent-hash-ring.webp 2x" height="670" sizes="683px" src="../assets/images/img_20fdc3d72b1a.webp" width="1349"/>
+</a><figcaption class="image-caption">Figure 29: URL shortener; Token service in consistent hash ring</figcaption>
+</figure>
+<p>The token service must be horizontally partitioned (<a class="offline-link" href="./mysql-sharding.html" rel="noopener noreffer">shard</a>) to meet the scalability requirements of the system. The potential sharding schemes for the token service are the following:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Partition_%28database%29" rel="noopener noreferrer" target="_blank">list partitioning</a></li>
+<li><a href="https://www.ibm.com/docs/en/iis/8.5?topic=partitioning-modulus-partitioner" rel="noopener noreferrer" target="_blank">modulus partitioning</a></li>
+<li><a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a></li>
+</ul>
+<p>The list and modulus partitioning schemes do not meet the scalability requirements of the system because both schemes limit the number of token service instances. The sharding based on <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> fits the system requirements as the token service <a class="offline-link" href="./scalable-software-architecture.html" rel="noopener noreffer">scales</a> out by provisioning new instances.</p>
+<p>The ingress is distributed to the token service using a load balancer. The <a href="https://en.wikipedia.org/wiki/Percent-encoding" rel="noopener noreferrer" target="_blank">percent-encoded</a> long URLs are load-balanced using consistent hashing to preserve the 1-to-1 mapping between the long and short URLs. However, a load balancer based on consistent hashing might result in hot shards when the same long URL is entered by a large number of clients at the same time.</p>
+<p>The output of the token service instances must be non-overlapping to prevent a collision. A highly reliable distributed service such as <a href="https://zookeeper.apache.org/" rel="noopener noreferrer" target="_blank">Apache Zookeeper</a> or <a href="https://aws.amazon.com/dynamodb/" rel="noopener noreferrer" target="_blank">Amazon DynamoDB</a> is used to coordinate the output range of token service instances. The service that coordinates the output range between token service instances is named the <strong>token range service</strong>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 30: URL shortener; Token range service&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-token-range-service.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-token-range-service.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Token range service">
+<img alt="URL shortener; Token range service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-token-range-service.webp, /url-shortening-system-design/url-shortener-token-range-service.webp 1.5x, /url-shortening-system-design/url-shortener-token-range-service.webp 2x" height="962" sizes="683px" src="../assets/images/img_3c39ea73174a.webp" width="1371"/>
+</a><figcaption class="image-caption">Figure 30: URL shortener; Token range service</figcaption>
+</figure>
+<p>When the key-value store is chosen as the token range service, the <a href="https://en.wikipedia.org/wiki/Quorum_%28distributed_computing%29#:~:text=A%20quorum%20is%20the%20minimum,operation%20in%20a%20distributed%20system." rel="noopener noreferrer" target="_blank">quorum</a> must be set to a higher value to increase the <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a> of the token range service. The stronger consistency prevents a range collision by preventing fetching the same output range by multiple token services.</p>
+<p>When an instance of the token service is provisioned, the fresh instance executes a request for an output range from the token range service. When the fetched output range is fully exhausted, the token service requests a fresh output range from the token range service.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 31: URL shortener; Token range service&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/token-range-service.webp" href="https://systemdesign.one/url-shortening-system-design/token-range-service.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Token range service">
+<img alt="URL shortener; Token range service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/token-range-service.webp, /url-shortening-system-design/token-range-service.webp 1.5x, /url-shortening-system-design/token-range-service.webp 2x" height="566" sizes="683px" src="../assets/images/img_7c4fd1f7336c.webp" width="971"/>
+</a><figcaption class="image-caption">Figure 31: URL shortener; Token range service</figcaption>
+</figure>
+<p>The token range service might become a <a href="https://en.wikipedia.org/wiki/Bottleneck_%28software%29" rel="noopener noreferrer" target="_blank">bottleneck</a> if queried frequently. Either the output range or the number of token range service replicas must be incremented to improve the reliability of the system. The token range solution is collision-free and scalable. However, the short URL is predictable due to the monotonically increasing output range. The following actions degrade the predictability of the shortened URL:</p>
+<ul>
+<li>append random bits to the suffix of the output</li>
+<li>token range service gives a randomized output range</li>
+</ul>
+<p>The time complexity of short URL generation using token service is constant O(1). In contrast, the KGS must perform one of the following operations before shortening a URL to preserve the 1-to-1 mapping:</p>
+<ul>
+<li>query the database to check the existence of the long URL</li>
+<li>use the <em>putIfAbsent</em> procedure to check the existence of the long URL</li>
+</ul>
+<p>Querying the database is an expensive operation because of the disk input/output (<strong>I/O</strong>) and most of the NoSQL data stores do not support the putIfAbsent procedure due to eventual consistency.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 32: URL shortener; Bloom filter&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-bloom-filter.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Bloom filter">
+<img alt="URL shortener; Bloom filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-bloom-filter.webp, /url-shortening-system-design/url-shortener-bloom-filter.webp 1.5x, /url-shortening-system-design/url-shortener-bloom-filter.webp 2x" height="793" sizes="683px" src="../assets/images/img_8c3652fa0d45.webp" width="1395"/>
+</a><figcaption class="image-caption">Figure 32: URL shortener; Bloom filter</figcaption>
+</figure>
+<p>A <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> is used to prevent expensive data store lookups on URL shortening. The time complexity of a <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> query is constant O(1)<sup id="fnref:10"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The KGS populates the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> with the long URL after shortening the long URL. When the client enters a customized short URL, the KGS queries the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> to check if the long URL exists before persisting the custom short URL into the data store. However, the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> query might yield false positives, resulting in a database lookup. In addition, the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> increases the operational complexity of the system.</p>
+<p>When the client enters an already existing long URL, the KGS must return the appropriate short URL but the database is partitioned with the short URL as the partition key. The short URL as the partition key resonates with the read and write paths of the URL shortener.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 33: URL shortener; Inverted index data store (Long URL: Short URL)&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-inverted-index-store.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-inverted-index-store.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Inverted index data store (Long URL: Short URL)">
+<img alt="URL shortener; Inverted index data store (Long URL: Short URL)" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-inverted-index-store.webp, /url-shortening-system-design/url-shortener-inverted-index-store.webp 1.5x, /url-shortening-system-design/url-shortener-inverted-index-store.webp 2x" height="755" sizes="683px" src="../assets/images/img_2c9830ac6d38.webp" width="1234"/>
+</a><figcaption class="image-caption">Figure 33: URL shortener; Inverted index data store (Long URL: Short URL)</figcaption>
+</figure>
+<p>A naive solution to finding the short URL is to build an <a href="https://en.wikipedia.org/wiki/Database_index" rel="noopener noreferrer" target="_blank">index</a> on the long URL column of the data store. However, the introduction of a database index degrades the write performance and querying remains complex due to sharding using the short URL key.</p>
+<p>The optimal solution is to introduce an additional data store (inverted index) with mapping from the long URLs to the short URLs (key-value schema). The additional data store improves the time complexity of finding the short URL of an already existing long URL record. On the other hand, an additional data store increases storage costs. The additional data store is partitioned using <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a>. The partition key is the long URL to quickly find the URL record. A key-value store such as DynamoDB is used as the additional data store.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 34: URL shortener; Scaling the token service&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-scaling-token-service.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-scaling-token-service.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Scaling the token service">
+<img alt="URL shortener; Scaling the token service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-scaling-token-service.webp, /url-shortening-system-design/url-shortener-scaling-token-service.webp 1.5x, /url-shortening-system-design/url-shortener-scaling-token-service.webp 2x" height="375" sizes="683px" src="../assets/images/img_a9ee2799ccb3.webp" width="935"/>
+</a><figcaption class="image-caption">Figure 34: URL shortener; Scaling the token service</figcaption>
+</figure>
+<p>The token service stores some short URLs (<strong>keys</strong>) in memory so that the token service quickly provides the keys to an incoming request. The keys in the token service must be distributed by an atomic data structure to handle concurrent requests. The output range stored in token service memory is marked as used to prevent a collision. The downside of storing keys in memory is losing the specific output range of keys on a server failure. The output range must be moved out to an external cache server to scale out the token service and improve its reliability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 35: URL shortener; Token server&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/token-server.webp" href="https://systemdesign.one/url-shortening-system-design/token-server.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Token server">
+<img alt="URL shortener; Token server" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/token-server.webp, /url-shortening-system-design/token-server.webp 1.5x, /url-shortening-system-design/token-server.webp 2x" height="440" sizes="683px" src="../assets/images/img_3ff4645652f7.webp" width="888"/>
+</a><figcaption class="image-caption">Figure 35: URL shortener; Token server</figcaption>
+</figure>
+<p>The output of the token service must be encoded within the token server using an encoding service to prevent external network communication. An additional function executes the encoding of token service output.</p>
+<p>In summary, use the token range solution for shortening a URL.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="read-path"><a class="header-mark offline-link" href="./url-shortening-system-design.html#read-path"></a>Read path</h3>
+<p>The server redirects the shortened URL to the original long URL. The simplified block diagram of a single-machine URL redirection is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 36: Simplified URL redirection&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/simplified-url-shortener.webp" href="https://systemdesign.one/url-shortening-system-design/simplified-url-shortener.webp" rel="noopener noreferrer" target="_blank" title="Simplified URL redirection">
+<img alt="Simplified URL redirection" class="lazyautosizes ls-is-cached lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/simplified-url-shortener.webp, /url-shortening-system-design/simplified-url-shortener.webp 1.5x, /url-shortening-system-design/simplified-url-shortener.webp 2x" height="637" sizes="683px" src="../assets/images/img_dad61d168fb6.webp" width="897"/>
+</a><figcaption class="image-caption">Figure 36: Simplified URL redirection</figcaption>
+</figure>
+<p>The single-machine solution does not meet the scalability requirements of URL redirection for a read-heavy system. The disk I/O due to frequent database access is a potential bottleneck.</p>
+<p>The URL redirection traffic (<strong>Egress</strong>) is cached following the <a href="https://en.wikipedia.org/wiki/Pareto_principle" rel="noopener noreferrer" target="_blank">80/20 rule</a> to improve latency. The cache stores the mapping between the short URLs and the long URLs. The cache handles uneven traffic and traffic spikes in URL redirection. The server must query the cache before hitting the data store. The <a href="https://github.com/donnemartin/system-design-primer#cache-aside" rel="noopener noreferrer" target="_blank">cache-aside pattern</a> is used to update the cache. When a cache miss occurs, the server queries the data store and populates the cache. The tradeoff of using the cache-aside pattern is the delay in initial requests. As the data stored in the cache is memory bound, the Least Recently Used (<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_%28LRU%29" rel="noopener noreferrer" target="_blank">LRU</a>) policy is used to evict the cache when the cache server is full.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 37: URL redirection; Caching at different layers&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection-caching-different-layers.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection-caching-different-layers.webp" rel="noopener noreferrer" target="_blank" title="URL redirection; Caching at different layers">
+<img alt="URL redirection; Caching at different layers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection-caching-different-layers.webp, /url-shortening-system-design/url-redirection-caching-different-layers.webp 1.5x, /url-shortening-system-design/url-redirection-caching-different-layers.webp 2x" height="993" sizes="683px" src="../assets/images/img_204faa407479.webp" width="1455"/>
+</a><figcaption class="image-caption">Figure 37: URL redirection; Caching at different layers</figcaption>
+</figure>
+<p>The cache is introduced at the following layers of the system for scalability:</p>
+<ul>
+<li>client</li>
+<li>content delivery network (<a class="offline-link" href="./cdn-explained.html" rel="noopener noreffer">CDN</a>)</li>
+<li>reverse proxy</li>
+<li>dedicated cache servers</li>
+</ul>
+<p>A shared cache such as CDN or a dedicated cache server reduces the load on the system. On the other hand, the private cache is only accessible by the client and does not significantly improve the system’s performance. On top of that, the definition of TTL for the private cache is crucial because private cache invalidation is difficult. Dedicated cache servers such as <a href="https://redis.io/" rel="noopener noreferrer" target="_blank">Redis</a> or <a href="https://memcached.org/" rel="noopener noreferrer" target="_blank">Memcached</a> are provisioned between the following system components to further improve latency:</p>
+<ul>
+<li>server and data store</li>
+<li>load balancer and server</li>
+</ul>
+<p>The typical usage pattern of a URL shortener by the client is to shorten a URL and access the short URL only once. The cache update on a single access usage pattern results in cache <a href="https://en.wikipedia.org/wiki/Thrashing_%28computer_science%29" rel="noopener noreferrer" target="_blank">thrashing</a>. A <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> on short URLs is introduced on cache servers and <a class="offline-link" href="./cdn-explained.html" rel="noopener noreffer">CDN</a> to prevent cache thrashing. The <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> is updated on the initial access to a short URL. The cache servers are updated only when the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> is already set (multiple requests to the same short URL).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 38: URL redirection; Cache update&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection-cache-update.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection-cache-update.webp" rel="noopener noreferrer" target="_blank" title="URL redirection; Cache update">
+<img alt="URL redirection; Cache update" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection-cache-update.webp, /url-shortening-system-design/url-redirection-cache-update.webp 1.5x, /url-shortening-system-design/url-redirection-cache-update.webp 2x" height="621" sizes="683px" src="../assets/images/img_ddc0b7ccc79a.webp" width="1943"/>
+</a><figcaption class="image-caption">Figure 38: URL redirection; Cache update</figcaption>
+</figure>
+<p>The cache and the data store must not be queried if the short URL does not exist. A <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> on the short URL is introduced to prevent unnecessary queries. If the short URL is absent in the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a>, return an HTTP status code of 404. If the short URL is set in the bloom filter, delegate the redirection request to the cache server or the data store.</p>
+<p>The cache servers are scaled out by performing the following operations:</p>
+<ul>
+<li>partition the cache servers (use the short URL as the partition key)</li>
+<li>replicate the cache servers to handle heavy loads using <a href="https://redis.io/docs/management/replication/" rel="noopener noreferrer" target="_blank">leader-follower topology</a></li>
+<li>redirect the write operations to the leader</li>
+<li>redirect all the read operations to the follower replicas</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 39: URL redirection; Scaling cache servers&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection-scaling-cache-servers.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection-scaling-cache-servers.webp" rel="noopener noreferrer" target="_blank" title="URL redirection; Scaling cache servers">
+<img alt="URL redirection; Scaling cache servers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection-scaling-cache-servers.webp, /url-shortening-system-design/url-redirection-scaling-cache-servers.webp 1.5x, /url-shortening-system-design/url-redirection-scaling-cache-servers.webp 2x" height="585" sizes="683px" src="../assets/images/img_fd10aa1d455e.webp" width="961"/>
+</a><figcaption class="image-caption">Figure 39: URL redirection; Scaling cache servers</figcaption>
+</figure>
+<p>When multiple identical requests arrive at the cache server at the same time, the cache server will <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#request_collapse" rel="noopener noreferrer" target="_blank">collapse the requests</a> and will forward a single request to the origin server on behalf of the clients. The response is reused among all the clients to save bandwidth and system resources.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 40: URL redirection; Cache server collapsed forwarding&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/cache-server-collapse-forwarding.webp" href="https://systemdesign.one/url-shortening-system-design/cache-server-collapse-forwarding.webp" rel="noopener noreferrer" target="_blank" title="URL redirection; Cache server collapsed forwarding">
+<img alt="URL redirection; Cache server collapsed forwarding" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/cache-server-collapse-forwarding.webp, /url-shortening-system-design/cache-server-collapse-forwarding.webp 1.5x, /url-shortening-system-design/cache-server-collapse-forwarding.webp 2x" height="581" sizes="683px" src="../assets/images/img_f15699d9cb4b.webp" width="809"/>
+</a><figcaption class="image-caption">Figure 40: URL redirection; Cache server collapsed forwarding</figcaption>
+</figure>
+<p>The following intermediate components are introduced to satisfy the scalability demand for URL redirection:</p>
+<ul>
+<li>Domain Name System (<a href="https://en.wikipedia.org/wiki/Domain_Name_System" rel="noopener noreferrer" target="_blank">DNS</a>)</li>
+<li>Load balancer</li>
+<li>Reverse proxy</li>
+<li>CDN</li>
+<li>Controller service to automatically scale the services</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 41: URL redirection workflow&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-redirection.webp" href="https://systemdesign.one/url-shortening-system-design/url-redirection.webp" rel="noopener noreferrer" target="_blank" title="URL redirection workflow">
+<img alt="URL redirection workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-redirection.webp, /url-shortening-system-design/url-redirection.webp 1.5x, /url-shortening-system-design/url-redirection.webp 2x" height="1024" sizes="683px" src="../assets/images/img_02d7d06e522c.webp" width="1561"/>
+</a><figcaption class="image-caption">Figure 41: URL redirection workflow</figcaption>
+</figure>
+<p>The following smart <a href="https://github.com/donnemartin/system-design-primer#domain-name-system" rel="noopener noreferrer" target="_blank">DNS services</a> improve URL redirection:</p>
+<ul>
+<li>weighted round-robin</li>
+<li>latency based</li>
+<li>geolocation based</li>
+</ul>
+<p>The reverse proxy is used as an <a href="https://aws.amazon.com/api-gateway/" rel="noopener noreferrer" target="_blank">API Gateway</a>. The reverse proxy executes <a href="https://en.wikipedia.org/wiki/TLS_termination_proxy" rel="noopener noreferrer" target="_blank">SSL termination</a> and compression at the expense of increased system complexity. When an extremely popular short URL is accessed by thousands of clients at the same time, the reverse proxy <a href="https://wiki.squid-cache.org/Features/CollapsedForwarding" rel="noopener noreferrer" target="_blank">collapse forwards</a> the requests to reduce the system load. The load balancer must be introduced between the following system components to route traffic between the replicas or shards:</p>
+<ul>
+<li>client and server</li>
+<li>server and database</li>
+<li>server and cache server</li>
+</ul>
+<p>The CDN serves the content from locations closer to the client at the expense of increased financial costs. The <a href="https://github.com/donnemartin/system-design-primer#content-delivery-network" rel="noopener noreferrer" target="_blank">Pull CDN</a> approach fits the URL redirection requirements. A dedicated controller service is provisioned to automatically scale out or scale down the system components based on the system load.</p>
+<p>The <a class="offline-link" href="../fundamentals/netflix-microservices.html" rel="noopener noreffer">microservices</a> architecture improves the fault tolerance of the system. The services such as <a href="https://etcd.io/" rel="noopener noreferrer" target="_blank">Etcd</a> or Zookeeper help services find each other (known as service discovery). In addition, the Zookeeper is configured to monitor the health of the services in the system by sending regular heartbeat signals. The downside of <a class="offline-link" href="./prime-video-microservices.html" rel="noopener noreffer">microservices</a> architecture is the increased operational complexity.</p>
+<hr/>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="design-deep-dive"><a class="header-mark offline-link" href="./url-shortening-system-design.html#design-deep-dive"></a>Design Deep Dive</h2>
+<h3 class="headerLink" id="availability"><a class="header-mark offline-link" href="./url-shortening-system-design.html#availability"></a>Availability</h3>
+<p>The availability of the system is improved by the following configuration:</p>
+<ul>
+<li>load balancer runs either in active-active or active-passive mode</li>
+<li>KGS runs either in active-active or active-passive mode</li>
+<li>back up the storage servers at least once a day to object storage such as AWS S3 to aid <a href="https://www.vmware.com/topics/glossary/content/disaster-recovery.html" rel="noopener noreferrer" target="_blank">disaster recovery</a></li>
+<li>rate-limiting the traffic to prevent <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" rel="noopener noreferrer" target="_blank">DDoS attacks</a> and malicious users</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="rate-limiting"><a class="header-mark offline-link" href="./url-shortening-system-design.html#rate-limiting"></a>Rate Limiting</h3>
+<p><a class="offline-link" href="./rate-limiter.html" rel="noopener noreffer">Rate limiting</a> the system prevents malicious clients from degrading the service. The following entities are used to identify the client for rate limiting:</p>
+<ul>
+<li>API developer key for a registered client</li>
+<li>HTTP cookie for an anonymous client</li>
+</ul>
+<p>The API developer key is transferred either as a JSON Web Token (<a href="https://jwt.io/" rel="noopener noreferrer" target="_blank">JWT</a>) parameter or as a custom HTTP header. The Internet Protocol (<strong>IP</strong>) address is also used to rate limit the client.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./url-shortening-system-design.html#scalability"></a>Scalability</h3>
+<p>Scaling a system is an iterative process. The following actions are repeatedly performed to scale a system<sup id="fnref:11"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:11" role="doc-noteref">11</a></sup>:</p>
+<ol>
+<li>benchmark or load test</li>
+<li>profile for bottlenecks or a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure" rel="noopener noreferrer" target="_blank">single point of failure</a> (<strong>SPOF</strong>)</li>
+<li>address bottlenecks</li>
+</ol>
+<p>The read and write paths of the URL shortener are segregated to improve the latency and prevent network bandwidth from becoming a bottleneck.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 42: URL shortener; Segregated read and write paths&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/segregated-read-write-paths.webp" href="https://systemdesign.one/url-shortening-system-design/segregated-read-write-paths.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Segregated read and write paths">
+<img alt="URL shortener; Segregated read and write paths" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/segregated-read-write-paths.webp, /url-shortening-system-design/segregated-read-write-paths.webp 1.5x, /url-shortening-system-design/segregated-read-write-paths.webp 2x" height="849" sizes="683px" src="../assets/images/img_db58009bd405.webp" width="1172"/>
+</a><figcaption class="image-caption">Figure 42: URL shortener; Segregated read and write paths</figcaption>
+</figure>
+<p>The general guidelines to horizontally scale a service are the following:</p>
+<ul>
+<li>keep the service stateless</li>
+<li>partition the service</li>
+<li>replicate the service</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="fault-tolerance"><a class="header-mark offline-link" href="./url-shortening-system-design.html#fault-tolerance"></a>Fault tolerance</h3>
+<p>The microservices architecture improves the fault tolerance of the system. The microservices are isolated from each other and the services will fail independently. Simply put, a service failure means reduced functionality without the whole system going down. For instance, the failure of a metric service will not affect the URL redirection requests. The <a href="https://en.wikipedia.org/wiki/Event-driven_architecture" rel="noopener noreferrer" target="_blank">event-driven architecture</a> also helps to isolate the services and improve the reliability of the system, and scale by naturally supporting multiple consumers<sup id="fnref:12"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<p>The introduction of a message queue such as <a href="https://kafka.apache.org/" rel="noopener noreferrer" target="_blank">Apache Kafka</a> further improves the fault tolerance of the URL shortener. The message queue must be provisioned in the write and read paths of the system. However, the message queue must be <a href="https://en.wikipedia.org/wiki/Application_checkpointing" rel="noopener noreferrer" target="_blank">checkpointed</a> frequently for reliability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 43: URL shortener; Message queue&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-message-queue.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-message-queue.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Message queue">
+<img alt="URL shortener; Message queue" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-message-queue.webp, /url-shortening-system-design/url-shortener-message-queue.webp 1.5x, /url-shortening-system-design/url-shortener-message-queue.webp 2x" height="971" sizes="683px" src="../assets/images/img_51fa43052d04.webp" width="1317"/>
+</a><figcaption class="image-caption">Figure 43: URL shortener; Message queue</figcaption>
+</figure>
+<p>The reasons for using a message queue are the following<sup id="fnref:12"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:12" role="doc-noteref">12</a></sup>:</p>
+<ul>
+<li>isolate the components</li>
+<li>allows concurrent operations</li>
+<li>fails independently</li>
+<li>asynchronous processing</li>
+</ul>
+<p>The tradeoffs of using a message queue are the following:</p>
+<ul>
+<li>makes the system asynchronous</li>
+<li>increases the overall system complexity</li>
+</ul>
+<p>Further actions to optimize the fault tolerance of the system are the following:</p>
+<ul>
+<li>implement backpressure between services to prevent cascading failures</li>
+<li>services must exponentially backoff when a failure occurs for a faster recovery</li>
+<li>leader election implemented using <a href="https://en.wikipedia.org/wiki/Paxos_%28computer_science%29" rel="noopener noreferrer" target="_blank">Paxos</a> or <a href="https://en.wikipedia.org/wiki/Raft_%28algorithm%29" rel="noopener noreferrer" target="_blank">Raft</a> consensus algorithms</li>
+<li>snapshot or checkpoint stateful services such as a bloom filter</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="partitioning"><a class="header-mark offline-link" href="./url-shortening-system-design.html#partitioning"></a>Partitioning</h3>
+<p>The following stateful services are partitioned for scalability:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 44: URL shortener; Partitioning services&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-partitioning-services.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-partitioning-services.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Partitioning services">
+<img alt="URL shortener; Partitioning services" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-partitioning-services.webp, /url-shortening-system-design/url-shortener-partitioning-services.webp 1.5x, /url-shortening-system-design/url-shortener-partitioning-services.webp 2x" height="288" sizes="683px" src="../assets/images/img_35da437db4b1.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 44: URL shortener; Partitioning services</figcaption>
+</figure>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="concurrency"><a class="header-mark offline-link" href="./url-shortening-system-design.html#concurrency"></a>Concurrency</h3>
+<p>The KGS must acquire a <a href="https://en.wikipedia.org/wiki/Mutual_exclusion" rel="noopener noreferrer" target="_blank">mutex</a> (<strong>lock</strong>) or a <a href="https://en.wikipedia.org/wiki/Semaphore_%28programming%29" rel="noopener noreferrer" target="_blank">semaphore</a> on the atomic data structure distributing the short URLs to handle concurrency. The lock prevents the distribution of the same short URL to distinct shortening requests from the KGS, resulting in a collision. Multiple data structures distribute the short URL in a single instance of the token service to improve latency. The lock must be released when the short URL is used.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 45: URL shortener; Locking the token service&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/locking-token-service.webp" href="https://systemdesign.one/url-shortening-system-design/locking-token-service.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Locking the token service">
+<img alt="URL shortener; Locking the token service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/locking-token-service.webp, /url-shortening-system-design/locking-token-service.webp 1.5x, /url-shortening-system-design/locking-token-service.webp 2x" height="806" sizes="683px" src="../assets/images/img_d0e8d3c93129.webp" width="1403"/>
+</a><figcaption class="image-caption">Figure 45: URL shortener; Locking the token service</figcaption>
+</figure>
+<p>When multiple clients enter the same long URL at the same time, all the clients must receive the same short URL. A naive approach to solving this problem is by introducing a message queue and grouping the duplicate requests. An alternative suboptimal approach is to use the collapsed forwarding feature of a reverse proxy. However, multiple reverse proxies might exist in a distributed system. The optimal solution is using a distributed lock such as the <a href="https://static.googleusercontent.com/media/research.google.com/en//archive/chubby-osdi06.pdf" rel="noopener noreferrer" target="_blank">Chubby</a> or the Redis lock. The distributed lock must be acquired on the long URL. The distributed lock internally uses Raft or Paxos consensus algorithm.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 46: URL shortener; Distributed lock&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/distributed-lock.webp" href="https://systemdesign.one/url-shortening-system-design/distributed-lock.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Distributed lock">
+<img alt="URL shortener; Distributed lock" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/distributed-lock.webp, /url-shortening-system-design/distributed-lock.webp 1.5x, /url-shortening-system-design/distributed-lock.webp 2x" height="805" sizes="683px" src="../assets/images/img_3ac244fbd8ea.webp" width="1379"/>
+</a><figcaption class="image-caption">Figure 46: URL shortener; Distributed lock</figcaption>
+</figure>
+<p>The distributed lock service must be used when the client enters a custom URL as well to prevent a collision. A reasonable TTL must be set on the distributed lock to prevent starvation. The tradeoff of using a distributed lock is the slight degradation of latency. The distributed lock service is unnecessary if the 1-to-1 mapping between the URLs is not a system requirement. The URL shortening workflow in a highly concurrent system is the following:</p>
+<ol>
+<li>KGS checks the bloom filter for the existence of a long URL</li>
+<li>Acquire a distributed lock on the long URL</li>
+<li>Shorten the long URL</li>
+<li>Populate the bloom filter with the long URL</li>
+<li>Release the distributed lock</li>
+</ol>
+<p>Thread safety in the bloom filter is achieved using a concurrent BitSet. The tradeoff is the increased latency to some write operations. A lock must be acquired on the bloom filter to handle concurrency. A variant of the bloom filter named <a href="https://github.com/iamthebot/hyperbloom" rel="noopener noreferrer" target="_blank">naive striped bloom filter</a> supports highly concurrent reads at the expense of extra space.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="analytics"><a class="header-mark offline-link" href="./url-shortening-system-design.html#analytics"></a>Analytics</h3>
+<p>The generation of analytics on the usage pattern of the clients is one of the crucial features of a URL shortening service. Some of the popular URL-shortening services like Bitly make money by offering analytics on URL redirections<sup id="fnref:12"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:12" role="doc-noteref">12</a></sup>. The HTTP headers of URL redirection requests are used to collect data for the generation of analytics. In addition, the IP address of the client identifies the country or location. The most popular HTTP headers useful for analytics are the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 47: URL Shortener; HTTP headers for analytics&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-http-headers-analytics.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-http-headers-analytics.webp" rel="noopener noreferrer" target="_blank" title="URL Shortener; HTTP headers for analytics">
+<img alt="URL Shortener; HTTP headers for analytics" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-http-headers-analytics.webp, /url-shortening-system-design/url-shortener-http-headers-analytics.webp 1.5x, /url-shortening-system-design/url-shortener-http-headers-analytics.webp 2x" height="288" sizes="683px" src="../assets/images/img_356e467086dc.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 47: URL Shortener; HTTP headers for analytics</figcaption>
+</figure>
+<p>The workflow for the generation of analytics is the following<sup id="fnref:12"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:12" role="doc-noteref">12</a></sup>:</p>
+<ol>
+<li>The client requests a URL redirection</li>
+<li>The server responds with the long URL</li>
+<li>The server puts a message on the message queue</li>
+<li>The archive service executes a batch operation to move messages from the message queue to HDFS</li>
+<li>Hadoop is executed on the collected data on HDFS to generate offline analytics</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 48: URL shortener; Analytics&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-analytics.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-analytics.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Analytics">
+<img alt="URL shortener; Analytics" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-analytics.webp, /url-shortening-system-design/url-shortener-analytics.webp 1.5x, /url-shortening-system-design/url-shortener-analytics.webp 2x" height="579" sizes="683px" src="../assets/images/img_a8133bd05a6b.webp" width="1195"/>
+</a><figcaption class="image-caption">Figure 48: URL shortener; Analytics</figcaption>
+</figure>
+<p>A data warehousing solution such as <a href="https://aws.amazon.com/redshift/" rel="noopener noreferrer" target="_blank">Amazon Redshift</a> or <a href="https://www.snowflake.com/en/" rel="noopener noreferrer" target="_blank">Snowflake</a> might be used for the analytics database.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="database-cleanup"><a class="header-mark offline-link" href="./url-shortening-system-design.html#database-cleanup"></a>Database cleanup</h3>
+<p>The expired records in the database are removed to save storage costs. Active removal of expired records in the database might overload the database and degrade the service. The approaches to the removal of the expired records from the database are the following:</p>
+<ul>
+<li>lazy removal</li>
+<li>dedicated cleanup service</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 49: URL shortener; Database cleanup&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/database-cleanup.webp" href="https://systemdesign.one/url-shortening-system-design/database-cleanup.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Database cleanup">
+<img alt="URL shortener; Database cleanup" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/database-cleanup.webp, /url-shortening-system-design/database-cleanup.webp 1.5x, /url-shortening-system-design/database-cleanup.webp 2x" height="624" sizes="683px" src="../assets/images/img_73098abade9f.webp" width="1071"/>
+</a><figcaption class="image-caption">Figure 49: URL shortener; Database cleanup</figcaption>
+</figure>
+<hr/>
+<h4 class="headerLink" id="lazy-removal"><a class="header-mark offline-link" href="./url-shortening-system-design.html#lazy-removal"></a>Lazy removal</h4>
+<p>When the client tries to access an expired short URL, remove the record from the database. The server responds to the client with a status code of <em>404 Not found</em>. On the other hand, if the client never visits an expired record, the record sits there forever and consumes storage space.</p>
+<hr/>
+<h4 class="headerLink" id="dedicated-cleanup-service"><a class="header-mark offline-link" href="./url-shortening-system-design.html#dedicated-cleanup-service"></a>Dedicated cleanup service</h4>
+<p>A dedicated cleanup service must be executed during non-peak (low traffic) hours to remove the expired short URLs. The cleanup service scans the whole database for expired records. If the traffic suddenly spikes during the execution of the cleanup service, the cleanup service must be stopped, and the system fallbacks to the lazy removal approach.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="archive"><a class="header-mark offline-link" href="./url-shortening-system-design.html#archive"></a>Archive</h3>
+<p>The unused data in the database is archived to save storage costs. The data that is frequently accessed is classified as hot data and the data that was not accessed for a significant amount of time (assume a time frame of 3 years) is classified as cold data.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 50: URL shortener; Archive workflow&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/archive-workflow.webp" href="https://systemdesign.one/url-shortening-system-design/archive-workflow.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Archive workflow">
+<img alt="URL shortener; Archive workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/archive-workflow.webp, /url-shortening-system-design/archive-workflow.webp 1.5x, /url-shortening-system-design/archive-workflow.webp 2x" height="518" sizes="683px" src="../assets/images/img_edcc71d05363.webp" width="885"/>
+</a><figcaption class="image-caption">Figure 50: URL shortener; Archive workflow</figcaption>
+</figure>
+<p>The last_visited timestamp column of the database is used for data classification. The cold data is compressed and stored in object storage (AWS S3) during non-peak hours to avoid degradation of the service. However, maintenance of object storage and data classification is an additional operational effort. The unused data must be archived only if you are certain that the data will not be accessed in the future.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="monitoring"><a class="header-mark offline-link" href="./url-shortening-system-design.html#monitoring"></a>Monitoring</h3>
+<p>Monitoring is essential to identify system failures before they lead to actual problems to increase the availability of the system. Monitoring is usually implemented by installing an agent on each of the servers (services). The agent collects and aggregates the metrics and publishes the result data to a central monitoring service. Dashboards are configured to visualize the data<sup id="fnref:13"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:13" role="doc-noteref">13</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 51: URL shortener; Monitoring&lt;/h2&gt;" data-thumbnail="/url-shortening-system-design/url-shortener-monitoring.webp" href="https://systemdesign.one/url-shortening-system-design/url-shortener-monitoring.webp" rel="noopener noreferrer" target="_blank" title="URL shortener; Monitoring">
+<img alt="URL shortener; Monitoring" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/url-shortening-system-design/url-shortener-monitoring.webp, /url-shortening-system-design/url-shortener-monitoring.webp 1.5x, /url-shortening-system-design/url-shortener-monitoring.webp 2x" height="689" sizes="683px" src="../assets/images/img_0cd94e521f9b.webp" width="1547"/>
+</a><figcaption class="image-caption">Figure 51: URL shortener; Monitoring</figcaption>
+</figure>
+<p>Centralized logging is required to quickly isolate the cause of a failure instead of hopping between servers. The popular log aggregation and monitoring services are <a href="https://www.fluentd.org/" rel="noopener noreferrer" target="_blank">fluentd</a> and <a href="https://www.datadoghq.com/" rel="noopener noreferrer" target="_blank">datadog</a>. The <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar" rel="noopener noreferrer" target="_blank">sidecar design pattern</a> is used to run the agent and collect metrics. The following metrics must be monitored in general to get the best results:</p>
+<ul>
+<li>operating system (CPU load, memory, disk I/O)</li>
+<li>generic server (cache hit ratio, queries per second)</li>
+<li>application (latency, failure rate)</li>
+<li>business (number of logins, financial costs)</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="security"><a class="header-mark offline-link" href="./url-shortening-system-design.html#security"></a>Security</h3>
+<p>The following list covers some of the most popular security measures<sup id="fnref:14"><a class="footnote-ref offline-link" href="./url-shortening-system-design.html#fn:14" role="doc-noteref">14</a></sup>:</p>
+<ul>
+<li>use JWT token for authorization</li>
+<li>rate limit the requests</li>
+<li>encrypt the data</li>
+<li>sanitize user input to prevent Cross Site Scripting (<a href="https://en.wikipedia.org/wiki/Cross-site_scripting" rel="noopener noreferrer" target="_blank">XSS</a>)</li>
+<li>use parameterized queries to prevent <a href="https://en.wikipedia.org/wiki/SQL_injection" rel="noopener noreferrer" target="_blank">SQL injection</a></li>
+<li>use the principle of <a href="https://en.wikipedia.org/wiki/Principle_of_least_privilege" rel="noopener noreferrer" target="_blank">least privilege</a></li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./url-shortening-system-design.html#summary"></a>Summary</h2>
+<p>The URL shortening service is a popular system design interview question. Although the use cases of a URL shortener seem trivial, building an internet-scale URL shortener is a challenging task.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./url-shortening-system-design.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-and-solutions"><a class="header-mark offline-link" href="./url-shortening-system-design.html#questions-and-solutions"></a>Questions and Solutions</h2>
+<p>If you would like to challenge your knowledge on the topic, visit the article: <a href="https://systemdesign.one/knowledge-test-url-shortening-system-design/" rel="noopener noreferrer" target="_blank">Knowledge Test</a></p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./url-shortening-system-design.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./url-shortening-system-design.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/URL_shortening" rel="noopener noreferrer" target="_blank">URL shortening</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p><a href="https://tinyurl.com/app/dev" rel="noopener noreferrer" target="_blank">TinyURL OpenAPI</a>, tinyurl.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p><a href="https://dev.bitly.com/docs/tutorials/shorten-customize-links/" rel="noopener noreferrer" target="_blank">Bitly developer API</a>, dev.bitly.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer#remote-procedure-call-rpc" rel="noopener noreferrer" target="_blank">System Design Primer Comparison of RPC and REST</a>, GitHub.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" rel="noopener noreferrer" target="_blank">MDN web docs HTTP Status codes</a>, mozilla.org <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections" rel="noopener noreferrer" target="_blank">MDN web docs Redirections in HTTP</a>, mozilla.org <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Sophie, <a href="http://n00tc0d3r.blogspot.com/" rel="noopener noreferrer" target="_blank">System Design for Big Data [tinyurl]</a> (2013), blogspot.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Ryan King, <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake" rel="noopener noreferrer" target="_blank">Announcing Snowflake</a> (2010), blog.twitter.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/MD5" rel="noopener noreferrer" target="_blank">MD5 Hash function</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/Bloom_filter" rel="noopener noreferrer" target="_blank">Bloom filter</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer/tree/master/solutions/system_design/pastebin" rel="noopener noreferrer" target="_blank">Design Pastebin.com (or Bit.ly)</a> (2017), GitHub.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2014/7/14/bitly-lessons-learned-building-a-distributed-system-that-han.html" rel="noopener noreferrer" target="_blank">Bitly: Lessons Learned Building A Distributed System That Handles 6 Billion Clicks A Month</a> (2014), highscalability.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p><a href="https://www.amazon.com/Scalability-Startup-Engineers-Artur-Ejsmont/dp/0071843655" rel="noopener noreferrer" target="_blank">Web Scalability for Startup Engineers</a> by Artur Ejsmont (2015), amazon.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer#security" rel="noopener noreferrer" target="_blank">System Design Primer Security Guide</a> (2017), GitHub.com <a class="footnote-backref offline-link" href="./url-shortening-system-design.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-03-03</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="URL Shortening System Design" data-url="https://systemdesign.one/url-shortening-system-design/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/url-shortening-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/url-shortening-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="URL Shortening System Design" data-url="https://systemdesign.one/url-shortening-system-design/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="1. create a unique short URL 2. encode the short URL 3. persist short URL 4. redirect the short URL to a long URL" data-image="url-shortening-system-design/how-to-build-a-url-shortener.webp" data-sharer="pinterest" data-url="https://systemdesign.one/url-shortening-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="1. create a unique short URL 2. encode the short URL 3. persist short URL 4. redirect the short URL to a long URL" data-sharer="tumblr" data-title="URL Shortening System Design" data-url="https://systemdesign.one/url-shortening-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="URL Shortening System Design" data-url="https://systemdesign.one/url-shortening-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/url-shortening-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="1. create a unique short URL 2. encode the short URL 3. persist short URL 4. redirect the short URL to a long URL" data-image="url-shortening-system-design/how-to-build-a-url-shortener.webp" data-sharer="vk" data-title="URL Shortening System Design" data-url="https://systemdesign.one/url-shortening-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="../fundamentals/how-to-troubleshoot-if-you-cannot-access-a-website.html" rel="prev" title="How to Troubleshoot if You Can’t Access a Particular Website?"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>How to Troubleshoot if You Can’t Access a Particular Website?</a>
+<a class="next" href="https://systemdesign.one/knowledge-test-url-shortening-system-design/" rel="noopener noreferrer" target="_blank" title="Knowledge Test: URL Shortening System Design">Knowledge Test: URL Shortening System Design<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./url-shortening-system-design.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./url-shortening-system-design.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

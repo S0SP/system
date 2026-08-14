@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Gossip Protocol - System Design</title><meta content="scalable broadcast algorithm in distributed system" name="Description"/><meta content="Gossip Protocol" property="og:title"/>
+<meta content="scalable broadcast algorithm in distributed system" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/gossip-protocol/" property="og:url"/><meta content="https://systemdesign.one/gossip-protocol/gossip-protocol.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-07-09T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-07-10T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/gossip-protocol/gossip-protocol.webp" name="twitter:image"/>
+<meta content="Gossip Protocol" name="twitter:title"/>
+<meta content="scalable broadcast algorithm in distributed system" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/gossip-protocol/" rel="canonical"/><link href="https://systemdesign.one/what-is-service-discovery/" rel="prev"/><link href="https://systemdesign.one/privacy-policy/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/gossip-protocol</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./gossip-protocol.html#what-is-gossip-protocol">What Is Gossip Protocol?</a>
+<ul>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#centralized-state-management-service">Centralized State Management Service</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#peer-to-peer-state-management-service">Peer-To-Peer State Management Service</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol-explained">Gossip Protocol Explained</a>
+<ul>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#point-to-point-broadcast">Point-To-Point Broadcast</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#eager-reliable-broadcast">Eager Reliable Broadcast</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol">Gossip Protocol</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#types-of-gossipprotocol">Types of Gossip Protocol</a>
+<ul>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#anti-entropy-gossip-protocol">Anti-Entropy Gossip Protocol</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#rumor-mongering-gossip-protocol">Rumor-Mongering Gossip Protocol</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#aggregation-gossip-protocol">Aggregation Gossip Protocol</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#strategies-to-spread-a-message-through-gossipprotocol">Strategies to Spread a Message through Gossip Protocol</a>
+<ul>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#push-model">Push Model</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#pull-model">Pull Model</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#push-pull-model">Push-Pull Model</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol-performance">Gossip Protocol Performance</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol-properties">Gossip Protocol Properties</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-algorithm">Gossip Algorithm</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol-implementation">Gossip Protocol Implementation</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol-usecases">Gossip Protocol Use Cases</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol-advantages">Gossip Protocol Advantages</a>
+<ul>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#fault-tolerance">Fault Tolerance</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#robustness">Robustness</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#convergent-consistency">Convergent Consistency</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#decentralization">Decentralization</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#simplicity">Simplicity</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#integration-and-interoperability">Integration and Interoperability</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#bounded-load">Bounded Load</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#gossip-protocol-disadvantages">Gossip Protocol Disadvantages</a>
+<ul>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#eventually-consistent">Eventually Consistent</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#network-partition-unawareness">Network Partition Unawareness</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#bandwidth">Bandwidth</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#latency">Latency</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#debugging-andtesting">Debugging and Testing</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#scalability-1">Scalability</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#computational-error">Computational Error</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./gossip-protocol.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Gossip Protocol</h1><h2 class="single-subtitle">Broadcast Algorithm Distributed Systems</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-07-09">2023-07-09</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 4307 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 21 minutes </div>
+</div><div class="featured-image"><img alt="/gossip-protocol/gossip-protocol.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/gossip-protocol/gossip-protocol.webp, /gossip-protocol/gossip-protocol.webp 1.5x, /gossip-protocol/gossip-protocol.webp 2x" height="192" sizes="667px" src="../assets/images/img_0b0083e9bf3a.webp" title="scalable broadcast algorithm in distributed system" width="667"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on my research on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-gossip-protocol"><a class="header-mark offline-link" href="./gossip-protocol.html#what-is-gossip-protocol"></a>What Is Gossip Protocol?</h2>
+<p>The typical problems in a distributed system are the following <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>maintaining the system state (liveness of nodes)</li>
+<li>communication between nodes</li>
+</ul>
+<p>The potential solutions to these problems are as follows <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>centralized state management service</li>
+<li>peer-to-peer state management service</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="centralized-state-management-service"><a class="header-mark offline-link" href="./gossip-protocol.html#centralized-state-management-service"></a>Centralized State Management Service</h3>
+<p>A centralized state management service such as Apache Zookeeper can be configured as the <a class="offline-link" href="./what-is-service-discovery.html" rel="noopener noreffer">service discovery</a> to keep track of the state of every node in the system. Although this approach provides a strong <a class="offline-link" href="./consistency-patterns.html" rel="noopener noreffer">consistency</a> guarantee, the primary drawbacks are the state management service becomes a single point of failure and runs into <a class="offline-link" href="./micro-frontends.html" rel="noopener noreffer">scalability</a> problems for a large distributed system <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<h3 class="headerLink" id="peer-to-peer-state-management-service"><a class="header-mark offline-link" href="./gossip-protocol.html#peer-to-peer-state-management-service"></a>Peer-To-Peer State Management Service</h3>
+<p>The peer-to-peer state management approach is inclined towards high availability and eventual consistency. The gossip protocol algorithms can be used to implement peer-to-peer state management services with high scalability and improved resilience <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The <a href="https://newsletter.systemdesign.one/p/gossiping-protocol" rel="noopener noreferrer" target="_blank">gossip protocol</a> is also known as the <strong>epidemic protocol</strong> because the transmission of the messages is similar to the way how <a href="https://en.wikipedia.org/wiki/Epidemic" rel="noopener noreferrer" target="_blank">epidemics</a> spread. The concept of communication in gossip protocol is analogous to the spread of rumors among the office staff or the dissemination of information on a social media website <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./gossip-protocol.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>node: a server that provides functionality to other services</li>
+<li>fanout: number of nodes that receives a message from a particular node</li>
+<li>cycle: count of gossip rounds required to spread a particular message across the entire cluster of nodes</li>
+<li>API: a software intermediary that allows two applications or services to talk to each other</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./gossip-protocol.html#requirements"></a>Requirements</h2>
+<p>Design a distributed system communication protocol with the following characteristics:</p>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./gossip-protocol.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>support transmission of node metadata</li>
+<li>support transmission of application data</li>
+<li>simple to implement</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./gossip-protocol.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>highly available</li>
+<li>eventually consistent</li>
+<li>scalable</li>
+<li>reliable</li>
+<li>fault tolerant</li>
+<li>decentralized</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="gossip-protocol-explained"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol-explained"></a>Gossip Protocol Explained</h2>
+<p>The popular message broadcasting techniques in a distributed system are the following:</p>
+<ul>
+<li>point-to-point broadcast</li>
+<li>eager reliable broadcast</li>
+<li>gossip protocol</li>
+</ul>
+<h3 class="headerLink" id="point-to-point-broadcast"><a class="header-mark offline-link" href="./gossip-protocol.html#point-to-point-broadcast"></a>Point-To-Point Broadcast</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: The message is lost in a point-to-point broadcast when both the producer and consumer fails&lt;/h2&gt;" data-thumbnail="/gossip-protocol/point-to-point-broadcast.webp" href="https://systemdesign.one/gossip-protocol/point-to-point-broadcast.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: The message is lost in a point-to-point broadcast when both the producer and consumer fails">
+<img alt="Figure 1: The message is lost in a point-to-point broadcast when both the producer and consumer fails" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/gossip-protocol/point-to-point-broadcast.webp, /gossip-protocol/point-to-point-broadcast.webp 1.5x, /gossip-protocol/point-to-point-broadcast.webp 2x" height="413" sizes="683px" src="../assets/images/img_df0e26900ed5.webp" width="752"/>
+</a><figcaption class="image-caption">Figure 1: The message is lost in a point-to-point broadcast when both the producer and consumer fails</figcaption>
+</figure>
+<p>The producer sends a message directly to the consumers in a point-to-point broadcast. The retry mechanism on the producer and deduplication mechanism on the consumers makes the point-to-point broadcast reliable. The messages will be lost when the producer and the consumer fail simultaneously <sup id="fnref:5"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="eager-reliable-broadcast"><a class="header-mark offline-link" href="./gossip-protocol.html#eager-reliable-broadcast"></a>Eager Reliable Broadcast</h3>
+<p>Every node re-broadcasts the messages to every other node via reliable network links. This approach provides improved fault tolerance because messages are not lost when both the producer and the consumer fail simultaneously. The message will be re-broadcast by the remaining nodes. The caveats of eager reliable broadcast are the following <sup id="fnref:5"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>significant network bandwidth usage due to O(n²) messages being broadcast for n number of nodes</li>
+<li>sending node can become a bottleneck due to O(n) linear broadcast</li>
+<li>every node stores the list of all the nodes in the system causing increased storage costs</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="gossip-protocol"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol"></a>Gossip Protocol</h3>
+<p>The gossip protocol is a decentralized peer-to-peer communication technique to transmit messages in an enormous distributed system <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>. The key concept of gossip protocol is that every node periodically sends out a message to a subset of other random nodes <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. The entire system will receive the particular message eventually with a high probability <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:5" role="doc-noteref">5</a></sup>. In layman’s terms, the gossip protocol is a technique for nodes to build a global map through limited local interactions <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Gossip protocol visualization&lt;/h2&gt;" data-thumbnail="/gossip-protocol/gossip-protocol-visualization.webp" href="https://systemdesign.one/gossip-protocol/gossip-protocol-visualization.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Gossip protocol visualization">
+<img alt="Figure 2: Gossip protocol visualization" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/gossip-protocol/gossip-protocol-visualization.webp, /gossip-protocol/gossip-protocol-visualization.webp 1.5x, /gossip-protocol/gossip-protocol-visualization.webp 2x" height="377" sizes="683px" src="../assets/images/img_c7607a66fdce.webp" width="685"/>
+</a><figcaption class="image-caption">Figure 2: Gossip protocol visualization</figcaption>
+</figure>
+<p>The gossip protocol is built on a robust, scalable, and eventually consistent  algorithm. The gossip protocol is typically used to maintain the node membership list, achieve consensus, and  fault detection in a distributed system <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. In addition, additional information such as application-level data can be piggybacked on gossip messages <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The gossip protocol is reliable because a node failure can be overcome by the retransmission of a message by another node. First-in-first-out (<strong>FIFO</strong>) broadcast, causality broadcast, and total order broadcast can be implemented with gossip protocol <sup id="fnref:5"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The gossip protocol parameters such as cycle and fanout can be tuned to improve the probabilistic guarantees of the gossip protocol. The following tools offer a high-end simulation and visualization of the gossip protocol <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li><a href="https://www.serf.io/docs/internals/simulator.html" rel="noopener noreferrer" target="_blank">serf convergence simulator</a></li>
+<li><a href="https://flopezluis.github.io/gossip-simulator/" rel="noopener noreferrer" target="_blank">gossip simulator</a></li>
+</ul>
+<p>The following characteristics of the gossip protocol make it an optimal choice as the communication protocol in a large-scale distributed system <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>limits the number of messages transmitted by each node</li>
+<li>limits the bandwidth consumption to prevent the degradation of application performance</li>
+<li>tolerates network and node failures</li>
+</ul>
+<p>The gossip protocol can be used to keep nodes consistent only when the operations executed are commutative and serializability is not necessary. The <strong>tombstone</strong> is a special entry to invalidate the data entries that have a matching key without actual deletion of the data. The gossip protocol deletes the data from a node using a tombstone.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./gossip-protocol.html#further-system-design-learning-resources"></a>Further system design learning resources</h3>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="types-of-gossipprotocol"><a class="header-mark offline-link" href="./gossip-protocol.html#types-of-gossipprotocol"></a>Types of Gossip Protocol</h3>
+<p>The time required by the gossip protocol to propagate a message across the system and the network traffic generated in propagating a message must be taken into consideration while choosing the type of gossip protocol for a particular use case <sup id="fnref:9"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:9" role="doc-noteref">9</a></sup>. The gossip protocol can be broadly categorized into the following types <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ul>
+<li>anti-entropy model</li>
+<li>rumor-mongering model</li>
+<li>aggregation model</li>
+</ul>
+<h4 class="headerLink" id="anti-entropy-gossip-protocol"><a class="header-mark offline-link" href="./gossip-protocol.html#anti-entropy-gossip-protocol"></a>Anti-Entropy Gossip Protocol</h4>
+<p>The anti-entropy algorithm was introduced to reduce the entropy between replicas of a stateful service such as the database. The replicated data is compared and the difference between replicas are patched <sup id="fnref:9"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:9" role="doc-noteref">9</a></sup>. The node with the newest message shares it with other nodes in every gossip round <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>The anti-entropy model usually transfers the whole dataset resulting in unnecessary bandwidth usage. The techniques such as checksum, recent update list, and <a href="https://en.wikipedia.org/wiki/Merkle_tree" rel="noopener noreferrer" target="_blank">Merkle tree</a> can be used to identify the differences between nodes to avoid transmission of the entire dataset and reduce network bandwidth usage. The anti-entropy gossip protocol will send an unbounded number of messages without termination <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="rumor-mongering-gossip-protocol"><a class="header-mark offline-link" href="./gossip-protocol.html#rumor-mongering-gossip-protocol"></a>Rumor-Mongering Gossip Protocol</h4>
+<p>The rumor-mongering protocol is also known as the <strong>dissemination protocol</strong>. The rumor-mongering cycle occurs relatively more frequently than anti-entropy cycles and floods the network with the worst-case load <sup id="fnref:9"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:9" role="doc-noteref">9</a></sup>. The rumor-mongering model utilizes fewer resources such as network bandwidth as only the latest updates are transferred across nodes <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>A message will be marked as removed after a few rounds of communication to limit the number of messages. There is usually a high probability that a message will reach all the nodes <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="aggregation-gossip-protocol"><a class="header-mark offline-link" href="./gossip-protocol.html#aggregation-gossip-protocol"></a>Aggregation Gossip Protocol</h4>
+<p>The aggregation gossip protocol computes a system-wide aggregate by sampling information across every node and combining the values to generate a system-wide value <sup id="fnref:9"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:9" role="doc-noteref">9</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="strategies-to-spread-a-message-through-gossipprotocol"><a class="header-mark offline-link" href="./gossip-protocol.html#strategies-to-spread-a-message-through-gossipprotocol"></a>Strategies to Spread a Message through Gossip Protocol</h3>
+<p>The gossip protocol is an optimal framework to build a highly available service. The strategy to spread a message through gossip protocol should be chosen based on the service requirements and available network conditions. There are tradeoffs in terms of bandwidth, latency, and reliability with each strategy to spread a message. The strategies to spread a message apply to both anti-entropy and rumor-mongering models. The different strategies to spread a message with the gossip protocol are as follows <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>push model</li>
+<li>pull model</li>
+<li>push-pull model</li>
+</ul>
+<h4 class="headerLink" id="push-model"><a class="header-mark offline-link" href="./gossip-protocol.html#push-model"></a>Push Model</h4>
+<p>The push model is efficient when there are only a few update messages due to the traffic overhead. The node with the latest message sends the message to a random subset of other nodes in the push model <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<h4 class="headerLink" id="pull-model"><a class="header-mark offline-link" href="./gossip-protocol.html#pull-model"></a>Pull Model</h4>
+<p>Every node will actively poll a random subset of nodes for any update messages in the pull model. This approach is efficient when there are many update messages because it is highly likely to find a node with the latest update message <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<h4 class="headerLink" id="push-pull-model"><a class="header-mark offline-link" href="./gossip-protocol.html#push-pull-model"></a>Push-Pull Model</h4>
+<p>The push-pull model is optimal to disseminate update messages quickly and reliably <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. The node can push a new update message and the node can also poll for new update messages. The push approach is efficient during the initial phase when there are only a very few nodes with update messages. The pull approach is efficient during the final phase when there are numerous nodes with many update messages <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="gossip-protocol-performance"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol-performance"></a>Gossip Protocol Performance</h3>
+<p>The number of nodes that will receive the message from a particular node is known as the <strong>fanout</strong>. The count of gossip rounds required to spread a message across the entire cluster is known as the <strong>cycle</strong> <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>Cycles necessary to spread a message across the cluster<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">O(log n) to the base of fanout, where n = total number of nodes</div>
+</div>
+</div>
+<p>For instance, it takes approximately 15 gossip rounds to propagate a message across 26,000 nodes. The gossip interval can be set to a value as low as 10 ms to propagate a message across a big data center in roughly 3 seconds. The propagation of a message in the gossip protocol should automatically age out to reduce the unnecessary load <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>. The performance of a gossip protocol implementation can be measured with the following metrics <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>residue: number of remaining nodes that haven’t received the messages should be minimum</li>
+<li>traffic: average number of messages sent between nodes should be minimum</li>
+<li>convergence: every node should receive the message as quickly as possible</li>
+<li>time average: average time taken to send the message to every node should be low</li>
+<li>time last: the time taken for the last node to receive the message should be low</li>
+</ul>
+<p>A case study showed that a system with 128 nodes consumed less than 2 percent of CPU and less than 60 KBps of bandwidth to run gossip protocol <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="gossip-protocol-properties"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol-properties"></a>Gossip Protocol Properties</h3>
+<p>There is no formal way to define gossip protocol. In general, the gossip protocol is expected to satisfy the following properties <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>node selection must be random to perform a fanout</li>
+<li>only local information is available to every node and the nodes are oblivious to the state of the cluster</li>
+<li>communication between nodes involves periodic, pairwise, interprocess interactions</li>
+<li>bounded size transmission capacity per gossip round</li>
+<li>every node deploys the same gossip protocol</li>
+<li>unreliable network paths between nodes are assumed</li>
+<li>node interaction frequency is low</li>
+<li>node interactions result in a state exchange</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="gossip-algorithm"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-algorithm"></a>Gossip Algorithm</h2>
+<p>The high-level overview of the gossip algorithm is the following <sup id="fnref:10"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:10" role="doc-noteref">10</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ol>
+<li>every node maintains a list of the subset of nodes and their metadata</li>
+<li>gossip to a random live peer node’s endpoint periodically</li>
+<li>every node inspects the received gossip message to merge the highest version number to the local dataset</li>
+</ol>
+<p>The heartbeat counter of a node is incremented whenever a particular node participates in the gossip exchange. The node is labeled healthy when the heartbeat counter keeps incrementing. On the other hand, the node is considered to be unhealthy when the heartbeat counter has not changed for an extended period due to a network partition or node failure <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>. The following are the different criteria for peer node selection in the gossip protocol <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>utilize library offered by programming languages such as java.util.random</li>
+<li>interact with the least contacted node</li>
+<li>enforce <a href="https://dl.acm.org/doi/10.1109/TPDS.2006.85" rel="noopener noreferrer" target="_blank">network-topology-aware</a> interaction</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="gossip-protocol-implementation"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol-implementation"></a>Gossip Protocol Implementation</h2>
+<p>The gossip protocol transports messages over User Datagram Protocol (UDP) or Transmission Control Protocol (<strong>TCP</strong>) with a configurable but fixed fanout and interval <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>. The <strong>peer sampling service</strong> is used by the gossip protocol to identify the peer nodes for gossip message exchange. The peer sampling service uses a randomized algorithm for the selection of a peer node. The Application Programming Interface (<strong>API</strong>) of the peer sampling service should provide the following endpoints <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>/gossip/init: returns the list of nodes known to a particular node at startup</li>
+<li>/gossip/get-peer: returns the address (IP address and port number) of an independent peer node</li>
+</ul>
+<p>The workflow of the peer sampling service execution is as follows <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ol>
+<li>initialize every node with a partial view of the system (a list with the subset of nodes)</li>
+<li>merge the node’s view with the peer node’s view on the gossip exchange</li>
+</ol>
+<p>Put another way, every node maintains a small local membership table with a partial view of the system and periodically refreshes the table through gossip messages. The gossip protocol can leverage probabilistic distribution for selecting a peer node to reduce duplicate message transmission to the same node <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>The application state can be transferred as key-value pairs via the gossip protocol. The most recent value must be transferred when multiple changes are performed to the same key by a node. The API provided by the gossip protocol to orchestrate application state exchange is the following <sup id="fnref:10"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ul>
+<li>/gossip/on-join</li>
+<li>/gossip/on-alive</li>
+<li>/gossip/on-dead</li>
+<li>/gossip/on-change</li>
+</ul>
+<p>The <strong>seed nodes</strong> are fully functional nodes that are based on static configuration. Every node in the system must be aware of the seed nodes. The gossip system interacts with the seed nodes to prevent logical divisions <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>. The following is the high-level workflow when a node receives a gossip message with the node metadata of a peer node <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ol>
+<li>compares the incoming gossip message to identify the missing values on the local node’s dataset</li>
+<li>compare the incoming gossip message to identify the missing values on the peer node’s dataset</li>
+<li>higher version value is chosen when the node already contains the values present in the incoming gossip message</li>
+<li>append the missing values in the local node’s dataset</li>
+<li>return the missing values on the peer node’s dataset in the response</li>
+<li>update the peer node’s dataset with the received response</li>
+</ol>
+<p>It is typical to transfer the entire node metadata through the gossip protocol on a node startup. An in-memory version number can be maintained by each node to send only incremental updates of the node metadata through the gossip protocol.</p>
+<p>The <a href="https://martinfowler.com/articles/patterns-of-distributed-systems/generation.html" rel="noopener noreferrer" target="_blank">generation clock</a> is a monotonically increasing number indicating the generation of the server. The generation clock is incremented whenever the node restarts. The version number guarantees the ordering and versioning of the application state. The version number can only be incremented <sup id="fnref:10"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:10" role="doc-noteref">10</a></sup>. The generation clock can be used along with the version number to detect node metadata changes correctly on node restarts <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<p>The <strong>gossiper timer</strong> is a component of the gossip protocol that will ensure every node eventually contains the crucial metadata about peer nodes, including the nodes that are behind a network partition. Every node includes a heartbeat associated with it. The heartbeat state consists of the generation and version number. The application state consists of key-value pairs representing the node state and a version number <sup id="fnref:10"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<p>A node initiating a gossip exchange sends a <strong>gossip digest synchronization</strong> message that consists of a list of <strong>gossip digests</strong>. The gossip digest consists of an endpoint address, a generation number, and a version number. The gossip digest acknowledgment message consists of a gossip digest list and an endpoint state list. The sample schema for the gossip digest is the following <sup id="fnref:10"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='EndPointState: 10.0.1.42
+  HeartBeatState: generation: 1259904231, version: 761
+  ApplicationState: "average-load": 2.4, generation: 1659909691, version: 42
+  ApplicationState: "bootstrapping": pxLpassF9XD8Kymj, generation: 1259909615, version: 90
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">EndPointState</span><span class="o">:</span> <span class="mf">10.0</span><span class="p">.</span><span class="mf">1.42</span>
+  <span class="nx">HeartBeatState</span><span class="o">:</span> <span class="nx">generation</span><span class="o">:</span> <span class="mi">1259904231</span><span class="p">,</span> <span class="nx">version</span><span class="o">:</span> <span class="mi">761</span>
+  <span class="nx">ApplicationState</span><span class="o">:</span> <span class="s2">"average-load"</span><span class="o">:</span> <span class="mf">2.4</span><span class="p">,</span> <span class="nx">generation</span><span class="o">:</span> <span class="mi">1659909691</span><span class="p">,</span> <span class="nx">version</span><span class="o">:</span> <span class="mi">42</span>
+  <span class="nx">ApplicationState</span><span class="o">:</span> <span class="s2">"bootstrapping"</span><span class="o">:</span> <span class="nx">pxLpassF9XD8Kymj</span><span class="p">,</span> <span class="nx">generation</span><span class="o">:</span> <span class="mi">1259909615</span><span class="p">,</span> <span class="nx">version</span><span class="o">:</span> <span class="mi">90</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./gossip-protocol.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="gossip-protocol-usecases"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol-usecases"></a>Gossip Protocol Use Cases</h2>
+<p>The gossip protocol is used in a multitude of applications where eventual consistency is favored. The popular applications of the gossip protocol are as follows <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>database replication</li>
+<li>information dissemination</li>
+<li>maintaining cluster membership</li>
+<li>failure detection</li>
+<li>generate aggregations (calculate average, maximum, sum)</li>
+<li>generate <a href="https://en.wikipedia.org/wiki/Overlay_network" rel="noopener noreferrer" target="_blank">overlay networks</a></li>
+<li>leader election</li>
+</ul>
+<p>The gossip protocol can be used to detect the failure of a node in a distributed system with high probability. The failure detection of nodes can save resources such as CPU, bandwidth, and  queue space. In a distributed system, it is not sufficient to assert a node failure when a single client cannot interact with the particular node because there might be an occurrence of network partition or client failure <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>. It can be concluded with certainty the failure of a particular node when several nodes (<strong>clients</strong>) confirm the liveness of the particular node through gossip protocol <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>The gossip protocol is significantly more reliable for data exchange and command and control than through TCP connections. The gossip protocol enables abstracting communication about node and subsystem properties out of the application logic <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>. The node statistics such as the average load and free memory can be transmitted in gossip messages to improve the local decision-making on fanout.</p>
+<p>The subsystem information such as queue depth, key metadata such as configuration changes, and even request-response can be transmitted through the gossip protocol. The aggregation of node update messages via gossip protocol allows sending data in a single chunk instead of multiple small messages to reduce the communication overhead <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>The messages can be routed across the cluster optimally by identifying the liveness of nodes <sup id="fnref:12"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:12" role="doc-noteref">12</a></sup>. The decision-making at the local node level without involving a centralized service is the key to scaling the gossip protocol <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>. The messages can be versioned with a vector clock to ignore the older message versions by the node <sup id="fnref:12"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. The real-world use cases of the gossip protocol are the following <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:12"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li><a href="https://cassandra.apache.org/_/index.html" rel="noopener noreferrer" target="_blank">Apache Cassandra</a> employs the gossip protocol to maintain cluster membership, transfer node metadata (token assignment), repair unread data using Merkle trees, and node failure detection</li>
+<li><a href="https://www.consul.io/" rel="noopener noreferrer" target="_blank">Consul</a> utilizes the <a href="https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/SWIM.pdf" rel="noopener noreferrer" target="_blank">swim-gossip protocol</a> variant for group membership, leader election, and failure detection of consul agents</li>
+<li><a href="https://www.cockroachlabs.com/docs/stable/" rel="noopener noreferrer" target="_blank">CockroachDB</a> operates the gossip protocol to propagate the node metadata</li>
+<li><a href="https://hyperledger-fabric.readthedocs.io/en/release-2.2/gossip.html" rel="noopener noreferrer" target="_blank">Hyperledger Fabric</a> blockchain uses the gossip protocol for group membership and ledger metadata transfer</li>
+<li><a href="https://riak.com/" rel="noopener noreferrer" target="_blank">Riak</a> utilizes the gossip protocol to transmit <a class="offline-link" href="./consistent-hashing-explained.html" rel="noopener noreffer">consistent hash ring</a> state and node metadata around the cluster</li>
+<li><a href="https://aws.amazon.com/s3/" rel="noopener noreferrer" target="_blank">Amazon S3</a> uses the gossip protocol to spread server state across the system</li>
+<li><a class="offline-link" href="../white-papers/amazon-dynamo-architecture.html" rel="noopener noreffer">Amazon Dynamo</a> employs the gossip protocol for failure detection, and keeping track of node membership</li>
+<li><a href="https://redis.io/" rel="noopener noreferrer" target="_blank">Redis</a> cluster uses the gossip protocol to propagate the node metadata</li>
+<li>Bitcoin uses the gossip protocol to spread the nonce value across the mining nodes</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="gossip-protocol-advantages"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol-advantages"></a>Gossip Protocol Advantages</h2>
+<p>The advantages of gossip protocol are the following <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li>scalable</li>
+<li>fault tolerant</li>
+<li>robust</li>
+<li>convergent consistency</li>
+<li>decentralized</li>
+<li>simplicity</li>
+<li>integration and interoperability</li>
+<li>bounded load</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./gossip-protocol.html#scalability"></a>Scalability</h3>
+<p>Scalability is the ability of the system to handle the increasing load without degradation of the performance <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. The gossip protocol cycle requires logarithmic time to achieve convergence. In addition, every node interacts with only a fixed number of nodes and sends only a fixed number of messages independent of the  number of nodes in the system. A node doesn’t wait for an acknowledgment to improve latency <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="fault-tolerance"><a class="header-mark offline-link" href="./gossip-protocol.html#fault-tolerance"></a>Fault Tolerance</h3>
+<p>Fault tolerance is the ability of the system to remain functional in the occurrence of failures such as node crashes, network partitions, or message loss. The distributed system employing the gossip protocol is fault tolerant due to tolerance towards unreliable networks. The redundancy, parallelism, and randomness offered by the gossip protocol improve the fault tolerance of the system <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>Furthermore, the symmetric and decentralized nature of the nodes strengthens the fault tolerance of the gossip protocol <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>. The same message is usually transmitted several times across multiple nodes. Put another way, there are many routes for the message flow between the source and destination. So, a node failure is overcome via message transmission through another node <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="robustness"><a class="header-mark offline-link" href="./gossip-protocol.html#robustness"></a>Robustness</h3>
+<p>The symmetric nature of the nodes participating in the gossip protocol improves the robustness of the system <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>. A node failure will not disrupt the system quality. The gossip protocol is also robust against transient network partitions. However, the gossip protocol is not robust against a malfunctioning node or a malicious gossip message unless the data is self-verified <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>A score-based reputation system for nodes can be used to prevent gossip system corruption by malicious nodes. Appropriate mechanisms and policies such as encryption, authentication, and authorization must be implemented to enforce the privacy and security of the gossip system <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="convergent-consistency"><a class="header-mark offline-link" href="./gossip-protocol.html#convergent-consistency"></a>Convergent Consistency</h3>
+<p>Consistency is the technique of ensuring the same state view across every node in the system. The different consistency levels  such as strong, eventual, causal, and probabilistic consistency have different implications on the performance, availability, and correctness of the system <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. The gossip protocol converges to a consistent state in logarithmic time complexity through the exponential spread of data <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="decentralization"><a class="header-mark offline-link" href="./gossip-protocol.html#decentralization"></a>Decentralization</h3>
+<p>The gossip protocol offers an extremely decentralized model of information discovery through peer-to-peer communication <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="simplicity"><a class="header-mark offline-link" href="./gossip-protocol.html#simplicity"></a>Simplicity</h3>
+<p>Most variants of the gossip protocol can be implemented with very little code and low complexity <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>. The symmetric nature of the nodes makes it trivial to execute the gossip protocol <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="integration-and-interoperability"><a class="header-mark offline-link" href="./gossip-protocol.html#integration-and-interoperability"></a>Integration and Interoperability</h3>
+<p>The gossip protocol can be integrated and interoperated with distributed system components such as the database, <a class="offline-link" href="./caching-patterns.html" rel="noopener noreffer">cache</a>, and queue. Common interfaces, data formats, and protocols must be defined to implement the gossip protocol across different distributed system components <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="bounded-load"><a class="header-mark offline-link" href="./gossip-protocol.html#bounded-load"></a>Bounded Load</h3>
+<p>The classic distributed system protocols usually generate high surge loads that might overload individual distributed system components. The gossip protocol will produce only a strictly bounded worst-case load on individual distributed system components to avoid the disruption of service quality. The peer node selection in the gossip protocol can be tuned to reduce the load on network links. In practice, the load generated by the gossip protocol is not only bounded but also negligible compared to the available bandwidth <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="gossip-protocol-disadvantages"><a class="header-mark offline-link" href="./gossip-protocol.html#gossip-protocol-disadvantages"></a>Gossip Protocol Disadvantages</h2>
+<p>The disadvantages of the gossip protocol are the following <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>:</p>
+<ul>
+<li>eventual consistency</li>
+<li>unawareness of network partitions</li>
+<li>relatively high bandwidth consumption</li>
+<li>increased latency</li>
+<li>difficulty in debugging and testing</li>
+<li>membership protocol is not scalable</li>
+<li>prone to computational errors</li>
+</ul>
+<h3 class="headerLink" id="eventually-consistent"><a class="header-mark offline-link" href="./gossip-protocol.html#eventually-consistent"></a>Eventually Consistent</h3>
+<p>The gossip protocol is inherently eventually consistent <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>. The gossip protocol is relatively slower compared to multicast <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>. There is also an overhead associated with gossip messages and the gossip behavior depends on the network topology and node heterogeneity <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. Therefore, there will be some delay to recognize a new node or a node failure by the cluster <sup id="fnref:8"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="network-partition-unawareness"><a class="header-mark offline-link" href="./gossip-protocol.html#network-partition-unawareness"></a>Network Partition Unawareness</h3>
+<p>When a network partition occurs, the nodes in the sub-partition will still gossip with each other. Hence, the gossip protocol is unaware of network partitions and might significantly delay message propagation <sup id="fnref:1"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="bandwidth"><a class="header-mark offline-link" href="./gossip-protocol.html#bandwidth"></a>Bandwidth</h3>
+<p>The gossip protocol is not known for efficiency as the same message might be retransmitted to the same node multiple times consuming unnecessary bandwidth <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>. Although the bandwidth usage by the gossip protocol is limited due to bounded message size and periodic exchange of messages, the effective fanout by gossip exchange might degrade when the amount of information that a node should gossip exceeds the bounded message size <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>The saturation point of the gossip protocol depends on different parameters such as the rate of generation of messages, message size, fanout, and the type of gossip protocol <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="latency"><a class="header-mark offline-link" href="./gossip-protocol.html#latency"></a>Latency</h3>
+<p>The usage of the gossip protocol results in increased latency because the node must wait for the next gossip cycle (interval) to transmit the message <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>. The message doesn’t trigger the gossip exchange but the gossip protocol interval timer does. The time complexity required to spread the message across the system is logarithmic <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="debugging-andtesting"><a class="header-mark offline-link" href="./gossip-protocol.html#debugging-andtesting"></a>Debugging and Testing</h3>
+<p>Debugging is identifying and fixing the failures that cause the gossip protocol to deviate from the expected behavior. Testing is the ability to verify whether the gossip protocol meets functional and non-functional requirements such as performance, reliability, and security <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The inherent non-determinism and distributed nature of the gossip protocol make it hard to debug and reproduce the failures <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>. Tools and techniques such as simulation, emulation, logging, tracing, monitoring, and visualization can be used to test and debug the gossip system <sup id="fnref:6"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability-1"><a class="header-mark offline-link" href="./gossip-protocol.html#scalability-1"></a>Scalability</h3>
+<p>Most variants of the gossip protocol rely on a non-scalable membership protocol <sup id="fnref:7"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="computational-error"><a class="header-mark offline-link" href="./gossip-protocol.html#computational-error"></a>Computational Error</h3>
+<p>The gossip protocol is inclined to computational errors due to malicious nodes. The nodes should implement a self-correcting mechanism because the robustness of the gossip protocol is limited to certain classes of failures <sup id="fnref:11"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:11" role="doc-noteref">11</a></sup>. Nevertheless, the gossip protocol is extremely reliable, and outcomes with a probability of one are typical <sup id="fnref:4"><a class="footnote-ref offline-link" href="./gossip-protocol.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./gossip-protocol.html#summary"></a>Summary</h2>
+<p>Gossiping in a distributed system is a boon while gossiping in the meat world is a curse. The gossip protocol is employed in distributed systems such as Amazon Dynamo and <a class="offline-link" href="../case-studies/distributed-counter-system-design.html" rel="noopener noreffer">Distributed Counter</a>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./gossip-protocol.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./gossip-protocol.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./gossip-protocol.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Prateek Gupta, <a href="https://medium.com/nerd-for-tech/gossip-protocol-in-distributed-systems-e2b0665c7135" rel="noopener noreferrer" target="_blank">Gossip Protocol in distributed systems</a> (2022), medium.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2011/11/14/using-gossip-protocols-for-failure-detection-monitoring-mess.html" rel="noopener noreferrer" target="_blank">Using Gossip Protocols For Failure Detection, Monitoring, Messaging And Other Good Things</a> (2011), highscalability.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Bhumika Dutta, <a href="https://www.analyticssteps.com/blogs/gentle-introduction-gossip-protocol" rel="noopener noreferrer" target="_blank">A Gentle Introduction to Gossip Protocol</a> (2022), analyticssteps.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Felix Lopez, <a href="https://managementfromscratch.wordpress.com/2016/04/01/introduction-to-gossip/" rel="noopener noreferrer" target="_blank">Introduction to Gossip</a> (2016), managementfromscratch.wordpress.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Martin Kleppmann, <a href="https://www.youtube.com/watch?v=77qpCahU3fo" rel="noopener noreferrer" target="_blank">Distributed Systems 4.3: Broadcast algorithms</a> (2021), YouTube.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p><a href="https://www.linkedin.com/advice/0/how-do-you-integrate-gossip-system-other-distributed" rel="noopener noreferrer" target="_blank">How do you integrate a gossip system with other distributed components and services?</a>, Distributed Systems (LinkedIn.com) <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Gabriel Acuna  et al., <a href="https://www.youtube.com/watch?v=qJpPjzg44R8" rel="noopener noreferrer" target="_blank">Parallel &amp; Distributed Computing - Gossip Protocol</a> (2020), YouTube.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Unmesh Joshi, <a href="https://martinfowler.com/articles/patterns-of-distributed-systems/gossip-dissemination.html" rel="noopener noreferrer" target="_blank">Gossip Dissemination</a> (2021), martinfowler.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p>Alan Demers et al., <a href="https://www1.icsi.berkeley.edu/pubs/networking/ICSI_epidemicalgorithmsfor87.pdf" rel="noopener noreferrer" target="_blank">Epidemic Algorithms for Replicated Database Maintainance</a> (1987), berkeley.edu <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p><a href="https://cwiki.apache.org/confluence/x/9zoyBw" rel="noopener noreferrer" target="_blank">Architecture Gossip</a>, Cassandra <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Ken Birman, <a href="https://www.cs.cornell.edu/projects/Quicksilver/public_pdfs/2007PromiseAndLimitations.pdf" rel="noopener noreferrer" target="_blank">The Promise, and Limitations, of Gossip Protocols</a> (2007), cornell.edu <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p>Kumar Chandrakant, <a href="https://www.baeldung.com/cs/distributed-systems-guide" rel="noopener noreferrer" target="_blank">Fundamentals of Distributed Systems</a> (2023), baeldung.com <a class="footnote-backref offline-link" href="./gossip-protocol.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-07-10</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Gossip Protocol" data-url="https://systemdesign.one/gossip-protocol/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/gossip-protocol/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/gossip-protocol/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Gossip Protocol" data-url="https://systemdesign.one/gossip-protocol/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="scalable broadcast algorithm in distributed system" data-image="gossip-protocol/gossip-protocol.webp" data-sharer="pinterest" data-url="https://systemdesign.one/gossip-protocol/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="scalable broadcast algorithm in distributed system" data-sharer="tumblr" data-title="Gossip Protocol" data-url="https://systemdesign.one/gossip-protocol/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Gossip Protocol" data-url="https://systemdesign.one/gossip-protocol/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/gossip-protocol/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="scalable broadcast algorithm in distributed system" data-image="gossip-protocol/gossip-protocol.webp" data-sharer="vk" data-title="Gossip Protocol" data-url="https://systemdesign.one/gossip-protocol/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="./what-is-service-discovery.html" rel="prev" title="What Is Service Discovery?"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>What Is Service Discovery?</a>
+<a class="next" href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank" title="Privacy Policy">Privacy Policy<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./gossip-protocol.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./gossip-protocol.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

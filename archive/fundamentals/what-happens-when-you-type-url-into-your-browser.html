@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>What Happens When You Type a URL Into Your Browser? - System Design</title><meta content="1. DNS resolution 2. TCP three-way handshake 3. HTTPS upgrade 4. HTTP Request/Response 5. Browser rendering the response" name="Description"/><meta content="What Happens When You Type a URL Into Your Browser?" property="og:title"/>
+<meta content="1. DNS resolution 2. TCP three-way handshake 3. HTTPS upgrade 4. HTTP Request/Response 5. Browser rendering the response" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" property="og:url"/><meta content="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2022-11-20T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-07-03T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp" name="twitter:image"/>
+<meta content="What Happens When You Type a URL Into Your Browser?" name="twitter:title"/>
+<meta content="1. DNS resolution 2. TCP three-way handshake 3. HTTPS upgrade 4. HTTP Request/Response 5. Browser rendering the response" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" rel="canonical"/><link href="https://systemdesign.one/knowledge-test-what-happens-when-you-type-a-url-into-your-browser/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/what-happens-when-you-type-url-into-your-browser</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#what-happens-when-you-type-amazon-com-or-www-google-com-in-the-browser">What happens when you type amazon com or www google com in the browser?</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#introduction">Introduction</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#what-is-domain-name-resolution">What is domain name resolution?</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#tcp-three-way-handshake">TCP three-way handshake</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#https-upgrade">HTTPS Upgrade</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#http-requestresponse">HTTP Request/Response</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#browser-rendering-the-response-from-the-server">Browser rendering the response from the server</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#questions-and-solutions">Questions and Solutions</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">What Happens When You Type a URL Into Your Browser?</h1><h2 class="single-subtitle">How the Internet Works</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2022-11-20">2022-11-20</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 2375 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 12 minutes </div>
+</div><div class="featured-image"><img alt="/what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp, /what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp 2x" height="484" sizes="699px" src="../assets/images/img_86213afb2955.webp" title="1. DNS resolution 2. TCP three-way handshake 3. HTTPS upgrade 4. HTTP Request/Response 5. Browser rendering the response" width="800"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+<li><em>Product managers</em></li>
+<li><em>Marketing team</em></li>
+<li><em>Sales team</em></li>
+</ul>
+<p><em>There are no prerequisites to reading this article. I assume that you have used a web browser to navigate across the internet.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<h2 class="headerLink" id="what-happens-when-you-type-amazon-com-or-www-google-com-in-the-browser"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#what-happens-when-you-type-amazon-com-or-www-google-com-in-the-browser"></a>What happens when you type amazon com or www google com in the browser?</h2>
+<p>At a high level, the <a href="https://newsletter.systemdesign.one/p/what-happens-when-you-type-google-com-in-browser" rel="noopener noreferrer" target="_blank">following operations</a> happen in the background when you type a URL into your browser and press Enter:</p>
+<ol>
+<li>DNS resolution</li>
+<li>TCP three-way handshake</li>
+<li>HTTPS upgrade</li>
+<li>HTTP Request/Response</li>
+<li>Browser rendering the response from the server</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be useful for you:</p>
+<ul>
+<li>DNS: data store that contains the mapping from domain name to IP address</li>
+<li>HTTP: standard application-level protocol used to exchange files on the internet</li>
+<li>HTTPS: secure (encrypted) version of HTTP</li>
+<li>TCP: standard that defines how to establish and maintain a network conversation between a client and a server</li>
+<li>Client: web browser or a mobile device that lets you perform different actions on the internet</li>
+<li>Server: a computer that stores files and information in the form of a website</li>
+<li>URL: web address to identify a web resource on the internet</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="introduction"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#introduction"></a>Introduction</h2>
+<p>When you type a Uniform Resource Locator (<a href="https://en.wikipedia.org/wiki/URL" rel="noopener noreferrer" target="_blank">URL</a>) into the browser and press Enter, a multitude of actions is executed in the background.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: HTTP high-level workflow&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/HTTP-high-level-workflow.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/HTTP-high-level-workflow.webp" rel="noopener noreferrer" target="_blank" title="HTTP high-level workflow">
+<img alt="HTTP high-level workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/HTTP-high-level-workflow.webp, /what-happens-when-you-type-url-into-your-browser/HTTP-high-level-workflow.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/HTTP-high-level-workflow.webp 2x" height="526" sizes="683px" src="../assets/images/img_8082f9f21dc9.webp" width="1210"/>
+</a><figcaption class="image-caption">Figure 1: HTTP high-level workflow</figcaption>
+</figure>
+<p>The browser (<strong>client</strong>) must find the Internet protocol (<a href="https://en.wikipedia.org/wiki/IP_address" rel="noopener noreferrer" target="_blank">IP</a>) address of the server that hosts the website. The client subsequently requests the IP address of the server to transfer or retrieve data. When the client enters a shortened URL (created using a URL shortener) into the browser there is an additional step of URL redirection before transferring data between the client and the server.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-domain-name-resolution"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#what-is-domain-name-resolution"></a>What is domain name resolution?</h2>
+<p>Domain Name System (<a href="https://en.wikipedia.org/wiki/Domain_Name_System" rel="noopener noreferrer" target="_blank">DNS</a>) is a data store that stores the mapping from a domain name (such as google.com) to its IP address (142.250.185.78). You could compare DNS to an address book or a telephone book<sup id="fnref:1"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>You need a <a href="https://en.wikipedia.org/wiki/Domain_name" rel="noopener noreferrer" target="_blank">domain name</a> (instead of using an IP address directly) because it’s trivial to remember domain names for a human. Each server (for example, google.com) should have a unique IP address on the internet. The DNS lets you find the IP address of the specific server on the internet using its domain name.</p>
+<p>The domain name space (<strong>DNS hierarchy</strong>) is an inverted tree structure. The DNS hierarchy has a single domain at the top level known as the root domain.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: DNS hierarchy structure&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/dns-hierarchy.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/dns-hierarchy.webp" rel="noopener noreferrer" target="_blank" title="DNS hierarchy structure">
+<img alt="DNS hierarchy structure" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/dns-hierarchy.webp, /what-happens-when-you-type-url-into-your-browser/dns-hierarchy.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/dns-hierarchy.webp 2x" height="820" sizes="683px" src="../assets/images/img_8e99e2ab3c35.webp" width="1543"/>
+</a><figcaption class="image-caption">Figure 2: DNS hierarchy structure</figcaption>
+</figure>
+<p>The DNS resolution starts at the root domain, TLD, and works its way down to the second-level domain. The DNS resolution might traverse through multiple third-level domains until the hostname of the website resolves to an IP address.</p>
+<p>A URL consists of the following parts<sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>protocol (scheme)</li>
+<li>subdomain</li>
+<li>domain (second-level)</li>
+<li>top-level domain</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Basic URL structure&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp" rel="noopener noreferrer" target="_blank" title="Basic URL structure">
+<img alt="Basic URL structure" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp, /what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp 2x" height="463" sizes="683px" src="../assets/images/img_65d381d1dacb.webp" width="1433"/>
+</a><figcaption class="image-caption">Figure 3: Basic URL structure</figcaption>
+</figure>
+<p>The protocol section of the URL informs the web server which protocol to use on accessing a website. The subdomain indicates the services offered by the website such as maps or mail. The second-level domain indicates the name of the website. The top-level domain indicates the type of entity the organization registers on the internet.</p>
+<p>The DNS resolution is a sequential process. The subsequent steps of DNS resolution get executed only if the cache in the former step does not have the relevant DNS entry.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: How does DNS resolution work?&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/how-does-dns-resolution-work.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/how-does-dns-resolution-work.webp" rel="noopener noreferrer" target="_blank" title="How does DNS resolution work?">
+<img alt="How does DNS resolution work?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/how-does-dns-resolution-work.webp, /what-happens-when-you-type-url-into-your-browser/how-does-dns-resolution-work.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/how-does-dns-resolution-work.webp 2x" height="931" sizes="683px" src="../assets/images/img_2387d855f9f2.webp" width="2253"/>
+</a><figcaption class="image-caption">Figure 4: How does DNS resolution work?</figcaption>
+</figure>
+<p>The following operations get executed in sequential order for DNS resolution:</p>
+<ol>
+<li>The browser (<strong>client</strong>) checks if the hostname to IP address mapping exists in the local cache of the client.</li>
+<li>If the last step failed, the client checks the Operating System (<a href="https://en.wikipedia.org/wiki/Operating_system" rel="noopener noreferrer" target="_blank">OS</a>) local cache by executing a system call (<a href="https://en.wikipedia.org/wiki/System_call#:~:text=In%20computing%2C%20a%20system%20call,on%20which%20it%20is%20executed." rel="noopener noreferrer" target="_blank">syscall</a>).</li>
+<li>If the last step failed, the client makes a DNS request to the Gateway/Router and checks the local cache of the Router.</li>
+<li>If the last step failed, the router forwards the request to Internet Service Provider (<a href="https://en.wikipedia.org/wiki/Internet_service_provider" rel="noopener noreferrer" target="_blank">ISP</a>) and checks the DNS cache of the ISP.</li>
+<li>If the last step fails, the DNS <a href="https://en.wikipedia.org/wiki/Domain_Name_System#DNS_resolvers" rel="noopener noreferrer" target="_blank">resolver</a> queries the root servers (there are 13 root servers with replicas worldwide).</li>
+<li>DNS resolver queries Top Level Domain (TLD) servers such as .com, or .org.</li>
+<li>DNS resolver queries Authoritative name servers such as google.com.</li>
+<li>Optionally, the DNS resolver queries Authoritative subdomain servers such as maps.google.com depending on your query.</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Recursive DNS lookup&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/recursive-dns-lookup.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/recursive-dns-lookup.webp" rel="noopener noreferrer" target="_blank" title="Recursive DNS lookup">
+<img alt="Recursive DNS lookup" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/recursive-dns-lookup.webp, /what-happens-when-you-type-url-into-your-browser/recursive-dns-lookup.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/recursive-dns-lookup.webp 2x" height="841" sizes="683px" src="../assets/images/img_cf7d584318ea.webp" width="1874"/>
+</a><figcaption class="image-caption">Figure 5: Recursive DNS lookup</figcaption>
+</figure>
+<p>Once the DNS query is resolved, the intermediate components in the DNS resolution process would cache the result with a Time-to-live (TTL) expiry time limit. If you change the IP address of a website, the client should wait until TTL has elapsed to automatically invalidate the cache. The cache also improves the latency of subsequent client requests.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="tcp-three-way-handshake"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#tcp-three-way-handshake"></a>TCP three-way handshake</h2>
+<p>The client should create a connection to the server to transfer and receive data. Transmission Control Protocol (<a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol" rel="noopener noreferrer" target="_blank">TCP</a>) is one of the underlying protocols in Hypertext Transfer Protocol (<strong>HTTP</strong>).</p>
+<p>You can compare HTTP to an abstract or a high-level protocol (Application layer or layer 7 in the <a href="https://en.wikipedia.org/wiki/OSI_model" rel="noopener noreferrer" target="_blank">OSI</a> model) used between the client and the server to transfer data. Data transferred in HTTP is human-readable. TCP is a lower-level protocol (Transport layer or layer 4 in the OSI model) that handles error detection and retransmission of data packets<sup id="fnref:3"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>The client performs a three-way handshake with the server to establish a TCP connection. TCP requires a three-way handshake because of the bi-directional communication channel. If you make a two-way handshake, you can only start a single-directional communication channel.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: TCP three-way handshake&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/TCP-three-way-handshake.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/TCP-three-way-handshake.webp" rel="noopener noreferrer" target="_blank" title="TCP three-way handshake">
+<img alt="TCP three-way handshake" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/TCP-three-way-handshake.webp, /what-happens-when-you-type-url-into-your-browser/TCP-three-way-handshake.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/TCP-three-way-handshake.webp 2x" height="755" sizes="683px" src="../assets/images/img_8af9cd91ad74.webp" width="1380"/>
+</a><figcaption class="image-caption">Figure 6: TCP three-way handshake</figcaption>
+</figure>
+<p>The following synchronize (<strong>SYN</strong>) and acknowledge (<strong>ACK</strong>) messages are sent between the client and the server to open a TCP connection:</p>
+<ol>
+<li>The client sends an SYN request with a random sequence number (x).</li>
+<li>The server responds with SYN-ACK. The acknowledgment number is set to one more than the received sequence number (x+1). The server sends another random sequence number (y).</li>
+<li>The client sends ACK. The client sends an acknowledgment number that is one more than the received sequence number (y+1).</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="https-upgrade"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#https-upgrade"></a>HTTPS Upgrade</h2>
+<p>Hypertext Transfer Protocol Secure (<a href="https://en.wikipedia.org/wiki/HTTPS" rel="noopener noreferrer" target="_blank">HTTPS</a>) is an extension of Hypertext Transfer Protocol (<a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol" rel="noopener noreferrer" target="_blank">HTTP</a>). The data transferred through HTTP is not encrypted and therefore anyone can eavesdrop on the data packets that are transferred. HTTPS encrypts the transferred data and thereby prevents man-in-the-middle attacks<sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:4" role="doc-noteref">4</a></sup>. Most of the modern websites on the internet enable HTTPS for secure communication. HTTPS uses port 443 by default while HTTP uses port 80.</p>
+<p>In <a href="https://en.wikipedia.org/wiki/Public-key_cryptography" rel="noopener noreferrer" target="_blank">asymmetric encryption</a>, there is a key pair — public and private keys. The public keys can be shared with anyone on the internet while the private key should never be shared. In <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm" rel="noopener noreferrer" target="_blank">symmetric encryption</a>, there is only a single private key and both parties should have access to the same key to encrypt or decrypt the message.</p>
+<p>You could compare asymmetric encryption to an email service. The public key would be your Email address and the private key would be the password used to access the email account. Anyone can easily verify that you sent the email by looking at the Email address of the sender. However, if anyone sends an Email to your account, only you can access it using the password.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: HTTPS upgrade request&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/HTTPS-upgrade-request.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/HTTPS-upgrade-request.webp" rel="noopener noreferrer" target="_blank" title="HTTPS upgrade request">
+<img alt="HTTPS upgrade request" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/HTTPS-upgrade-request.webp, /what-happens-when-you-type-url-into-your-browser/HTTPS-upgrade-request.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/HTTPS-upgrade-request.webp 2x" height="897" sizes="683px" src="../assets/images/img_da4559a99894.webp" width="1665"/>
+</a><figcaption class="image-caption">Figure 7: HTTPS upgrade request</figcaption>
+</figure>
+<p>The following operations are executed between the client and server to upgrade HTTP to HTTPS before the transfer of any data packets:</p>
+<ol>
+<li>The browser (<strong>client</strong>) uses the HTTP Request headers to make an HTTPS upgrade request to the server.</li>
+<li>The server responds to the client with a Secure Sockets Layer (<a href="https://en.wikipedia.org/wiki/Transport_Layer_Security#SSL_1.0,_2.0,_and_3.0" rel="noopener noreferrer" target="_blank">SSL</a>) certificate that contains the public key of the server, which was signed by the Certificate Authority (<a href="https://en.wikipedia.org/wiki/Certificate_authority" rel="noopener noreferrer" target="_blank">CA</a>).</li>
+<li>The client by default has the public keys of popular CA (for example, Google CA). The client can use the public keys of the CA to verify the validity of the SSL certificate by checking the digital signature (digital signature in <a href="https://en.wikipedia.org/wiki/Public-key_cryptography" rel="noopener noreferrer" target="_blank">asymmetric encryption</a>).</li>
+<li>The client creates a new <a href="https://en.wikipedia.org/wiki/Symmetric-key_algorithm" rel="noopener noreferrer" target="_blank">symmetric</a> private key and encrypts the new symmetric private key with the public key of the server.</li>
+<li>The server decrypts the new symmetric private key shared by the client using the server’s private key.</li>
+<li>Any further communication between the client and the server would be encrypted using the new symmetric private key and therefore remains secure.</li>
+</ol>
+<p>Anyone listening to the HTTP Upgrade request or response messages would not be able to capture any meaningful data because of the asymmetric encryption. Once HTTPS is upgraded, further communication between the client and the server utilizes symmetric encryption.</p>
+<p>To create an SSL certificate, the server executes a Certificate Signing Request (<a href="https://en.wikipedia.org/wiki/Certificate_signing_request" rel="noopener noreferrer" target="_blank">CSR</a>) to the CA.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: SSL Certificate Signing Request&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/SSL-CSR.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/SSL-CSR.webp" rel="noopener noreferrer" target="_blank" title="SSL Certificate Signing Request">
+<img alt="SSL Certificate Signing Request" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/SSL-CSR.webp, /what-happens-when-you-type-url-into-your-browser/SSL-CSR.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/SSL-CSR.webp 2x" height="960" sizes="683px" src="../assets/images/img_560acf0590a8.webp" width="1502"/>
+</a><figcaption class="image-caption">Figure 8: SSL Certificate Signing Request</figcaption>
+</figure>
+<p>The CSR transfers the public key of the server to the CA. The CA has a pair of public and private keys. The CA signs the public key of the server using the private key of the CA and creates an SSL certificate. Anyone on the internet who has access to the public key of the CA could easily verify the digital signature of the SSL certificate.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="http-requestresponse"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#http-requestresponse"></a>HTTP Request/Response</h2>
+<p>Hypertext Transfer Protocol (<strong>HTTP</strong>) is a mechanism for transporting data between a client and a server. The client issues an HTTP(S) Request to the server to fetch or transfer data. The server responds with relevant content and completion status information about the request<sup id="fnref:5"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: HTTP simplified workflow&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/HTTP-simplified-workflow.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/HTTP-simplified-workflow.webp" rel="noopener noreferrer" target="_blank" title="HTTP simplified workflow">
+<img alt="HTTP simplified workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/HTTP-simplified-workflow.webp, /what-happens-when-you-type-url-into-your-browser/HTTP-simplified-workflow.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/HTTP-simplified-workflow.webp 2x" height="388" sizes="683px" src="../assets/images/img_a20e44322186.webp" width="871"/>
+</a><figcaption class="image-caption">Figure 9: HTTP simplified workflow</figcaption>
+</figure>
+<p>The client makes a GET HTTP Request to view a website (such as google.com). The client makes a POST HTTP Request if the client wants to submit data to the server (such as searching for some keyword in google.com).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Basic HTTP URL structure&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp" rel="noopener noreferrer" target="_blank" title="Basic HTTP URL structure">
+<img alt="Basic HTTP URL structure" class="lazyautosizes ls-is-cached lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp, /what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/basic-url-structure.webp 2x" height="463" sizes="683px" src="../assets/images/img_65d381d1dacb.webp" width="1433"/>
+</a><figcaption class="image-caption">Figure 10: Basic HTTP URL structure</figcaption>
+</figure>
+<p>The URL can be broken down into multiple components. The domain name is used to identify the server. The URL path is used to identify the resource (a specific file or information) on the server. The query parameters are used to filter or sort the data (or transfer stateful information). The following is the simplified workflow when you view the google.com website on your client<sup id="fnref:7"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ol>
+<li>client makes an HTTP GET method Request to the google.com server</li>
+<li>the server responds with a 200 OK status code if successful</li>
+</ol>
+<p>The HTTP Request is composed of the following entities:</p>
+<ul>
+<li>Uniform Resource Locator (URL)</li>
+<li>HTTP headers</li>
+<li>HTTP body (optional)</li>
+</ul>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="google.com/search?q=beatles
+
+method: GET
+cookie: x=123;y=345
+Accept-encoding: gzip/deflate
+Accept: text/HTML
+User-agent: Chrome
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">google</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">search</span><span class="o">?</span><span class="nx">q</span><span class="o">=</span><span class="nx">beatles</span>
+
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">cookie</span><span class="o">:</span> <span class="nx">x</span><span class="o">=</span><span class="mi">123</span><span class="p">;</span><span class="nx">y</span><span class="o">=</span><span class="mi">345</span>
+<span class="nx">Accept</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span><span class="o">/</span><span class="nx">deflate</span>
+<span class="nx">Accept</span><span class="o">:</span> <span class="nx">text</span><span class="o">/</span><span class="nx">HTML</span>
+<span class="nx">User</span><span class="o">-</span><span class="nx">agent</span><span class="o">:</span> <span class="nx">Chrome</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The HTTP Request method (Verb) defines the type of action that should be performed on the server. Some of the popular HTTP methods are the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Popular HTTP methods&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/popular-HTTP-methods.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/popular-HTTP-methods.webp" rel="noopener noreferrer" target="_blank" title="Popular HTTP methods">
+<img alt="Popular HTTP methods" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/popular-HTTP-methods.webp, /what-happens-when-you-type-url-into-your-browser/popular-HTTP-methods.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/popular-HTTP-methods.webp 2x" height="194" sizes="683px" src="../assets/images/img_4bdc5ae4f333.webp" width="980"/>
+</a><figcaption class="image-caption">Figure 11: Popular HTTP methods</figcaption>
+</figure>
+<p><strong>Idempotent</strong>: multiple invocations of the resource yield similar outcomes</p>
+<p><strong>Safe</strong>: Invocation does not modify the resource</p>
+<p>The server (<a href="https://www.nginx.com/" rel="noopener noreferrer" target="_blank">Nginx</a>, Apache web server) delegates the HTTP Request to the Request handlers. The Request handler is a piece of code that is defined in any server-side programming language (such as Python, Node.js, or Java). The Request handler checks the HTTP headers of the Request (content-type, content-encoding, cookies, etc) and subsequently validates the HTTP Request body. The Request handler then generates an appropriate response in the content-type (<a class="offline-link" href="../case-studies/protocol-buffers-vs-json.html" rel="noopener noreffer">JSON</a>, XML) that was requested by the client.</p>
+<p>The HTTP server response is composed of the following entities:</p>
+<ul>
+<li>HTTP headers</li>
+<li>HTTP body</li>
+</ul>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 200 OK
+Cache-control: private, expires=&lt;datetime&gt;
+Content-type: text/HTML
+Content-encoding: gzip
+
+&lt;HTTP Response body&gt;
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">Cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="kr">private</span><span class="p">,</span> <span class="nx">expires</span><span class="o">=&lt;</span><span class="nx">datetime</span><span class="o">&gt;</span>
+<span class="nx">Content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">text</span><span class="o">/</span><span class="nx">HTML</span>
+<span class="nx">Content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+
+<span class="o">&lt;</span><span class="nx">HTTP</span> <span class="nx">Response</span> <span class="nx">body</span><span class="o">&gt;</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The HTTP Response Status Code helps you to troubleshoot failures. The HTTP Status Codes can be categorized into the following<sup id="fnref:9"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:9" role="doc-noteref">9</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: HTTP Status Codes&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/HTTP-status-codes.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/HTTP-status-codes.webp" rel="noopener noreferrer" target="_blank" title="HTTP Status Codes">
+<img alt="HTTP Status Codes" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/HTTP-status-codes.webp, /what-happens-when-you-type-url-into-your-browser/HTTP-status-codes.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/HTTP-status-codes.webp 2x" height="194" sizes="683px" src="../assets/images/img_bbabd14bb557.webp" width="980"/>
+</a><figcaption class="image-caption">Figure 12: HTTP Status Codes</figcaption>
+</figure>
+<p>The HTTP Request and Response headers are used to control the cache, authorize the client, or compress the data that is transferred between the client and the server. For example, the user-agent HTTP request header helps the server to identify if the client is a mobile or a desktop client. Some of the most popular HTTP headers are the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Popular HTTP headers&lt;/h2&gt;" data-thumbnail="/what-happens-when-you-type-url-into-your-browser/popular-HTTP-headers.webp" href="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/popular-HTTP-headers.webp" rel="noopener noreferrer" target="_blank" title="Popular HTTP headers">
+<img alt="Popular HTTP headers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-happens-when-you-type-url-into-your-browser/popular-HTTP-headers.webp, /what-happens-when-you-type-url-into-your-browser/popular-HTTP-headers.webp 1.5x, /what-happens-when-you-type-url-into-your-browser/popular-HTTP-headers.webp 2x" height="313" sizes="683px" src="../assets/images/img_f58ad37d0fe4.webp" width="982"/>
+</a><figcaption class="image-caption">Figure 13: Popular HTTP headers</figcaption>
+</figure>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="browser-rendering-the-response-from-the-server"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#browser-rendering-the-response-from-the-server"></a>Browser rendering the response from the server</h2>
+<p>The browser might make multiple HTTP Requests to the server to fetch all the relevant data for a website such as Cascading Style Sheets (CSS), JavaScript files, Images, or Videos. Finally, the browser renders the HTML and the content received from the server<sup id="fnref:11"><a class="footnote-ref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>Depending on the HTTP response headers (Cache-control), the browser caches the response to prevent re-requesting the same data from the server. The cache improves the latency of the website.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#summary"></a>Summary</h2>
+<p>The client usually caches the DNS mapping and server response with an arbitrary Time-to-live (<a href="https://en.wikipedia.org/wiki/Time_to_live#:~:text=Time%20to%20live%20%28TTL%29%20or,data%20is%20discarded%20or%20revalidated." rel="noopener noreferrer" target="_blank">TTL</a>) expiry time. The DNS server is not queried multiple times when you revisit the same website because of the local cache.</p>
+<p>In an internet-scale system, there are multiple components as intermediate layers to meet the incoming load demand. Content Delivery Networks (<a class="offline-link" href="../case-studies/cdn-explained.html" rel="noopener noreffer">CDN</a>), <a href="https://en.wikipedia.org/wiki/Load_balancing_%28computing%29" rel="noopener noreferrer" target="_blank">Load Balancers</a>, and <a href="https://en.wikipedia.org/wiki/Reverse_proxy" rel="noopener noreferrer" target="_blank">Reverse Proxy</a> are some of the intermediate components that might appear in a large-scale system.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-and-solutions"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#questions-and-solutions"></a>Questions and Solutions</h2>
+<p>If you would like to challenge your knowledge on the topic, visit the article: <a href="https://systemdesign.one/knowledge-test-what-happens-when-you-type-a-url-into-your-browser" rel="noopener noreferrer" target="_blank">Knowledge Test</a></p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/Domain_Name_System" rel="noopener noreferrer" target="_blank">Domain Name System</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/URL" rel="noopener noreferrer" target="_blank">URL</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/Transmission_Control_Protocol" rel="noopener noreferrer" target="_blank">Transmission Control Protocol</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/HTTPS" rel="noopener noreferrer" target="_blank">HTTPS</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers" rel="noopener noreferrer" target="_blank">MDN Web docs HTTP headers</a>, Mozilla.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" rel="noopener noreferrer" target="_blank">MDN Web docs HTTP response status Code</a>, Mozilla.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods" rel="noopener noreferrer" target="_blank">HTTP Request methods</a>, Wikipedia.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p><a href="https://www.cloudflare.com/en-gb/learning/ddos/glossary/hypertext-transfer-protocol-http/" rel="noopener noreferrer" target="_blank">What is HTTP</a>, Cloudflare.com <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p><a href="https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design" rel="noopener noreferrer" target="_blank">RESTful web API design</a>, learn.microsoft.com <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer#communication" rel="noopener noreferrer" target="_blank">System Design Primer HTTP communication</a>, GitHub.com <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work" rel="noopener noreferrer" target="_blank">Populating the page: how browsers work</a>, Mozilla.org <a class="footnote-backref offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-07-03</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="What Happens When You Type a URL Into Your Browser?" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="What Happens When You Type a URL Into Your Browser?" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="1. DNS resolution 2. TCP three-way handshake 3. HTTPS upgrade 4. HTTP Request/Response 5. Browser rendering the response" data-image="what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp" data-sharer="pinterest" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="1. DNS resolution 2. TCP three-way handshake 3. HTTPS upgrade 4. HTTP Request/Response 5. Browser rendering the response" data-sharer="tumblr" data-title="What Happens When You Type a URL Into Your Browser?" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="What Happens When You Type a URL Into Your Browser?" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="1. DNS resolution 2. TCP three-way handshake 3. HTTPS upgrade 4. HTTP Request/Response 5. Browser rendering the response" data-image="what-happens-when-you-type-url-into-your-browser/user-visiting-google-com-on-web-browser.webp" data-sharer="vk" data-title="What Happens When You Type a URL Into Your Browser?" data-url="https://systemdesign.one/what-happens-when-you-type-url-into-your-browser/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav">
+<a class="next" href="https://systemdesign.one/knowledge-test-what-happens-when-you-type-a-url-into-your-browser/" rel="noopener noreferrer" target="_blank" title="Knowledge Test: What Happens When You Type a URL Into Your Browser?">Knowledge Test: What Happens When You Type a URL Into Your Browser?<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./what-happens-when-you-type-url-into-your-browser.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./what-happens-when-you-type-url-into-your-browser.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

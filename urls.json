@@ -1,0 +1,741 @@
+{
+  "counts": {
+    "total_markdown_links": 185,
+    "newsletter_urls": 163,
+    "main_site_urls": 19,
+    "other_urls": 0
+  },
+  "newsletter_urls": [
+    {
+      "title": "How Virtual Machines Work",
+      "url": "https://newsletter.systemdesign.one/p/virtualization-architecture"
+    },
+    {
+      "title": "How to Scale an App to 10 Million Users on AWS",
+      "url": "https://newsletter.systemdesign.one/p/aws-scale"
+    },
+    {
+      "title": "This Is How Airbnb Adopted HTTP Streaming to Save 84 Million USD in Costs",
+      "url": "https://newsletter.systemdesign.one/p/what-is-critical-rendering-path"
+    },
+    {
+      "title": "Amazon Prime Video Microservices Top Failure",
+      "url": "https://newsletter.systemdesign.one/p/prime-video-microservices"
+    },
+    {
+      "title": "How Amazon S3 Achieves 99.999999999% Durability",
+      "url": "https://newsletter.systemdesign.one/p/amazon-s3-durability"
+    },
+    {
+      "title": "How Amazon Lambda Works",
+      "url": "https://newsletter.systemdesign.one/p/how-does-aws-lambda-work"
+    },
+    {
+      "title": "How Amazon S3 Works",
+      "url": "https://newsletter.systemdesign.one/p/s3-architecture"
+    },
+    {
+      "title": "How Do Apple AirTags Work",
+      "url": "https://newsletter.systemdesign.one/p/how-do-airtags-work"
+    },
+    {
+      "title": "How Apple Pay Handles 41 Million Transactions a Day Securely",
+      "url": "https://newsletter.systemdesign.one/p/how-does-apple-pay-work"
+    },
+    {
+      "title": "How Amazon S3 Achieves Strong Consistency",
+      "url": "https://newsletter.systemdesign.one/p/s3-strong-consistency"
+    },
+    {
+      "title": "How Does Bluesky Work",
+      "url": "https://newsletter.systemdesign.one/p/how-does-bluesky-work"
+    },
+    {
+      "title": "How Canva Supports Real-Time Collaboration for 135 Million Monthly Users",
+      "url": "https://newsletter.systemdesign.one/p/rsocket"
+    },
+    {
+      "title": "How Cloudflare Was Able to Support 55 Million Requests per Second With Only 15 Postgres Clusters",
+      "url": "https://newsletter.systemdesign.one/p/postgresql-scalability"
+    },
+    {
+      "title": "How Disney+ Hotstar Delivered 5 Billion Emojis in Real Time",
+      "url": "https://newsletter.systemdesign.one/p/hotstar-architecture"
+    },
+    {
+      "title": "How Disney+ Hotstar Scaled to 25 Million Concurrent Users",
+      "url": "https://newsletter.systemdesign.one/p/hotstar-scaling"
+    },
+    {
+      "title": "How Disney+ Scaled to 11 Million Users on Launch Day",
+      "url": "https://newsletter.systemdesign.one/p/disney-architecture"
+    },
+    {
+      "title": "How Discord Boosts Performance With Code-Splitting",
+      "url": "https://newsletter.systemdesign.one/p/what-is-code-splitting-in-react"
+    },
+    {
+      "title": "How Dropbox Scaled to 100 Thousand Users in a Year After Launch",
+      "url": "https://newsletter.systemdesign.one/p/dropbox-architecture"
+    },
+    {
+      "title": "How Facebook Scaled Live Video to a Billion Users",
+      "url": "https://newsletter.systemdesign.one/p/live-streaming-architecture"
+    },
+    {
+      "title": "How Facebook Was Able to Support a Billion Users via Software Load Balancer",
+      "url": "https://newsletter.systemdesign.one/p/facebook-load-balancer"
+    },
+    {
+      "title": "How Figma Scaled Postgres to 4M Users",
+      "url": "https://newsletter.systemdesign.one/p/postgres-scale"
+    },
+    {
+      "title": "How Google Search Works",
+      "url": "https://newsletter.systemdesign.one/p/search-engine-architecture"
+    },
+    {
+      "title": "How Giphy Delivers 10 Billion GIFs a Day to 1 Billion Users",
+      "url": "https://newsletter.systemdesign.one/p/cdn-explained"
+    },
+    {
+      "title": "How to Scale an App to 100 Million Users on GCP",
+      "url": "https://newsletter.systemdesign.one/p/google-cloud-scalability"
+    },
+    {
+      "title": "How Google Docs Works",
+      "url": "http://newsletter.systemdesign.one/p/how-does-google-docs-work"
+    },
+    {
+      "title": "How Hashnode Generates Feed at Scale",
+      "url": "https://newsletter.systemdesign.one/p/feed-architecture"
+    },
+    {
+      "title": "How Halo Scaled to 11.6 Million Users Using the Saga Design Pattern",
+      "url": "https://newsletter.systemdesign.one/p/saga-design-pattern"
+    },
+    {
+      "title": "How Instagram Scaled to 2.5 Billion Users",
+      "url": "https://newsletter.systemdesign.one/p/instagram-infrastructure"
+    },
+    {
+      "title": "How Khan Academy Scaled to 30 Million Users",
+      "url": "https://newsletter.systemdesign.one/p/khan-academy-architecture"
+    },
+    {
+      "title": "How LinkedIn Scaled to 930 Million Users",
+      "url": "https://newsletter.systemdesign.one/p/scalable-software-architecture"
+    },
+    {
+      "title": "How LinkedIn Adopted Protocol Buffers to Reduce Latency by 60%",
+      "url": "https://newsletter.systemdesign.one/p/protocol-buffers-vs-json"
+    },
+    {
+      "title": "Tech Stack Evolution at Levels fyi",
+      "url": "https://newsletter.systemdesign.one/p/levels-fyi-google-sheets"
+    },
+    {
+      "title": "How Lyft Support Rides to 21 Million Users",
+      "url": "https://newsletter.systemdesign.one/p/lyft-engineering"
+    },
+    {
+      "title": "How McDonald\u2019s Food Delivery Platform Handles 20,000 Orders per Second",
+      "url": "https://newsletter.systemdesign.one/p/mcdonalds-architecture"
+    },
+    {
+      "title": "How Meta Achieves 99.99999999% Cache Consistency",
+      "url": "https://newsletter.systemdesign.one/p/cache-consistency"
+    },
+    {
+      "title": "How Does Netflix Work?",
+      "url": "https://newsletter.systemdesign.one/p/how-does-netflix-work"
+    },
+    {
+      "title": "Microservices Lessons From Netflix",
+      "url": "https://newsletter.systemdesign.one/p/netflix-microservices"
+    },
+    {
+      "title": "How Netflix Uses Chaos Engineering to Create Resilience Systems",
+      "url": "https://newsletter.systemdesign.one/p/chaos-engineering"
+    },
+    {
+      "title": "How PayPal Was Able to Support a Billion Transactions per Day With Only 8 Virtual Machines",
+      "url": "https://newsletter.systemdesign.one/p/actor-model"
+    },
+    {
+      "title": "Designing a Payment Backend with Stripe Integration",
+      "url": "https://newsletter.systemdesign.one/p/design-a-payment-system"
+    },
+    {
+      "title": "This Is How Quora Shards MySQL to Handle 13+ Terabytes",
+      "url": "https://newsletter.systemdesign.one/p/mysql-sharding"
+    },
+    {
+      "title": "How Razorpay Scaled to Handle Flash Sales at 1500 Requests per Second",
+      "url": "https://newsletter.systemdesign.one/p/payment-gateway-architecture"
+    },
+    {
+      "title": "How Reddit Works",
+      "url": "https://newsletter.systemdesign.one/p/reddit-architecture"
+    },
+    {
+      "title": "Virtual Waiting Room Architecture That Handles High-Demand Ticket Sales at SeatGeek",
+      "url": "https://newsletter.systemdesign.one/p/virtual-waiting-room"
+    },
+    {
+      "title": "How Shopify Handles Flash Sales at 32 Million Requests per Minute",
+      "url": "https://newsletter.systemdesign.one/p/shopify-flash-sale"
+    },
+    {
+      "title": "This Is How Stripe Does Rate Limiting to Build Scalable APIs",
+      "url": "https://newsletter.systemdesign.one/p/rate-limiter"
+    },
+    {
+      "title": "How Stripe Prevents Double Payment Using Idempotent API",
+      "url": "https://newsletter.systemdesign.one/p/idempotent-api"
+    },
+    {
+      "title": "Tumblr Shares Database Migration Strategy With 60+ Billion Rows",
+      "url": "https://newsletter.systemdesign.one/p/how-to-migrate-a-mysql-database"
+    },
+    {
+      "title": "6 Proven Guidelines on Open Sourcing From Tumblr",
+      "url": "https://newsletter.systemdesign.one/p/open-source-guidelines"
+    },
+    {
+      "title": "How Tinder Scaled to 1.6 Billion Swipes per Day",
+      "url": "https://newsletter.systemdesign.one/p/tinder-architecture"
+    },
+    {
+      "title": "How Uber Computes ETA at Half a Million Requests per Second",
+      "url": "https://newsletter.systemdesign.one/p/uber-eta"
+    },
+    {
+      "title": "How Uber Finds Nearby Drivers at 1 Million Requests per Second",
+      "url": "https://newsletter.systemdesign.one/p/how-does-uber-find-nearby-drivers"
+    },
+    {
+      "title": "How Uber Payment System Handles 30 Million Transactions Per Day",
+      "url": "https://newsletter.systemdesign.one/p/payment-system-design"
+    },
+    {
+      "title": "8 Reasons Why WhatsApp Was Able to Support 50 Billion Messages a Day With Only 32 Engineers",
+      "url": "https://newsletter.systemdesign.one/p/whatsapp-engineering"
+    },
+    {
+      "title": "Wechat Architecture That Powers 1.67 Billion Monthly Users",
+      "url": "https://newsletter.systemdesign.one/p/chat-application-architecture"
+    },
+    {
+      "title": "11 Reasons Why YouTube Was Able to Support 100 Million Video Views a Day With Only 9 Engineers",
+      "url": "https://newsletter.systemdesign.one/p/youtube-scalability"
+    },
+    {
+      "title": "How YouTube Was Able to Support 2.49 Billion Users With MySQL",
+      "url": "https://newsletter.systemdesign.one/p/vitess-mysql"
+    },
+    {
+      "title": "5 Reasons Why Zoom Was Able to Support 300 Million Video Calls a Day",
+      "url": "https://newsletter.systemdesign.one/p/zoom-architecture"
+    },
+    {
+      "title": "How Zapier Automates Billions of Tasks",
+      "url": "https://newsletter.systemdesign.one/p/zapier-architecture"
+    },
+    {
+      "title": "7 Simple Ways to Fail System Design Interview",
+      "url": "https://newsletter.systemdesign.one/p/design-system-newsletter"
+    },
+    {
+      "title": "Amazon Frugal Architecture Explained",
+      "url": "https://newsletter.systemdesign.one/p/frugal-architecture"
+    },
+    {
+      "title": "11 System Design Concepts Explained, Simply",
+      "url": "https://newsletter.systemdesign.one/p/11-system-design-concepts-explained"
+    },
+    {
+      "title": "114 System Design Concepts - Part 1",
+      "url": "https://newsletter.systemdesign.one/p/system-design-concepts"
+    },
+    {
+      "title": "114 System Design Concepts - Part 2",
+      "url": "https://newsletter.systemdesign.one/p/system-design-core-concepts"
+    },
+    {
+      "title": "114 System Design Concepts - Part 3",
+      "url": "https://newsletter.systemdesign.one/p/system-design-fundamentals"
+    },
+    {
+      "title": "How Timsort Algorithm Works",
+      "url": "https://newsletter.systemdesign.one/p/timsort-algorithm"
+    },
+    {
+      "title": "Mobile System Design Concepts - Part 1",
+      "url": "https://newsletter.systemdesign.one/p/mobile-system-design"
+    },
+    {
+      "title": "Mobile System Design Concepts - Part 2",
+      "url": "https://newsletter.systemdesign.one/p/mobile-system-design-concepts"
+    },
+    {
+      "title": "Mobile System Design Concepts - Part 3",
+      "url": "https://newsletter.systemdesign.one/p/system-design-mobile"
+    },
+    {
+      "title": "How API Gateway Works",
+      "url": "https://newsletter.systemdesign.one/p/how-api-gateway-works"
+    },
+    {
+      "title": "API Gateway vs Load Balancer vs Reverse Proxy",
+      "url": "https://newsletter.systemdesign.one/p/api-gateway-load-balancer-reverse-proxy"
+    },
+    {
+      "title": "Best Practices for API Design",
+      "url": "https://newsletter.systemdesign.one/p/best-practices-for-api-design"
+    },
+    {
+      "title": "Best Practices for API Security",
+      "url": "https://newsletter.systemdesign.one/p/api-security-best-practices"
+    },
+    {
+      "title": "API Versioning",
+      "url": "https://newsletter.systemdesign.one/p/api-versioning"
+    },
+    {
+      "title": "High Performance APIs",
+      "url": "https://newsletter.systemdesign.one/p/api-performance"
+    },
+    {
+      "title": "Cell Based Architecture",
+      "url": "https://newsletter.systemdesign.one/p/cell-based-architecture"
+    },
+    {
+      "title": "Top 5 Caching Patterns",
+      "url": "https://newsletter.systemdesign.one/p/caching-patterns"
+    },
+    {
+      "title": "How to Scale Code Reviews",
+      "url": "https://newsletter.systemdesign.one/p/how-to-do-code-review"
+    },
+    {
+      "title": "Code Review Best Practices",
+      "url": "https://newsletter.systemdesign.one/p/code-review-best-practices"
+    },
+    {
+      "title": "Concurrency Is Not Parallelism",
+      "url": "https://newsletter.systemdesign.one/p/concurrency-is-not-parallelism"
+    },
+    {
+      "title": "15 Pitfalls That Break Cloud Systems",
+      "url": "https://newsletter.systemdesign.one/p/cloud-system-design"
+    },
+    {
+      "title": "Cybersecurity Terms Every Software Engineer Must Know",
+      "url": "https://newsletter.systemdesign.one/p/cybersecurity-fundamentals"
+    },
+    {
+      "title": "The Entire Computer Science Stack, Explained In 51 Images",
+      "url": "https://newsletter.systemdesign.one/p/computer-science-101"
+    },
+    {
+      "title": "How CDN Works",
+      "url": "https://newsletter.systemdesign.one/p/how-does-cdn-work"
+    },
+    {
+      "title": "How Databases Keep Passwords Securely",
+      "url": "https://newsletter.systemdesign.one/p/how-to-store-passwords-in-database"
+    },
+    {
+      "title": "How DNS Works",
+      "url": "https://newsletter.systemdesign.one/p/what-is-a-dns-server-and-how-does-it-work"
+    },
+    {
+      "title": "Deployment Patterns",
+      "url": "https://newsletter.systemdesign.one/p/deployment-patterns"
+    },
+    {
+      "title": "Distributed Systems Deep Dive",
+      "url": "https://newsletter.systemdesign.one/p/distributed-systems"
+    },
+    {
+      "title": "How Docker Works",
+      "url": "https://newsletter.systemdesign.one/p/how-do-docker-containers-work"
+    },
+    {
+      "title": "21 Frontend System Design Concepts for Software Engineers",
+      "url": "https://newsletter.systemdesign.one/p/frontend-system-design"
+    },
+    {
+      "title": "21 Git Commands",
+      "url": "https://newsletter.systemdesign.one/p/commands-in-git"
+    },
+    {
+      "title": "How Does HTTPS Work",
+      "url": "https://newsletter.systemdesign.one/p/how-does-https-work"
+    },
+    {
+      "title": "Must Know HTTP Headers",
+      "url": "https://newsletter.systemdesign.one/p/http-headers"
+    },
+    {
+      "title": "What Is High Availability",
+      "url": "https://newsletter.systemdesign.one/p/what-is-high-availability"
+    },
+    {
+      "title": "How JWT Works",
+      "url": "https://newsletter.systemdesign.one/p/how-jwt-works"
+    },
+    {
+      "title": "How Kafka Works",
+      "url": "https://newsletter.systemdesign.one/p/how-kafka-works"
+    },
+    {
+      "title": "How Kubernetes Works",
+      "url": "https://newsletter.systemdesign.one/p/kubernetes-architecture"
+    },
+    {
+      "title": "How Load Balancing Algorithms Work",
+      "url": "https://newsletter.systemdesign.one/p/load-balancing-algorithms"
+    },
+    {
+      "title": "Micro Frontends",
+      "url": "https://newsletter.systemdesign.one/p/micro-frontends"
+    },
+    {
+      "title": "How Shopify Handled 30TB per Minute With a Modular Monolith Architecture",
+      "url": "https://newsletter.systemdesign.one/p/modular-monolith"
+    },
+    {
+      "title": "1 Simple Technique to Scale Microservices Architecture",
+      "url": "https://newsletter.systemdesign.one/p/how-to-scale-microservices"
+    },
+    {
+      "title": "How Message Queues Work",
+      "url": "https://newsletter.systemdesign.one/p/what-is-a-message-queue"
+    },
+    {
+      "title": "22 Microservices Design Patterns",
+      "url": "https://newsletter.systemdesign.one/p/microservices-design-patterns"
+    },
+    {
+      "title": "How Nginx Was Able to Support 1 Million Concurrent Connections on a Single Server",
+      "url": "https://newsletter.systemdesign.one/p/how-does-nginx-work"
+    },
+    {
+      "title": "Forward proxy vs Reverse proxy",
+      "url": "https://newsletter.systemdesign.one/p/forward-proxy-vs-reverse-proxy"
+    },
+    {
+      "title": "10 System Design Patterns",
+      "url": "https://newsletter.systemdesign.one/p/system-design-patterns"
+    },
+    {
+      "title": "Redis Use Cases",
+      "url": "https://newsletter.systemdesign.one/p/redis-use-cases"
+    },
+    {
+      "title": "Rate Limiting Strategies Explained",
+      "url": "https://newsletter.systemdesign.one/p/rate-limiting"
+    },
+    {
+      "title": "How Remote Procedure Call Works",
+      "url": "https://newsletter.systemdesign.one/p/how-rpc-works"
+    },
+    {
+      "title": "How Sidecar Pattern Works",
+      "url": "https://newsletter.systemdesign.one/p/sidecar-pattern"
+    },
+    {
+      "title": "Stacked Diffs, Simply Explained",
+      "url": "https://newsletter.systemdesign.one/p/stacked-diffs"
+    },
+    {
+      "title": "How Stock Exchange Works - Part 1",
+      "url": "https://newsletter.systemdesign.one/p/stock-exchange-system-design"
+    },
+    {
+      "title": "How Stock Exchange Handles Concurrency at Scale - Part 2",
+      "url": "https://newsletter.systemdesign.one/p/disruptor-pattern"
+    },
+    {
+      "title": "Design Stock Exchange: A Deep Dive - Part 3",
+      "url": "https://newsletter.systemdesign.one/p/system-design-stock-exchange"
+    },
+    {
+      "title": "How Do Websockets Work",
+      "url": "https://newsletter.systemdesign.one/p/how-do-websockets-work"
+    },
+    {
+      "title": "How Do Webhooks Work",
+      "url": "https://newsletter.systemdesign.one/p/how-do-webhooks-work"
+    },
+    {
+      "title": "System Design Interview Framework",
+      "url": "https://newsletter.systemdesign.one/p/how-to-prepare-for-system-design-interview"
+    },
+    {
+      "title": "Behavioral Interview Playbook",
+      "url": "https://newsletter.systemdesign.one/p/common-behavioral-interview-questions"
+    },
+    {
+      "title": "Mobile System Design Interview Framework",
+      "url": "https://newsletter.systemdesign.one/p/mobile-system-design-interview"
+    },
+    {
+      "title": "System Design Interview: Design Airbnb",
+      "url": "https://newsletter.systemdesign.one/p/airbnb-system-design"
+    },
+    {
+      "title": "System Design Interview: Design ChatGPT",
+      "url": "https://newsletter.systemdesign.one/p/chatgpt-system-design"
+    },
+    {
+      "title": "Software Engineer Resume",
+      "url": "https://newsletter.systemdesign.one/p/software-engineer-resume"
+    },
+    {
+      "title": "System Design Interview: Design Spotify",
+      "url": "https://newsletter.systemdesign.one/p/spotify-system-design"
+    },
+    {
+      "title": "System Design Interview: Design Web Crawler and Search Engine",
+      "url": "https://newsletter.systemdesign.one/p/web-crawler-system-design"
+    },
+    {
+      "title": "System Design Interview: Design Amazon S3",
+      "url": "https://newsletter.systemdesign.one/p/aws-s3-system-design"
+    },
+    {
+      "title": "Design Twitter/X Timeline - A Frontend Deep Dive",
+      "url": "https://newsletter.systemdesign.one/p/system-design-interview-twitter"
+    },
+    {
+      "title": "Design WhatsApp",
+      "url": "https://newsletter.systemdesign.one/p/whatsapp-system-design"
+    },
+    {
+      "title": "Part 2",
+      "url": "https://newsletter.systemdesign.one/p/design-a-chat-system"
+    },
+    {
+      "title": "Design YouTube",
+      "url": "https://newsletter.systemdesign.one/p/youtube-system-design"
+    },
+    {
+      "title": "How AI Agents Work",
+      "url": "https://newsletter.systemdesign.one/p/ai-agents-explained"
+    },
+    {
+      "title": "How to design your own AI agent",
+      "url": "https://newsletter.systemdesign.one/p/how-do-ai-agents-work"
+    },
+    {
+      "title": "11 AI Concepts Explained, Simply",
+      "url": "https://newsletter.systemdesign.one/p/ai-concepts"
+    },
+    {
+      "title": "Agentic AI Use Cases in Software Development Workflow",
+      "url": "https://newsletter.systemdesign.one/p/agentic-ai-use-cases"
+    },
+    {
+      "title": "30 Agentic Engineering Concepts, Explained Simply",
+      "url": "https://newsletter.systemdesign.one/p/agentic-engineering"
+    },
+    {
+      "title": "How Agent to Agent Protocol Works",
+      "url": "https://newsletter.systemdesign.one/p/agent-to-agent-protocol"
+    },
+    {
+      "title": "AI Coding Workflow",
+      "url": "https://newsletter.systemdesign.one/p/ai-coding-workflow"
+    },
+    {
+      "title": "What is Context Engineering?",
+      "url": "https://newsletter.systemdesign.one/p/what-is-context-engineering"
+    },
+    {
+      "title": "Context Engineering vs Prompt Engineering",
+      "url": "https://newsletter.systemdesign.one/p/context-engineering-vs-prompt-engineering"
+    },
+    {
+      "title": "How ChatGPT Apps Work",
+      "url": "https://newsletter.systemdesign.one/p/apps-in-chatgpt"
+    },
+    {
+      "title": "Design a personal AI chat assistant",
+      "url": "https://newsletter.systemdesign.one/p/ai-chat-assistant"
+    },
+    {
+      "title": "Claude Folder - A Deep Dive",
+      "url": "https://newsletter.systemdesign.one/p/claude-folder"
+    },
+    {
+      "title": "Agentic Design Patterns",
+      "url": "https://newsletter.systemdesign.one/p/agentic-design-patterns"
+    },
+    {
+      "title": "How to Build a Domain Expert AI",
+      "url": "https://newsletter.systemdesign.one/p/fine-tuning-ai-models"
+    },
+    {
+      "title": "29 LLM Evaluation Concepts",
+      "url": "https://newsletter.systemdesign.one/p/llm-evals"
+    },
+    {
+      "title": "Everything You Need to Know to Design GenAI Systems From Scratch",
+      "url": "https://newsletter.systemdesign.one/p/generative-ai-system-design"
+    },
+    {
+      "title": "AI Agent - Graph Shaped Memory",
+      "url": "https://newsletter.systemdesign.one/p/graph-based-agent-memory"
+    },
+    {
+      "title": "What is AI Infrastructure",
+      "url": "https://newsletter.systemdesign.one/p/what-is-ai-infrastructure"
+    },
+    {
+      "title": "Design Knowledge Q&A System",
+      "url": "https://newsletter.systemdesign.one/p/ai-based-knowledge-management-system"
+    },
+    {
+      "title": "LLM Concepts, Simply Explained",
+      "url": "https://newsletter.systemdesign.one/p/llm-concepts"
+    },
+    {
+      "title": "MCP - A Deep Dive",
+      "url": "https://newsletter.systemdesign.one/p/how-mcp-works"
+    },
+    {
+      "title": "Multi-Agent Architectures, Clearly Explained",
+      "url": "https://newsletter.systemdesign.one/p/multi-agent-system"
+    },
+    {
+      "title": "How ML Systems Actually Work: From Data to Deployment",
+      "url": "https://newsletter.systemdesign.one/p/machine-learning-system-design-interview"
+    },
+    {
+      "title": "AI Agents: State, Memory, Consistency",
+      "url": "https://newsletter.systemdesign.one/p/ai-agent-memory"
+    },
+    {
+      "title": "How to use NotebookLM",
+      "url": "https://newsletter.systemdesign.one/p/how-to-use-notebooklm"
+    },
+    {
+      "title": "How OpenClaw Works",
+      "url": "https://newsletter.systemdesign.one/p/openclaw-architecture"
+    },
+    {
+      "title": "What Is Reinforcement Learning",
+      "url": "https://newsletter.systemdesign.one/p/what-is-reinforcement-learning"
+    },
+    {
+      "title": "How RAG Works",
+      "url": "https://newsletter.systemdesign.one/p/how-rag-works"
+    },
+    {
+      "title": "How AI Research Agent Works",
+      "url": "https://newsletter.systemdesign.one/p/how-to-build-an-ai-research-agent-with-mcp"
+    },
+    {
+      "title": "Vector Database - A Deep Dive",
+      "url": "https://newsletter.systemdesign.one/p/what-is-a-vector-database"
+    },
+    {
+      "title": "Vertical Small LLM",
+      "url": "https://newsletter.systemdesign.one/p/fine-tuning-small-language-models"
+    },
+    {
+      "title": "Amazon Dynamo",
+      "url": "https://newsletter.systemdesign.one/p/amazon-dynamo-architecture"
+    },
+    {
+      "title": "Google Spanner",
+      "url": "https://newsletter.systemdesign.one/p/cloud-spanner-database"
+    },
+    {
+      "title": "Meta Serverless Architecture: XFaaS",
+      "url": "https://newsletter.systemdesign.one/p/serverless-architecture"
+    }
+  ],
+  "main_site_urls": [
+    {
+      "title": "Real-Time Gaming Leaderboard",
+      "url": "https://systemdesign.one/leaderboard-system-design"
+    },
+    {
+      "title": "Real-Time Live Comments",
+      "url": "https://systemdesign.one/live-comment-system-design"
+    },
+    {
+      "title": "Distributed Counter",
+      "url": "https://systemdesign.one/distributed-counter-system-design"
+    },
+    {
+      "title": "Real Time Presence Platform",
+      "url": "https://systemdesign.one/real-time-presence-platform-system-design"
+    },
+    {
+      "title": "Bitly URL Shortener Architecture",
+      "url": "https://systemdesign.one/url-shortening-system-design"
+    },
+    {
+      "title": "Pastebin",
+      "url": "https://systemdesign.one/system-design-pastebin"
+    },
+    {
+      "title": "Slack Architecture",
+      "url": "https://systemdesign.one/slack-architecture"
+    },
+    {
+      "title": "Back of the Envelope",
+      "url": "https://systemdesign.one/back-of-the-envelope"
+    },
+    {
+      "title": "How to Troubleshoot if You Can\u2019t Access a Particular Website?",
+      "url": "https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website"
+    },
+    {
+      "title": "What Happens When You Type a URL Into Your Browser?",
+      "url": "https://systemdesign.one/what-happens-when-you-type-url-into-your-browser"
+    },
+    {
+      "title": "System Design Interview Cheat Sheet",
+      "url": "https://systemdesign.one/system-design-interview-cheatsheet"
+    },
+    {
+      "title": "Software Engineer Interview Learning Resources",
+      "url": "https://systemdesign.one/software-engineer-interview-learning-resources"
+    },
+    {
+      "title": "Bloom Filter",
+      "url": "https://systemdesign.one/bloom-filters-explained"
+    },
+    {
+      "title": "Consistency Patterns",
+      "url": "https://systemdesign.one/consistency-patterns"
+    },
+    {
+      "title": "Consistent Hashing",
+      "url": "https://systemdesign.one/consistent-hashing-explained"
+    },
+    {
+      "title": "Gossip Protocol",
+      "url": "https://systemdesign.one/gossip-protocol"
+    },
+    {
+      "title": "Hinted Handoff",
+      "url": "https://systemdesign.one/hinted-handoff"
+    },
+    {
+      "title": "Quotient Filter",
+      "url": "https://systemdesign.one/quotient-filter-explained"
+    },
+    {
+      "title": "Service Discovery",
+      "url": "https://systemdesign.one/what-is-service-discovery"
+    }
+  ],
+  "other_urls": []
+}

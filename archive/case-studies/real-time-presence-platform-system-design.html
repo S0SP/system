@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Real Time Presence Platform System Design - System Design</title><meta content="heartbeat signal is used for checking the status of the client in real-time" name="Description"/><meta content="Real Time Presence Platform System Design" property="og:title"/>
+<meta content="heartbeat signal is used for checking the status of the client in real-time" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/real-time-presence-platform-system-design/" property="og:url"/><meta content="https://systemdesign.one/presence-platform-system-design/real-time-presence-platform.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-04-15T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-04-15T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/presence-platform-system-design/real-time-presence-platform.webp" name="twitter:image"/>
+<meta content="Real Time Presence Platform System Design" name="twitter:title"/>
+<meta content="heartbeat signal is used for checking the status of the client in real-time" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/real-time-presence-platform-system-design/" rel="canonical"/><link href="https://systemdesign.one/live-comment-system-design/" rel="prev"/><link href="https://systemdesign.one/distributed-counter-system-design/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/real-time-presence-platform-system-design</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./real-time-presence-platform-system-design.html#what-is-the-real-time-presence-platform">What Is the Real-Time Presence Platform?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#how-does-the-real-time-presence-platformwork">How Does the Real-Time Presence Platform Work?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#questions-to-ask-the-interviewer">Questions to Ask the Interviewer</a>
+<ul>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#candidate">Candidate</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#interviewer">Interviewer</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#real-time-presence-platformapi">Real-Time Presence Platform API</a>
+<ul>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#heartbeat">Heartbeat</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#real-time-presence-platform-datastorage">Real-Time Presence Platform Data Storage</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#further-system-design-learning-resources">Further System Design Learning Resources</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#real-time-presence-platform-high-level-design">Real-Time Presence Platform High-Level Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#prototyping-the-presence-platform-with-redissets">Prototyping the Presence Platform With Redis Sets</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#presence-platform-with-pub-subserver">Presence Platform With Pub-Sub Server</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#an-abstract-presenceplatform">An Abstract Presence Platform</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#further-system-design-learning-resources-1">Further System Design Learning Resources</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#design-deepdive">Design Deep Dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#how-does-the-presence-platform-identify-whether-a-user-isonline">How Does the Presence Platform Identify Whether a User Is Online?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#how-does-the-presence-platform-identify-when-a-user-goesoffline">How Does the Presence Platform Identify When a User Goes Offline?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#how-to-handle-jittery-connections-of-theclient">How to Handle Jittery Connections of the Client?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#what-is-the-subscribe-workflow-and-publish-workflow-for-the-real-time-platform">What Is the Subscribe Workflow and Publish Workflow for the Real-Time Platform?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#what-is-the-cross-data-center-publish-workflow-for-presence-statuschange">What Is the Cross-Data Center Publish Workflow for Presence Status Change?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#reliability">Reliability</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#latency">Latency</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./real-time-presence-platform-system-design.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Real Time Presence Platform System Design</h1><h2 class="single-subtitle">User Online Status Indicator</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/deep-dive/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Deep Dive</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-04-15">2023-04-15</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 4264 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 21 minutes </div>
+</div><div class="featured-image"><img alt="/presence-platform-system-design/real-time-presence-platform.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/real-time-presence-platform.webp, /presence-platform-system-design/real-time-presence-platform.webp 1.5x, /presence-platform-system-design/real-time-presence-platform.webp 2x" height="1173" sizes="699px" src="../assets/images/img_193370ecbcce.webp" title="heartbeat signal is used for checking the status of the client in real-time" width="2084"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<p>The system design of the Presence Platform depends on the design of the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">Real-Time Platform</a>. I highly recommend reading the related article to improve your system design skills.</p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-the-real-time-presence-platform"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#what-is-the-real-time-presence-platform"></a>What Is the Real-Time Presence Platform?</h2>
+<p>The presence status is a key feature to make the real-time platform engaging and interactive for the users (<strong>clients</strong>). In layman’s terms, the presence status shows whether a particular client is currently online or offline. The presence status is popular on real-time messaging applications and social networking platforms such as LinkedIn, Facebook, and Slack <sup id="fnref:1"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:1" role="doc-noteref">1</a></sup>. The presence status represents the availability of the client for communication on a <a class="offline-link" href="./chat-application-architecture.html" rel="noopener noreffer">chat</a> application or a social network.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Online presence status; Offline presence status&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/online-offline-presence-status.webp" href="https://systemdesign.one/presence-platform-system-design/online-offline-presence-status.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Online presence status; Offline presence status">
+<img alt="Figure 1: Online presence status; Offline presence status" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/online-offline-presence-status.webp, /presence-platform-system-design/online-offline-presence-status.webp 1.5x, /presence-platform-system-design/online-offline-presence-status.webp 2x" height="1020" sizes="683px" src="../assets/images/img_bd2d941b8513.webp" width="1718"/>
+</a><figcaption class="image-caption">Figure 1: Online presence status; Offline presence status</figcaption>
+</figure>
+<p>Usually, a green colored circle is shown adjacent to the profile image of the client to indicate the client’s presence status as online. The presence status can also show the last active timestamp of the client <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:3" role="doc-noteref">3</a></sup>. The presence status feature offers enormous value on multiple platforms by supporting the following use cases <sup id="fnref:4"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>enabling accurate virtual waiting rooms for efficient staffing and scheduling in telemedicine</li>
+<li>logging and viewing real-time activity in a logistics application</li>
+<li>identify the online users in a chat application or a multi-player game</li>
+<li>enable monitoring of the Internet of Things (<strong>IoT</strong>) devices</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>Node: a server that provides functionality to other services</li>
+<li>Data replication: a technique of storing multiple copies of the same data on different nodes to improve the availability and durability of the system</li>
+<li>High availability: the ability of a service to remain reachable and not lose data even when a failure occurs</li>
+<li>Connections: list of friends or contacts of a particular client</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-the-real-time-presence-platformwork"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#how-does-the-real-time-presence-platformwork"></a>How Does the Real-Time Presence Platform Work?</h2>
+<p>The real-time presence platform leverages the <a href="https://en.wikipedia.org/wiki/Heartbeat_%28computing%29" rel="noopener noreferrer" target="_blank">heartbeat signal</a> signal to check the status of the client in real time. The presence status is broadcast to the clients using the persistent <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" rel="noopener noreferrer" target="_blank">server-sent events</a> (<strong>SSE</strong>) connections on the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a>.</p>
+<h2 class="headerLink" id="questions-to-ask-the-interviewer"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#questions-to-ask-the-interviewer"></a>Questions to Ask the Interviewer</h2>
+<h3 class="headerLink" id="candidate"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#candidate"></a>Candidate</h3>
+<ol>
+<li>What are the primary use cases of the system?</li>
+<li>Are the clients distributed across the globe?</li>
+<li>What is the total count of clients on the platform?</li>
+<li>What is the average amount of concurrent online clients?</li>
+<li>How many times does the presence status of a client change on average during the day?</li>
+<li>What is the anticipated read: write ratio of a presence status change?</li>
+<li>Should the client be able to see the list of all online connections?</li>
+</ol>
+<hr/>
+<h3 class="headerLink" id="interviewer"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#interviewer"></a>Interviewer</h3>
+<ol>
+<li>Clients can view the presence status of their friends (connections) in real-time</li>
+<li>Yes</li>
+<li>700 million</li>
+<li>100 million</li>
+<li>10</li>
+<li>10: 1</li>
+<li>Yes, the connections should be grouped into lists, and the online connections should be displayed at the top of the list</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#requirements"></a>Requirements</h2>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>Display the real-time presence status of a client</li>
+<li>Display the last active timestamp of an offline client</li>
+<li>The connections should be able to see the presence status of the client</li>
+<li>The client should be able to view the list of online clients (connections)</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>Scalable</li>
+<li>Reliable</li>
+<li>High availability</li>
+<li>Low latency</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="real-time-presence-platformapi"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#real-time-presence-platformapi"></a>Real-Time Presence Platform API</h2>
+<p>The connections (<strong>subscribers</strong>) should receive real-time updates on the online status of the client (<strong>publisher</strong>). The persistent SSE connections on the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> can be used to broadcast the changes in the presence status using a JSON payload <sup id="fnref:3"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:3" role="doc-noteref">3</a></sup>. The fields of the <a class="offline-link" href="./protocol-buffers-vs-json.html" rel="noopener noreffer">JSON</a> payload for broadcasting the presence status changes are the following <sup id="fnref:4"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>event</td>
+<td>type of event</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>ID of the user (publisher)</td>
+</tr>
+<tr>
+<td>timestamp</td>
+<td>timestamp of event (can be used for last seen)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The following is a sample payload to broadcast an <em>online</em> event on the presence status:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='{
+   "event": "online",
+   "user_id": "john",
+   "timestamp": 2398020423,
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span>
+   <span class="s2">"event"</span><span class="o">:</span> <span class="s2">"online"</span><span class="p">,</span>
+   <span class="s2">"user_id"</span><span class="o">:</span> <span class="s2">"john"</span><span class="p">,</span>
+   <span class="s2">"timestamp"</span><span class="o">:</span> <span class="mi">2398020423</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The following is a sample payload to broadcast an <em>offline</em> event on the presence status:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='{
+   "event": "offline",
+   "user_id": "paul",
+   "timestamp": 1328020431,
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span>
+   <span class="s2">"event"</span><span class="o">:</span> <span class="s2">"offline"</span><span class="p">,</span>
+   <span class="s2">"user_id"</span><span class="o">:</span> <span class="s2">"paul"</span><span class="p">,</span>
+   <span class="s2">"timestamp"</span><span class="o">:</span> <span class="mi">1328020431</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<h3 class="headerLink" id="heartbeat"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#heartbeat"></a>Heartbeat</h3>
+<p>The heartbeat signal should be connectionless and lightweight for improved performance. Hence, the <a href="https://en.wikipedia.org/wiki/User_Datagram_Protocol" rel="noopener noreferrer" target="_blank">User Datagram Protocol</a> (<strong>UDP</strong>) is a natural fit for sending the heartbeat. A low-valued time interval between consecutive heartbeats will result in an increased system load and poor performance. On the contrary, a high-valued time interval between consecutive heartbeats will introduce a delay in detecting the status of the client. Therefore, the interval delay should be finely tuned for efficiency and accuracy <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="real-time-presence-platform-datastorage"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#real-time-presence-platform-datastorage"></a>Real-Time Presence Platform Data Storage</h2>
+<p>The timestamp of the latest heartbeat signal received must be stored in the presence database to identify the last active timestamp of the client. The relational database with support for transactions and atomicity, <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a>, isolation, and durability (<strong>ACID</strong>) compliance can be an overkill for keeping presence status data. The NoSQL database such as <a href="https://cassandra.apache.org/_/index.html" rel="noopener noreferrer" target="_blank">Apache Cassandra</a> offers high write throughput at the expense of slower read operations due to the usage of an LSM-based storage engine. Hence, Cassandra cannot be used to store the presence status data.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Data schema for user presence status&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/data-schema-user-presence.webp" href="https://systemdesign.one/presence-platform-system-design/data-schema-user-presence.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Data schema for user presence status">
+<img alt="Figure 2: Data schema for user presence status" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/data-schema-user-presence.webp, /presence-platform-system-design/data-schema-user-presence.webp 1.5x, /presence-platform-system-design/data-schema-user-presence.webp 2x" height="723" sizes="683px" src="../assets/images/img_28fce3040eda.webp" width="1580"/>
+</a><figcaption class="image-caption">Figure 2: Data schema for user presence status</figcaption>
+</figure>
+<p>A distributed key-value store that can support both extremely high read and extremely high write operations must be used for the real-time presence database <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>. Redis is a fast, <a class="offline-link" href="./open-source-guidelines.html" rel="noopener noreffer">open-source</a>, and in-memory key-value data store that offers high throughput read-write operations. Redis can be provisioned as the presence database. The <a href="https://redis.io/docs/data-types/hashes/" rel="noopener noreferrer" target="_blank">hash</a> data type in Redis will efficiently store the presence status of a client. The hash key will be the user ID and the value will be the last active timestamp.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#further-system-design-learning-resources"></a>Further System Design Learning Resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="real-time-presence-platform-high-level-design"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#real-time-presence-platform-high-level-design"></a>Real-Time Presence Platform High-Level Design</h2>
+<p>A trivial approach to implementing the presence platform is to take advantage of clickstream events in the system. The presence service can track the client status through clickstream events and change the presence status to offline when the server has not received any clickstream events from the client for a defined  time threshold. The downside of this approach is that clickstream events might not be available on every system. Besides, the change in the client’s presence status will not be accurate due to the dependency on clickstream events.</p>
+<hr/>
+<h3 class="headerLink" id="prototyping-the-presence-platform-with-redissets"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#prototyping-the-presence-platform-with-redissets"></a>Prototyping the Presence Platform With Redis Sets</h3>
+<p>The <a href="https://redis.io/docs/data-types/sets/" rel="noopener noreferrer" target="_blank">sets</a> data type in Redis is an unordered collection of unique members with no duplicates. The sets data type can be used to store the presence status of the clients at the expense of not showing the last active timestamp of the client. The user IDs of the connections of a particular client can be stored in a set named <em>connections</em> and the user IDs of every online user on the platform can be stored in a set named <em>online</em>.</p>
+<p>The sets data type in Redis supports intersection operation between multiple sets. The intersection operation between the set <em>online</em> and set <em>connections</em> can be performed to identify the list of connections of a particular client, who is currently online. The following Redis set commands can be useful to prototype the presence platform <sup id="fnref:5"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SADD</td>
+<td>add the user to the online set</td>
+</tr>
+<tr>
+<td>SISMEMBER</td>
+<td>check if the user is online</td>
+</tr>
+<tr>
+<td>SREM</td>
+<td>remove the user from the online set</td>
+</tr>
+<tr>
+<td>SCARD</td>
+<td>fetch the total count of online users</td>
+</tr>
+<tr>
+<td>SINTER</td>
+<td>identify connections who are online</td>
+</tr>
+</tbody>
+</table></div>
+<p>The set operations such as adding, removing, or checking whether an item is a set member take constant time complexity, O(1). The time complexity of the set intersection is O(n*m), where <em>n</em> is the cardinality of the smallest set and <em>m</em> is the number of sets. Alternatively, the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> or cuckoo filter can be used to reduce memory usage at the expense of approximate results <sup id="fnref:5"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Key expiration pattern with sliding window&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/key-expiration-sliding-window.webp" href="https://systemdesign.one/presence-platform-system-design/key-expiration-sliding-window.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Key expiration pattern with sliding window">
+<img alt="Figure 3: Key expiration pattern with sliding window" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/key-expiration-sliding-window.webp, /presence-platform-system-design/key-expiration-sliding-window.webp 1.5x, /presence-platform-system-design/key-expiration-sliding-window.webp 2x" height="821" sizes="683px" src="../assets/images/img_7c61bf200ed4.webp" width="1546"/>
+</a><figcaption class="image-caption">Figure 3: Key expiration pattern with sliding window</figcaption>
+</figure>
+<p>The client-side failures or jittery client connections can be handled through the key expiration pattern. A sliding window of sets with time-scoped keys can be used to implement the key expiration pattern. In layman’s terms, a new set is created periodically to keep track of online clients. In addition, two sets named <em>current</em> and <em>next</em> with distinct expiry times are kept simultaneously in the Redis server.</p>
+<p>When a client changes the status to online, the user ID of the particular client is added to both the <em>current</em> set and the <em>next</em> set. The presence status of the client is identified by querying only the <em>current</em> set. The <em>current</em> set is eventually removed on expiry as time elapses. The trivial implementation of the system is the primary benefit of the current architecture with the sliding window key expiration. The limitation of the current prototype is that the status of a client who gets disconnected abruptly is not reflected in real time because the change in presence status depends on the sliding window length <sup id="fnref:6"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Presence platform with Redis sets&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/presence-platform-redis-sets.webp" href="https://systemdesign.one/presence-platform-system-design/presence-platform-redis-sets.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Presence platform with Redis sets">
+<img alt="Figure 4: Presence platform with Redis sets" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/presence-platform-redis-sets.webp, /presence-platform-system-design/presence-platform-redis-sets.webp 1.5x, /presence-platform-system-design/presence-platform-redis-sets.webp 2x" height="1261" sizes="683px" src="../assets/images/img_e9bbf30f7c2b.webp" width="1723"/>
+</a><figcaption class="image-caption">Figure 4: Presence platform with Redis sets</figcaption>
+</figure>
+<p>The Redis server can make use of <a href="https://redis.io/docs/manual/keyspace-notifications/" rel="noopener noreferrer" target="_blank">Redis keyspace notifications</a> to notify the clients (subscribers) connected to the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> when the presence status changes. The server can subscribe to any data change events in Redis in near real-time through Redis keyspace notifications. The key expiration in Redis might not occur in real-time because Redis uses either lazy expiration on read operation or through a background cleanup process. The keyspace notification gets only triggered when Redis removes the key-value pair. The limitations with keyspace notifications for detecting changes in presence status are the following <sup id="fnref:7"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li>Redis keyspace notifications consume CPU power</li>
+<li>key expiration by Redis is not real-time</li>
+<li>subscribing to keyspace notifications on the Redis cluster is relatively complex</li>
+</ul>
+<p>The heartbeat signal updates the expiry time of a key in the Redis set. The <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> can broadcast the change in the status of a particular client (publisher) to subscribers over SSE. In conclusion, do not use the Redis sets approach for implementing the presence platform.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="presence-platform-with-pub-subserver"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#presence-platform-with-pub-subserver"></a>Presence Platform With Pub-Sub Server</h3>
+<p>The publisher (client) can broadcast the presence status to multiple subscribers through a <a href="https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern" rel="noopener noreferrer" target="_blank">publish-subscribe</a> (<strong>pub-sub</strong>) server. The subscriber who was disconnected during the broadcast operation should not see the status history of a publisher when the subscriber reconnects later to the platform.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Presence platform with pub-sub server&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/presence-platform-pub-sub.webp" href="https://systemdesign.one/presence-platform-system-design/presence-platform-pub-sub.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Presence platform with pub-sub server">
+<img alt="Figure 5: Presence platform with pub-sub server" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/presence-platform-pub-sub.webp, /presence-platform-system-design/presence-platform-pub-sub.webp 1.5x, /presence-platform-system-design/presence-platform-pub-sub.webp 2x" height="993" sizes="683px" src="../assets/images/img_17d82a0de256.webp" width="1751"/>
+</a><figcaption class="image-caption">Figure 5: Presence platform with pub-sub server</figcaption>
+</figure>
+<p>The message bus in the pub-sub server should be configured in fire-and-forget (<strong>ephemeral</strong>) mode to ensure that the presence status history is not stored to reduce storage needs. There is a risk with the fire-and-forget mode that some subscribers might not receive the changes in client status. Redis pub-sub or Apache Kafka can be configured as the message bus. The limitations of using the pub-sub server in the ephemeral mode are the following:</p>
+<ul>
+<li>no guaranteed at least one-time message delivery</li>
+<li>degraded latency because consumers use a pull-based model</li>
+<li>operational complexity of message bus such as Apache Kafka is relatively high</li>
+</ul>
+<p>In summary, do not use the pub-sub approach for implementing the presence  platform.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="an-abstract-presenceplatform"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#an-abstract-presenceplatform"></a>An Abstract Presence Platform</h3>
+<p>The <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> is a critical component for the implementation of the presence feature. Both the publisher and the subscriber maintain a persistent SSE connection with the real-time platform. The bandwidth usage to fan out the client’s presence status can be reduced by reusing the existing SSE connection.</p>
+<p>Simply put, the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> is a publish-subscribe service for streaming the client’s presence status to the subscribers over the persistent SSE connection <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:9" role="doc-noteref">9</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The presence platform should track the following events to identify any change in the status of the client <sup id="fnref:3"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>online</td>
+<td>published when a client connects to the platform</td>
+</tr>
+<tr>
+<td>offline</td>
+<td>published when a client disconnects from the platform</td>
+</tr>
+<tr>
+<td>timeout</td>
+<td>published when a client is disconnected from the platform for over a minute</td>
+</tr>
+</tbody>
+</table></div>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Presence platform; High-level design&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/presence-platform-high-level-design.webp" href="https://systemdesign.one/presence-platform-system-design/presence-platform-high-level-design.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Presence platform; High-level design">
+<img alt="Figure 6: Presence platform; High-level design" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/presence-platform-high-level-design.webp, /presence-platform-system-design/presence-platform-high-level-design.webp 1.5x, /presence-platform-system-design/presence-platform-high-level-design.webp 2x" height="1205" sizes="683px" src="../assets/images/img_b7cbb991b28d.webp" width="1864"/>
+</a><figcaption class="image-caption">Figure 6: Presence platform; High-level design</figcaption>
+</figure>
+<p>The presence status of a client connected to the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> must be shown <em>online</em>. The client should also subscribe to the real-time platform for notifications on the status of the client’s connections (friends). At a very high level, the following operations are executed by the presence platform <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ol>
+<li>the subscriber (client) queries the presence service to fetch the status of a publisher over the HTTP GET method</li>
+<li>the presence service queries the presence database to identify the presence status</li>
+<li>the client subscribes to the status of a publisher through the real-time platform and creates an SSE connection</li>
+<li>the publisher comes online and makes an SSE connection with the real-time platform</li>
+<li>the real-time platform sends a heartbeat signal to the presence  service over UDP</li>
+<li>the presence service queries the presence database to check if the publisher just came online</li>
+<li>the presence service publishes an <em>online</em> event to the real-time platform over the HTTP PUT method</li>
+<li>the real-time platform broadcasts the change in the presence status of the publisher to subscribers over SSE</li>
+</ol>
+<p>The presence service should return the last active timestamp of an <em>offline</em> publisher by querying the presence database. In synopsis, the current architecture can be used to implement a real-time presence platform.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#further-system-design-learning-resources-1"></a>Further System Design Learning Resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="design-deepdive"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#design-deepdive"></a>Design Deep Dive</h2>
+<h3 class="headerLink" id="how-does-the-presence-platform-identify-whether-a-user-isonline"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#how-does-the-presence-platform-identify-whether-a-user-isonline"></a>How Does the Presence Platform Identify Whether a User Is Online?</h3>
+<p>The <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> can be leveraged by the presence platform for streaming the change in status of a particular client to the subscribers in real-time <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:9" role="doc-noteref">9</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The subscriber establishes an SSE connection with the real-time platform and also subscribes to any change in the status of the connections (clients). The heartbeat signal is used by the presence platform to detect the current status of a client (publisher). The presence platform publishes  an <em>online</em> event to the real-time platform for notifying the subscribers when the client status changes to online <sup id="fnref:4"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:4" role="doc-noteref">4</a></sup>. The client who just came online can query the presence platform through the Representational state transfer (<strong>REST</strong>) API to check the presence status of a particular client.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Presence platform checking whether a user is online&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/presence-platform-online-event.webp" href="https://systemdesign.one/presence-platform-system-design/presence-platform-online-event.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Presence platform checking whether a user is online">
+<img alt="Figure 7: Presence platform checking whether a user is online" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/presence-platform-online-event.webp, /presence-platform-system-design/presence-platform-online-event.webp 1.5x, /presence-platform-system-design/presence-platform-online-event.webp 2x" height="1180" sizes="683px" src="../assets/images/img_86384ec94a19.webp" width="1831"/>
+</a><figcaption class="image-caption">Figure 7: Presence platform checking whether a user is online</figcaption>
+</figure>
+<p>The following operations are executed by the presence platform for notifying the subscribers when a client changes the status to online <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ol>
+<li>The publisher (client) creates an SSE connection with the real-time platform</li>
+<li>The real-time platform sends a heartbeat signal to the presence service over UDP</li>
+<li>The presence service queries the presence database to check whether an unexpired record for the publisher exists in the database</li>
+<li>The presence service infers that the publisher just changed the status to online if there is no database record or if the previous record has expired</li>
+<li>The presence platform publishes an <em>online</em> event to the real-time platform over the HTTP PUT method</li>
+<li>The real-time platform broadcasts the change in the presence status to subscribers over SSE</li>
+<li>The presence service subsequently inserts a record in the presence database with an expiry value slightly greater than the timestamp for the successive heartbeat</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Flowchart; Presence platform processing a heartbeat signal&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/flowchart-presence-platform-heartbeat.webp" href="https://systemdesign.one/presence-platform-system-design/flowchart-presence-platform-heartbeat.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Flowchart; Presence platform processing a heartbeat signal">
+<img alt="Figure 8: Flowchart; Presence platform processing a heartbeat signal" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/flowchart-presence-platform-heartbeat.webp, /presence-platform-system-design/flowchart-presence-platform-heartbeat.webp 1.5x, /presence-platform-system-design/flowchart-presence-platform-heartbeat.webp 2x" height="2147" sizes="683px" src="../assets/images/img_c23090742267.webp" width="2764"/>
+</a><figcaption class="image-caption">Figure 8: Flowchart; Presence platform processing a heartbeat signal</figcaption>
+</figure>
+<p>The presence service only updates the last active timestamp of the publisher in the presence database when an unexpired record already exists in the presence database because there was no change in the status of the publisher.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-the-presence-platform-identify-when-a-user-goesoffline"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#how-does-the-presence-platform-identify-when-a-user-goesoffline"></a>How Does the Presence Platform Identify When a User Goes Offline?</h3>
+<p>When the publisher doesn’t reconnect to the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> within a defined time interval, the presence platform should detect the absence of the heartbeat signals. The presence platform will subsequently publish an <em>offline</em> event over HTTP to the real-time platform for broadcasting the change in presence status to all the subscribers. The <em>offline</em> event must include the last active timestamp of the publisher <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: Presence platform checking whether a user is offline&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/presence-platform-offline-event.webp" href="https://systemdesign.one/presence-platform-system-design/presence-platform-offline-event.webp" rel="noopener noreferrer" target="_blank" title="Figure 9: Presence platform checking whether a user is offline">
+<img alt="Figure 9: Presence platform checking whether a user is offline" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/presence-platform-offline-event.webp, /presence-platform-system-design/presence-platform-offline-event.webp 1.5x, /presence-platform-system-design/presence-platform-offline-event.webp 2x" height="1272" sizes="683px" src="../assets/images/img_bdb56085642f.webp" width="1851"/>
+</a><figcaption class="image-caption">Figure 9: Presence platform checking whether a user is offline</figcaption>
+</figure>
+<p>The web browser can trigger an <a href="https://www.w3schools.com/jsref/event_onunload.asp" rel="noopener noreferrer" target="_blank">unload event</a> to change the presence status when the publisher closes the application <sup id="fnref:4"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:4" role="doc-noteref">4</a></sup>. A delayed trigger can be configured on the presence service to identify the absence of a heartbeat signal. The delayed trigger will guarantee the accuracy of detection in the status changes. The delayed trigger must schedule a timer that gets executed when the time interval for the successive heartbeat elapses. The delayed trigger execution should query the presence database to check whether the database record for a specific publisher has expired. The following operations are executed by the presence platform for notifying the subscribers when a client changes the status to offline <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ol>
+<li>The delayed trigger queries the presence database to check whether the database record of the publisher has expired</li>
+<li>The presence service publishes an <em>offline</em> event to the real-time platform over HTTP when the database record has expired</li>
+<li>The real-time platform broadcasts the change in status along with the last active timestamp to the subscribers over SSE</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Flowchart; Presence platform using a delayed trigger&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/flowchart-delayed-trigger.webp" href="https://systemdesign.one/presence-platform-system-design/flowchart-delayed-trigger.webp" rel="noopener noreferrer" target="_blank" title="Figure 10: Flowchart; Presence platform using a delayed trigger">
+<img alt="Figure 10: Flowchart; Presence platform using a delayed trigger" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/flowchart-delayed-trigger.webp, /presence-platform-system-design/flowchart-delayed-trigger.webp 1.5x, /presence-platform-system-design/flowchart-delayed-trigger.webp 2x" height="1787" sizes="683px" src="../assets/images/img_7575485f6c6e.webp" width="2316"/>
+</a><figcaption class="image-caption">Figure 10: Flowchart; Presence platform using a delayed trigger</figcaption>
+</figure>
+<p>The presence service creates a delayed trigger if the trigger doesn’t already exist when the heartbeat is processed. The delayed trigger should be reset in case the trigger already exists <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Actor model in the presence platform&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/actor-model-presence-platform.webp" href="https://systemdesign.one/presence-platform-system-design/actor-model-presence-platform.webp" rel="noopener noreferrer" target="_blank" title="Figure 11: Actor model in the presence platform">
+<img alt="Figure 11: Actor model in the presence platform" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/actor-model-presence-platform.webp, /presence-platform-system-design/actor-model-presence-platform.webp 1.5x, /presence-platform-system-design/actor-model-presence-platform.webp 2x" height="887" sizes="683px" src="../assets/images/img_317e161745cf.webp" width="1206"/>
+</a><figcaption class="image-caption">Figure 11: Actor model in the presence platform</figcaption>
+</figure>
+<p>The <a href="https://en.wikipedia.org/wiki/Actor_model" rel="noopener noreferrer" target="_blank">actor</a> model can be used to implement the presence service for improved performance. An actor is an extremely lightweight object that can receive messages and take actions to handle the messages. A thread will be assigned to an actor when a message must be processed. The thread is released once the message is processed and the thread is subsequently assigned to the next actor. The total count of actors in the presence platform will be equal to the total count of online users. The lifecycle of an actor depends on the online status of the corresponding client. The following operations are executed when the presence service receives a heartbeat signal <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ol>
+<li>create an actor in the presence service if an actor doesn’t already exist for the particular client</li>
+<li>set a delayed trigger on the actor for publishing  an <em>offline</em> event when the timeout interval elapses</li>
+<li>the actor publishes an <em>offline</em> event when the delayed trigger gets executed</li>
+</ol>
+<p>Every delayed trigger should be drained before decommissioning the presence service for improved reliability of the real-time presence platform.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-handle-jittery-connections-of-theclient"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#how-to-handle-jittery-connections-of-theclient"></a>How to Handle Jittery Connections of the Client?</h3>
+<p>The client signing off or timing out will likely have the same status on a chat application. Therefore, the offline and timeout actions of a client can be indicated by the <em>offline</em> event. In IoT at transportation companies, a longer time interval must be set for the timeout to prevent excessive offline events from being published because the region of IoT operation might have poor network connectivity. On the contrary, the IoT in a home security system needs a very short timeout interval for alerts when the monitoring service is down. The <em>offline</em> event can be published by the presence platform for the following reasons <sup id="fnref:4"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>the client lost internet connectivity</li>
+<li>the client left the platform abruptly</li>
+</ul>
+<p>The clients connected to the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> through mobile devices are often on unpredictable networks. The client might disconnect and reconnect to the platform randomly. The presence platform should be able to handle jittery client connections gracefully to prevent constant fluctuations in the client’s presence status, which might result in a poor user experience and unnecessary bandwidth usage <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: Presence platform; Heartbeat signal&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/heartbeat-presence-platform.webp" href="https://systemdesign.one/presence-platform-system-design/heartbeat-presence-platform.webp" rel="noopener noreferrer" target="_blank" title="Figure 12: Presence platform; Heartbeat signal">
+<img alt="Figure 12: Presence platform; Heartbeat signal" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/heartbeat-presence-platform.webp, /presence-platform-system-design/heartbeat-presence-platform.webp 1.5x, /presence-platform-system-design/heartbeat-presence-platform.webp 2x" height="1687" sizes="683px" src="../assets/images/img_40b5806efc75.webp" width="2523"/>
+</a><figcaption class="image-caption">Figure 12: Presence platform; Heartbeat signal</figcaption>
+</figure>
+<p>The real-time platform sends periodic heartbeat signals to the presence platform with the user ID of the connected publisher and a timestamp of the heartbeat in the payload. The presence platform will show the status of the client online when periodic heartbeats are received. The presence status can be kept online although the client gets disconnected from the network as long as the successive heartbeat is received by the presence platform within the defined timeout interval <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="what-is-the-subscribe-workflow-and-publish-workflow-for-the-real-time-platform"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#what-is-the-subscribe-workflow-and-publish-workflow-for-the-real-time-platform"></a>What Is the Subscribe Workflow and Publish Workflow for the Real-Time Platform?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Presence platform; Subscribe workflow&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/subscribe-presence-platform.webp" href="https://systemdesign.one/presence-platform-system-design/subscribe-presence-platform.webp" rel="noopener noreferrer" target="_blank" title="Figure 13: Presence platform; Subscribe workflow">
+<img alt="Figure 13: Presence platform; Subscribe workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/subscribe-presence-platform.webp, /presence-platform-system-design/subscribe-presence-platform.webp 1.5x, /presence-platform-system-design/subscribe-presence-platform.webp 2x" height="1014" sizes="683px" src="../assets/images/img_18a029cdf00f.webp" width="1655"/>
+</a><figcaption class="image-caption">Figure 13: Presence platform; Subscribe workflow</figcaption>
+</figure>
+<p>The following operations are executed for the subscription when the client connects to the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> <sup id="fnref:10"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ol>
+<li>the client subscribes to the gateway server over HTTP</li>
+<li>the gateway stores the subscription associations on the in-memory subscription store</li>
+<li>the gateway server makes a subscription request on the endpoint store by creating an entry on the key-value store</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 14: Presence platform; Publish workflow&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/publish-presence-platform.webp" href="https://systemdesign.one/presence-platform-system-design/publish-presence-platform.webp" rel="noopener noreferrer" target="_blank" title="Figure 14: Presence platform; Publish workflow">
+<img alt="Figure 14: Presence platform; Publish workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/publish-presence-platform.webp, /presence-platform-system-design/publish-presence-platform.webp 1.5x, /presence-platform-system-design/publish-presence-platform.webp 2x" height="1491" sizes="683px" src="../assets/images/img_9431f76cbc3d.webp" width="2785"/>
+</a><figcaption class="image-caption">Figure 14: Presence platform; Publish workflow</figcaption>
+</figure>
+<p>The following operations are executed when the publisher with a user ID <em>red</em> changes the presence status <sup id="fnref:10"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ol>
+<li>the dispatcher queries the external endpoint store to identify the set of subscribed gateway servers on the status of the publisher with <em>red</em> as the user ID</li>
+<li>the dispatcher publishes the status change to the set of subscribed gateway servers over the HTTP</li>
+<li>the gateway server queries the local in-memory subscription store to identify the clients subscribed to the status change of the publisher with <em>red</em> as the user ID</li>
+<li>the gateway server broadcasts the status change to all the subscribed clients over SSE</li>
+</ol>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="what-is-the-cross-data-center-publish-workflow-for-presence-statuschange"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#what-is-the-cross-data-center-publish-workflow-for-presence-statuschange"></a>What Is the Cross-Data Center Publish Workflow for Presence Status Change?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 15: Publishing the status change across data centers through broadcasting&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/cross-data-center-presence-publish.webp" href="https://systemdesign.one/presence-platform-system-design/cross-data-center-presence-publish.webp" rel="noopener noreferrer" target="_blank" title="Figure 15: Publishing the status change across data centers through broadcasting">
+<img alt="Figure 15: Publishing the status change across data centers through broadcasting" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/cross-data-center-presence-publish.webp, /presence-platform-system-design/cross-data-center-presence-publish.webp 1.5x, /presence-platform-system-design/cross-data-center-presence-publish.webp 2x" height="1848" sizes="683px" src="../assets/images/img_73a94edbbd68.webp" width="3532"/>
+</a><figcaption class="image-caption">Figure 15: Publishing the status change across data centers through broadcasting</figcaption>
+</figure>
+<p>The following operations are executed when the presence status of a client changes <sup id="fnref:10"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ol>
+<li>the dispatcher in the local data center broadcasts the status change to dispatchers on peer data centers over HTTP</li>
+<li>the dispatcher queries the local endpoint store to check if there are any subscribed gateway servers on the status change of the particular publisher</li>
+<li>the subscribed gateway server queries the local in-memory subscription store to identify the subscribed clients</li>
+<li>the gateway server fans out the status change to the subscribed clients over SSE</li>
+</ol>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#scalability"></a>Scalability</h3>
+<p>The serverless functions can be used to implement presence service for <a class="offline-link" href="../fundamentals/micro-frontends.html" rel="noopener noreffer">scalability</a> and reduced operational complexity. The REST API endpoints of the platform can also be implemented using serverless functions for easy horizontal scaling <sup id="fnref:4"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:12"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 16: Scaling the presence platform&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/scale-presence-platform.webp" href="https://systemdesign.one/presence-platform-system-design/scale-presence-platform.webp" rel="noopener noreferrer" target="_blank" title="Figure 16: Scaling the presence platform">
+<img alt="Figure 16: Scaling the presence platform" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/scale-presence-platform.webp, /presence-platform-system-design/scale-presence-platform.webp 1.5x, /presence-platform-system-design/scale-presence-platform.webp 2x" height="1621" sizes="683px" src="../assets/images/img_a0bd61a5d1bf.webp" width="2132"/>
+</a><figcaption class="image-caption">Figure 16: Scaling the presence platform</figcaption>
+</figure>
+<p>The presence status including the last active timestamp of the clients is stored in the distributed presence database. The presence service should be replicated for scalability and high availability. <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">Consistent hashing</a> can be used to redirect the heartbeats from a particular client to the same set of nodes (sticky routing) of the presence service to prevent the creation of duplicate delayed triggers <sup id="fnref:2"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 17: Deploying the presence platform across multiple data centers&lt;/h2&gt;" data-thumbnail="/presence-platform-system-design/multi-datacenter-presence-platform.webp" href="https://systemdesign.one/presence-platform-system-design/multi-datacenter-presence-platform.webp" rel="noopener noreferrer" target="_blank" title="Figure 17: Deploying the presence platform across multiple data centers">
+<img alt="Figure 17: Deploying the presence platform across multiple data centers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/presence-platform-system-design/multi-datacenter-presence-platform.webp, /presence-platform-system-design/multi-datacenter-presence-platform.webp 1.5x, /presence-platform-system-design/multi-datacenter-presence-platform.webp 2x" height="1181" sizes="683px" src="../assets/images/img_73c38b129f5a.webp" width="1878"/>
+</a><figcaption class="image-caption">Figure 17: Deploying the presence platform across multiple data centers</figcaption>
+</figure>
+<p>The presence platform should be replicated across data centers for scalability, low latency, and high availability. The presence database can make use of <a href="https://redis.com/blog/diving-into-crdts/" rel="noopener noreferrer" target="_blank">conflict-free replicated data type</a> (<strong>CRDT</strong>) for active-active geo-distribution.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="reliability"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#reliability"></a>Reliability</h3>
+<p>The presence database (Redis) should not lose the current status of the clients on a node failure. The following methods can be used to persist Redis data on persistent storage such as solid-state disk (<strong>SSD</strong>) <sup id="fnref:13"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:13" role="doc-noteref">13</a></sup>, <sup id="fnref:14"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:14" role="doc-noteref">14</a></sup>:</p>
+<ul>
+<li>Redis Database (<strong>RDB</strong>)  persistence performs point-in-time snapshots of the dataset at periodic  intervals</li>
+<li>Append Only File (<strong>AOF</strong>) persistence logs every write operation on the server for fault-tolerance</li>
+</ul>
+<p>The RDB method is optimal for disaster recovery. However, there is a risk of data loss on unpredictable node failure because the snapshots are taken periodically. The AOF method is relatively more durable through an append-only log at the expense of larger storage needs. The general rule of thumb for improved reliability with Redis is to use both RDB and AOF persistence methods simultaneously <sup id="fnref:13"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:13" role="doc-noteref">13</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="latency"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#latency"></a>Latency</h3>
+<p>The network hops in the presence platform are very few because the client SSE connections on the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> are reused for the implementation of the presence feature. On top of that, the pipelining feature in Redis can be used to batch the query operations on the presence database for reducing the round-trip time (<strong>RTT</strong>) <sup id="fnref:15"><a class="footnote-ref offline-link" href="./real-time-presence-platform-system-design.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#summary"></a>Summary</h2>
+<p>The real-time presence platform might seem conceptually trivial. However, orchestrating the real-time presence platform at <a class="offline-link" href="./scalable-software-architecture.html" rel="noopener noreffer">scale</a> and maintaining accuracy and reliability can be challenging.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./real-time-presence-platform-system-design.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Sammy Shreibati, <a href="https://blog.linkedin.com/2017/august/16/introducing-active-status-on-linkedin-messaging" rel="noopener noreferrer" target="_blank">Introducing Active Status on LinkedIn Messaging: See When Your Connections are Available</a> (2017), blog.linkedin.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Akhilesh Gupta, Meng Lay, <a href="https://engineering.linkedin.com/blog/2018/01/now-you-see-me--now-you-dont--linkedins-real-time-presence-platf" rel="noopener noreferrer" target="_blank">Now You See Me, Now You Don’t: LinkedIn’s Real-Time Presence Platform</a> (2018), engineering.linkedin.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p><a href="https://www.pubnub.com/guides/the-importance-of-user-presence-in-real-time-technology/" rel="noopener noreferrer" target="_blank">What is User Presence? And Why is it Important?</a>, pubnub.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p><a href="https://www.pubnub.com/blog/presence-webhooks-introduction/" rel="noopener noreferrer" target="_blank">Is Anyone Home? An Intro to Presence Webhooks</a> (2020), pubnub.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Andrew Brookins, <a href="https://www.youtube.com/watch?v=PKdCppSNTGQ" rel="noopener noreferrer" target="_blank">Redis Sets Explained</a> (2022), youtube.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Andrew Brookins, <a href="https://www.youtube.com/watch?v=aRw5ME_5kMY" rel="noopener noreferrer" target="_blank">Redis Sets Elaborated</a> (2022), youtube.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p><a href="https://redis.io/docs/manual/keyspace-notifications/" rel="noopener noreferrer" target="_blank">Redis keyspace notifications</a>, redis.io <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Jeff Barber, <a href="https://www.usenix.org/conference/srecon17americas/program/presentation/erlich" rel="noopener noreferrer" target="_blank">Building Real-Time Infrastructure at Facebook</a> (2017), usenix.org <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p>Akhilesh Gupta, <a href="https://www.infoq.com/presentations/linkedin-play-akka-distributed-systems/" rel="noopener noreferrer" target="_blank">Streaming a Million Likes/Second: Real-Time Interactions on Live Video</a>, infoq.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Neo Kim, <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">Live Comment System Design</a> (2023), systemdesign.one <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p><a href="https://www.infoq.com/podcasts/linkedin-realtime-messaging-architecture/" rel="noopener noreferrer" target="_blank">Akhilesh Gupta on the Architecture of LinkedIn’s Real-Time Messaging Platform</a> (2020), infoq.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p><a href="https://www.pubnub.com/blog/pubnub-react-native-basics-pub-sub-history-gelocation-presence/" rel="noopener noreferrer" target="_blank">React Native in Real Time: Pub/Sub, Geolocation, Presence</a> (2019), pubnub.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p><a href="https://redis.io/docs/management/persistence/" rel="noopener noreferrer" target="_blank">Redis persistence</a>, redis.io <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p><a href="https://www.alibabacloud.com/tech-news/redis/2zd-when-to-use-redis-persistence" rel="noopener noreferrer" target="_blank">When To Use Redis Persistence</a> (2023), alibabacloud.com <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:15" role="doc-endnote">
+<p><a href="https://redis.io/docs/manual/pipelining/" rel="noopener noreferrer" target="_blank">Redis pipelining</a>, redis.io <a class="footnote-backref offline-link" href="./real-time-presence-platform-system-design.html#fnref:15" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-04-15</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Real Time Presence Platform System Design" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Real Time Presence Platform System Design" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="heartbeat signal is used for checking the status of the client in real-time" data-image="presence-platform-system-design/real-time-presence-platform.webp" data-sharer="pinterest" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="heartbeat signal is used for checking the status of the client in real-time" data-sharer="tumblr" data-title="Real Time Presence Platform System Design" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Real Time Presence Platform System Design" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="heartbeat signal is used for checking the status of the client in real-time" data-image="presence-platform-system-design/real-time-presence-platform.webp" data-sharer="vk" data-title="Real Time Presence Platform System Design" data-url="https://systemdesign.one/real-time-presence-platform-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="./live-comment-system-design.html" rel="prev" title="Live Comment System Design"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Live Comment System Design</a>
+<a class="next offline-link" href="./distributed-counter-system-design.html" rel="next" title="Distributed Counter System Design">Distributed Counter System Design<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./real-time-presence-platform-system-design.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./real-time-presence-platform-system-design.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

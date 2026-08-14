@@ -1,0 +1,48 @@
+
+    /* Offline Layout Overrides for Table of Contents (TOC) */
+    @media (min-width: 1300px) {
+        .container {
+            position: relative !important;
+        }
+        #toc-auto {
+            position: fixed !important;
+            top: 100px !important;
+            left: 50% !important;
+            margin-left: 420px !important; /* Perfectly offset to the right of the centered 800px main text */
+            width: 280px !important;
+            max-width: 280px !important;
+            visibility: visible !important;
+            display: block !important;
+            border-left: 1px solid rgba(0,0,0,0.08) !important;
+            padding-left: 15px !important;
+            overflow-y: auto !important;
+            max-height: calc(100vh - 150px) !important;
+            z-index: 10 !important;
+        }
+        [theme=dark] #toc-auto {
+            border-left-color: rgba(255,255,255,0.08) !important;
+        }
+    }
+
+    @media (max-width: 1300px) {
+        #toc-auto {
+            display: none !important; /* Hide absolute floating TOC on smaller screens to prevent overlapping content */
+        }
+    }
+
+    /* Ensure TOC links wrap naturally and do not clip text boundaries */
+    .toc-content a {
+        white-space: normal !important;
+        word-break: break-word !important;
+        display: inline-block !important;
+        width: 100% !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+    }
+
+    /* Standard content width limits for premium layout */
+    .page.single {
+        max-width: 800px !important;
+        margin: 0 auto !important;
+    }
+    

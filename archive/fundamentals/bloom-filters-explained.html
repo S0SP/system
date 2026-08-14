@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Bloom Filters Explained - System Design</title><meta content="probabilistic data structure to check membership of an item in constant time and space" name="Description"/><meta content="Bloom Filters Explained" property="og:title"/>
+<meta content="probabilistic data structure to check membership of an item in constant time and space" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/bloom-filters-explained/" property="og:url"/><meta content="https://systemdesign.one/bloom-filters-explained/bloom-filter.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-03-06T18:08:02+01:00" property="article:published_time"/>
+<meta content="2023-03-10T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/bloom-filters-explained/bloom-filter.webp" name="twitter:image"/>
+<meta content="Bloom Filters Explained" name="twitter:title"/>
+<meta content="probabilistic data structure to check membership of an item in constant time and space" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/bloom-filters-explained/" rel="canonical"/><link href="https://systemdesign.one/software-engineer-interview-learning-resources/" rel="prev"/><link href="https://systemdesign.one/quotient-filter-explained/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/bloom-filters-explained</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./bloom-filters-explained.html#introduction">Introduction</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#requirements">Requirements</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#what-is-a-bloomfilter">What is a bloom filter?</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#how-does-a-bloom-filterwork">How does a bloom filter work?</a>
+<ul>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#how-to-add-an-item-to-the-bloomfilter">How to add an item to the bloom filter?</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#how-to-check-the-membership-of-an-item-in-the-bloomfilter">How to check the membership of an item in the bloom filter?</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#bloom-filter-falsepositive">Bloom filter false positive</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#what-is-the-asymptotic-complexity-of-the-bloomfilter">What is the asymptotic complexity of the bloom filter?</a>
+<ul>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#time-complexity">Time complexity</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#space-complexity">Space complexity</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#bloom-filter-calculator">Bloom filter calculator</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#advantages-of-bloomfilter">Advantages of bloom filter</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#bloom-filter-disadvantages">Bloom filter disadvantages</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#bloom-filter-usecases">Bloom filter use cases</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#bloom-filter-implementation">Bloom filter implementation</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#extensions-of-bloomfilter">Extensions of bloom filter</a>
+<ul>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#counting-bloom-filter">Counting bloom filter</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#scalable-bloom-filter">Scalable bloom filter</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#striped-bloom-filter">Striped bloom filter</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#variants-of-bloomfilter">Variants of bloom filter</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./bloom-filters-explained.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Bloom Filters Explained</h1><h2 class="single-subtitle">Probabilistic Data Structure To Check Membership</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-03-06">2023-03-06</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 2220 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 11 minutes </div>
+</div><div class="featured-image"><img alt="/bloom-filters-explained/bloom-filter.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/bloom-filter.webp, /bloom-filters-explained/bloom-filter.webp 1.5x, /bloom-filters-explained/bloom-filter.webp 2x" height="972" sizes="699px" src="../assets/images/img_da664426b2ee.webp" title="probabilistic data structure to check membership of an item in constant time and space" width="1446"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of data structures and algorithms. This article does not cover an in-depth guide on probabilistic data structures.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<h2 class="headerLink" id="introduction"><a class="header-mark offline-link" href="./bloom-filters-explained.html#introduction"></a>Introduction</h2>
+<p>Data structures such as HashSet can be used in a small data set to test if an item is a member of the data set. However, the operation to test if an item is a member of a large dataset can be expensive. The time complexity and space complexity can be linear in the worst case.</p>
+<p>Probabilistic data structures offer constant time complexity and constant space complexity at the expense of providing an answer that is non-deterministic.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./bloom-filters-explained.html#requirements"></a>Requirements</h2>
+<p>Design a data structure with the following characteristics:</p>
+<ul>
+<li>constant time complexity to test membership</li>
+<li>a small amount of memory to test membership</li>
+<li>insert and query operations should be parallelizable</li>
+<li>test membership can yield approximate results</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-a-bloomfilter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#what-is-a-bloomfilter"></a>What is a bloom filter?</h2>
+<p>A Bloom filter is a space-efficient probabilistic data structure that is used to test whether an item is a member of a set. The bloom filter will always say yes if an item is a set member. However, the bloom filter might still say yes although an item is not a member of the set (<a href="https://en.wikipedia.org/wiki/False_positives_and_false_negatives#False_positive_error" rel="noopener noreferrer" target="_blank">false positive</a>). The items can be added to the bloom filter but the items cannot be removed. The bloom filter supports the following operations:</p>
+<ul>
+<li>adding an item to the set</li>
+<li>test the membership of an item in the set</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-a-bloom-filterwork"><a class="header-mark offline-link" href="./bloom-filters-explained.html#how-does-a-bloom-filterwork"></a>How does a bloom filter work?</h2>
+<p>The bloom filter data structure is a bit array of length n as shown in Figure 1. The position of the buckets is indicated by the index (0–9) for a bit array of length ten. All the bits in the bloom filter are set to zero when the bloom filter is initialized (an empty bloom filter). The bloom filter discards the value of the items but stores only a set of bits identified by the execution of hash functions on the item.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Empty bloom filter&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/empty-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/empty-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Empty bloom filter">
+<img alt="Figure 1: Empty bloom filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/empty-bloom-filter.webp, /bloom-filters-explained/empty-bloom-filter.webp 1.5x, /bloom-filters-explained/empty-bloom-filter.webp 2x" height="1280" sizes="683px" src="../assets/images/img_4cc7d1e49cc8.webp" width="3845"/>
+</a><figcaption class="image-caption">Figure 1: Empty bloom filter</figcaption>
+</figure>
+<hr/>
+<h3 class="headerLink" id="how-to-add-an-item-to-the-bloomfilter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#how-to-add-an-item-to-the-bloomfilter"></a>How to add an item to the bloom filter?</h3>
+<p>The following operations are executed to add an item to the bloom filter:</p>
+<ol>
+<li>the item is hashed through <em>k</em> hash functions</li>
+<li>the modulo n (length of bit array) operation is executed on the output of the hash functions to identify the <em>k</em> array positions (<strong>buckets</strong>)</li>
+<li>the bits at all identified buckets are set to one</li>
+</ol>
+<p>There is a probability that some bits on the array are set to one multiple times due to hash collisions.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Adding an item to the Bloom Filter&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/add-item-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/add-item-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Adding an item to the Bloom Filter">
+<img alt="Figure 2: Adding an item to the Bloom Filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/add-item-bloom-filter.webp, /bloom-filters-explained/add-item-bloom-filter.webp 1.5x, /bloom-filters-explained/add-item-bloom-filter.webp 2x" height="2529" sizes="683px" src="../assets/images/img_7d4d1cb05db9.webp" width="3995"/>
+</a><figcaption class="image-caption">Figure 2: Adding an item to the Bloom Filter</figcaption>
+</figure>
+<p>In Figure 2, the items <em>red</em> and <em>blue</em> are added to the bloom filter. The buckets that should be set to one for the item <em>red</em> are identified by the execution of the modulo operator on the computed hash value.</p>
+<ul>
+<li>h1(<em>red</em>) mod 10 = 1</li>
+<li>h2(<em>red</em>) mod 10 = 3</li>
+<li>h3(<em>red</em>) mod 10 = 5</li>
+</ul>
+<p>The buckets that should be set to one for the item <em>blue</em> are identified by the execution of the modulo operator on the computed hash value.</p>
+<ul>
+<li>h1(<em>blue</em>) mod 10 = 4</li>
+<li>h2(<em>blue</em>) mod 10 = 5</li>
+<li>h3(<em>blue</em>) mod 10 = 9</li>
+</ul>
+<p>The bucket at position five is set to one by distinct items <em>red</em> and <em>blue</em>.</p>
+<hr/>
+<h3 class="headerLink" id="how-to-check-the-membership-of-an-item-in-the-bloomfilter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#how-to-check-the-membership-of-an-item-in-the-bloomfilter"></a>How to check the membership of an item in the bloom filter?</h3>
+<p>The following operations are executed to check if an item is a member of the bloom filter:</p>
+<ol>
+<li>the item is hashed through the same <em>k</em>-hash functions</li>
+<li>the modulo n (length of bit array) operation is executed on the output of the hash functions to identify the <em>k</em> array positions (buckets)</li>
+<li>verify if all the bits at identified buckets are set to one</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Check the membership of an item in the bloom filter&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/item-membership-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/item-membership-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Check the membership of an item in the bloom filter">
+<img alt="Figure 3: Check the membership of an item in the bloom filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/item-membership-bloom-filter.webp, /bloom-filters-explained/item-membership-bloom-filter.webp 1.5x, /bloom-filters-explained/item-membership-bloom-filter.webp 2x" height="2649" sizes="683px" src="../assets/images/img_47943c02649d.webp" width="4071"/>
+</a><figcaption class="image-caption">Figure 3: Check the membership of an item in the bloom filter</figcaption>
+</figure>
+<p>If any of the identified bits are set to zero, the item is not a member of the bloom filter. If all the bits are set to one, the item <strong>might</strong> be a member of the bloom filter. The uncertainty about the membership of an item is due to the possibility of some bits being set to one by different items or due to hash function collisions.</p>
+<p>In Figure 3, the bloom filter is queried to check the membership of item <em>blue</em>. The buckets that should be checked are identified by the execution of the modulo operator on the computed hash value.</p>
+<ul>
+<li>h1(<em>blue</em>) mod 10 = 4</li>
+<li>h2(<em>blue</em>) mod 10 = 5</li>
+<li>h3(<em>blue</em>) mod 10 = 9</li>
+</ul>
+<p>The item <em>blue</em> <strong>might</strong> be a member of the bloom filter as all the bits are set to one.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Check the membership of an item not in the bloom filter&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/item-not-membership-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/item-not-membership-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Check the membership of an item not in the bloom filter">
+<img alt="Figure 4: Check the membership of an item not in the bloom filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/item-not-membership-bloom-filter.webp, /bloom-filters-explained/item-not-membership-bloom-filter.webp 1.5x, /bloom-filters-explained/item-not-membership-bloom-filter.webp 2x" height="2440" sizes="683px" src="../assets/images/img_fa3acc796bc5.webp" width="4143"/>
+</a><figcaption class="image-caption">Figure 4: Check the membership of an item not in the bloom filter</figcaption>
+</figure>
+<p>In Figure 4, the bloom filter is queried to check the membership of item <em>black</em>, which is not a member of the bloom filter.</p>
+<ul>
+<li>h1(<em>black</em>) mod 10 = 0</li>
+<li>h2(<em>black</em>) mod 10 = 3</li>
+<li>h3(<em>black</em>) mod 10 = 6</li>
+</ul>
+<p>The item <em>black</em> is not a member of the bloom filter as the bit at position zero is set to zero. The verification of the remaining bits can be skipped.</p>
+<hr/>
+<h3 class="headerLink" id="bloom-filter-falsepositive"><a class="header-mark offline-link" href="./bloom-filters-explained.html#bloom-filter-falsepositive"></a>Bloom filter false positive</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Bloom filter yielding a false positive&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/false-positive-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/false-positive-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Bloom filter yielding a false positive">
+<img alt="Figure 5: Bloom filter yielding a false positive" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/false-positive-bloom-filter.webp, /bloom-filters-explained/false-positive-bloom-filter.webp 1.5x, /bloom-filters-explained/false-positive-bloom-filter.webp 2x" height="2125" sizes="683px" src="../assets/images/img_1b94b1c83040.webp" width="3915"/>
+</a><figcaption class="image-caption">Figure 5: Bloom filter yielding a false positive</figcaption>
+</figure>
+<p>In Figure 5, the bloom filter is queried to check the membership of item <em>green</em>, which is not a member of the bloom filter.</p>
+<ul>
+<li>h1(<em>green</em>) mod 10 = 3</li>
+<li>h2(<em>green</em>) mod 10 = 4</li>
+<li>h3(<em>green</em>) mod 10 = 5</li>
+</ul>
+<p>The bloom filter will say yes although the item <em>green</em> is not a member of the bloom filter as the bits were set to one by items <em>blue</em> and <em>red</em>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./bloom-filters-explained.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-the-asymptotic-complexity-of-the-bloomfilter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#what-is-the-asymptotic-complexity-of-the-bloomfilter"></a>What is the asymptotic complexity of the bloom filter?</h2>
+<p>The performance of the bloom filter depends on the hash functions used. The faster the computation of the hash function, the quicker the overall time of each operation on the bloom filter.</p>
+<h3 class="headerLink" id="time-complexity"><a class="header-mark offline-link" href="./bloom-filters-explained.html#time-complexity"></a>Time complexity</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>add item</td>
+<td>O(k) or constant</td>
+</tr>
+<tr>
+<td>membership query</td>
+<td>O(k) or constant</td>
+</tr>
+</tbody>
+</table></div>
+<p>where <em>k</em> is the number of hash functions.</p>
+<p>The time complexity of the bloom filter is independent of the number of items already in the bloom filter. The <em>k</em> lookups in the bloom filter are independent and can be parallelized.</p>
+<h3 class="headerLink" id="space-complexity"><a class="header-mark offline-link" href="./bloom-filters-explained.html#space-complexity"></a>Space complexity</h3>
+<p>Regardless of the number of items in the bloom filter, the bloom filter requires a constant number of bits by reserving a few bits per item. The bloom filter does not store the data items yielding a <strong>constant space complexity of O(1)</strong>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="bloom-filter-calculator"><a class="header-mark offline-link" href="./bloom-filters-explained.html#bloom-filter-calculator"></a>Bloom filter calculator</h2>
+<p>The <a href="https://hur.st/bloomfilter/" rel="noopener noreferrer" target="_blank">hur.st bloom filter calculator</a> can be used to choose an optimal size for the bloom filter and explore how the different parameters interact. The accuracy of the bloom filter depends on the following:</p>
+<ul>
+<li>number of hash functions (k)</li>
+<li>quality of hash functions</li>
+<li>length of the bit array (n)</li>
+<li>number of items stored in the bloom filter</li>
+</ul>
+<p>The properties of an optimal hash function for the bloom filter are the following:</p>
+<ul>
+<li>fast</li>
+<li>independent</li>
+<li>uniformly distributed</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="advantages-of-bloomfilter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#advantages-of-bloomfilter"></a>Advantages of bloom filter</h2>
+<p>The advantages of the bloom filter are the following:</p>
+<ul>
+<li>constant time complexity</li>
+<li>constant space complexity</li>
+<li>operations are parallelizable</li>
+<li>no false negatives</li>
+<li>enables privacy by not storing actual items</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="bloom-filter-disadvantages"><a class="header-mark offline-link" href="./bloom-filters-explained.html#bloom-filter-disadvantages"></a>Bloom filter disadvantages</h2>
+<p>The limitations of the bloom filter are the following:</p>
+<ul>
+<li>bloom filter doesn’t support the delete operation</li>
+<li>false positives rate can’t be reduced to zero</li>
+<li>bloom filter on disk requires random access due to random indices generated by hash functions</li>
+</ul>
+<p>Removing an item from the bloom filter is not supported because there is no possibility to identify the bits that should be cleared. There might be other items that map onto the same bits and clearing any of the bits would introduce the possibility of false negatives.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="bloom-filter-usecases"><a class="header-mark offline-link" href="./bloom-filters-explained.html#bloom-filter-usecases"></a>Bloom filter use cases</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Bloom filter used to reduce disk lookups in a database&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/disk-lookup-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/disk-lookup-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Bloom filter used to reduce disk lookups in a database">
+<img alt="Figure 6: Bloom filter used to reduce disk lookups in a database" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/disk-lookup-bloom-filter.webp, /bloom-filters-explained/disk-lookup-bloom-filter.webp 1.5x, /bloom-filters-explained/disk-lookup-bloom-filter.webp 2x" height="3205" sizes="683px" src="../assets/images/img_f434531b6ca5.webp" width="4951"/>
+</a><figcaption class="image-caption">Figure 6: Bloom filter used to reduce disk lookups in a database</figcaption>
+</figure>
+<p>The bloom filters are useful in high-ingestion systems to prevent expensive disk seeks. In Figure 6, for instance, the server performing a lookup of an item in a large table on the disk can degrade the throughput of the service. The bloom filter in memory can be used to serve the lookups and reduce the unnecessary disk I/O except when the bloom filter returns a false positive.
+The applications of the bloom filter are the following:</p>
+<ul>
+<li>reducing disk lookups for the non-existing keys in a database</li>
+<li>determining whether a user ID is already taken</li>
+<li>filtering out previously shown posts on recommendation engines</li>
+<li>checking words for misspellings and <a class="offline-link" href="../case-studies/system-design-pastebin.html#write-path" rel="noopener noreffer">profanity with a spellchecker</a></li>
+<li>identifying malicious URLs, blocked IPs, and fraudulent transactions</li>
+<li>Log-structured merge tree (<a href="https://en.wikipedia.org/wiki/Log-structured_merge-tree" rel="noopener noreferrer" target="_blank">LSM</a>) storage engine used in databases such as <a href="https://cassandra.apache.org/_/index.html" rel="noopener noreferrer" target="_blank">Cassandra</a> uses a bloom filter to check if the key exists in the SSTable</li>
+<li><a href="https://en.wikipedia.org/wiki/MapReduce" rel="noopener noreferrer" target="_blank">MapReduce</a> uses the bloom filter for the efficient processing of large datasets</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="bloom-filter-implementation"><a class="header-mark offline-link" href="./bloom-filters-explained.html#bloom-filter-implementation"></a>Bloom filter implementation</h2>
+<p><a href="https://redis.io/docs/stack/bloom/" rel="noopener noreferrer" target="_blank">RedisBloom</a> module provides bloom filter support out of the box. The bloom filter can take as little as 2% of the memory a set requires and are typically faster than sets.
+The node.js implementation of a bloom filter for academic purposes can be found on <a href="https://github.com/guyroyse/understanding-probabilistic-data-structures/blob/master/code/bloom-filter/javascript/bloom.js" rel="noopener noreferrer" target="_blank">github.com/guyroyse</a>.
+Non-cryptographic hash functions such as <a href="https://en.wikipedia.org/wiki/MurmurHash" rel="noopener noreferrer" target="_blank">MurmurHash</a> or <a href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function" rel="noopener noreferrer" target="_blank">FNV-1a</a> can be used in bloom filters.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="extensions-of-bloomfilter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#extensions-of-bloomfilter"></a>Extensions of bloom filter</h2>
+<h3 class="headerLink" id="counting-bloom-filter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#counting-bloom-filter"></a>Counting bloom filter</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Counting bloom filter&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/counting-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/counting-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Counting bloom filter">
+<img alt="Figure 7: Counting bloom filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/counting-bloom-filter.webp, /bloom-filters-explained/counting-bloom-filter.webp 1.5x, /bloom-filters-explained/counting-bloom-filter.webp 2x" height="2529" sizes="683px" src="../assets/images/img_45868428e3a6.webp" width="3995"/>
+</a><figcaption class="image-caption">Figure 7: Counting bloom filter</figcaption>
+</figure>
+<p>The counting bloom filter includes an array of counters for each bit in the bloom filter array. The counter array is initialized to zeros. The counter for associated bits is incremented when an item is added to the counting bloom filter. The membership query is the same as the classical bloom filter.
+<strong>The counting bloom filter supports the delete operation.</strong> The following operations are executed to delete an item from the bloom filter:</p>
+<ol>
+<li>the item is hashed through the same <em>k</em>-hash functions</li>
+<li>the modulo n (length of bit array) operation is executed on the output of the hash functions to identify the <em>k</em> array positions (buckets)</li>
+<li>the counter of the associated bits is decreased</li>
+<li>the corresponding bit is unset to zero if the associated counter is decremented to zero</li>
+</ol>
+<p>Naturally, Counting Bloom filters are much bigger than classical Bloom filters because additional memory has to be allocated for the counters even if most of them are zeros. Therefore, it is important to estimate how large such counters can become and how their size depends on the filter’s length m and the number of hash functions <em>k</em>.</p>
+<hr/>
+<h3 class="headerLink" id="scalable-bloom-filter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#scalable-bloom-filter"></a>Scalable bloom filter</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Scalable bloom filter&lt;/h2&gt;" data-thumbnail="/bloom-filters-explained/scalable-bloom-filter.webp" href="https://systemdesign.one/bloom-filters-explained/scalable-bloom-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Scalable bloom filter">
+<img alt="Figure 8: Scalable bloom filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/bloom-filters-explained/scalable-bloom-filter.webp, /bloom-filters-explained/scalable-bloom-filter.webp 1.5x, /bloom-filters-explained/scalable-bloom-filter.webp 2x" height="1699" sizes="683px" src="../assets/images/img_6d82da419d81.webp" width="2546"/>
+</a><figcaption class="image-caption">Figure 8: Scalable bloom filter</figcaption>
+</figure>
+<p>The bloom filters cannot be rebalanced on saturation because it is not possible to identify the items that are members of the bloom filter. The bloom filters can be stacked for scalability. Once a bloom filter is saturated, a new bloom filter with a higher capacity is created on top of the current bloom filter. Membership queries require inspecting each bloom filter in the stack. The addition of a new item must check each bloom filter before adding the item to the top bloom filter.</p>
+<hr/>
+<h3 class="headerLink" id="striped-bloom-filter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#striped-bloom-filter"></a>Striped bloom filter</h3>
+<p>The <a href="https://github.com/iamthebot/hyperbloom" rel="noopener noreferrer" target="_blank">striped bloom filter</a> is implemented using an array of unsigned 64-bit integers and is divided into shards for concurrency. Each <a class="offline-link" href="../case-studies/mysql-sharding.html" rel="noopener noreffer">shard</a> contains its mutex, allowing for a high degree of concurrent insert and lookup throughput. A restriction is that the bloom filter size must be a multiple of the number of shards.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="variants-of-bloomfilter"><a class="header-mark offline-link" href="./bloom-filters-explained.html#variants-of-bloomfilter"></a>Variants of bloom filter</h2>
+<p>There are data structures that offer similar functionality as the bloom filter. The popular variants of the bloom filter are the following:</p>
+<ul>
+<li><a class="offline-link" href="./quotient-filter-explained.html" rel="noopener noreffer">quotient filter</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Cuckoo_filter" rel="noopener noreferrer" target="_blank">cuckoo filter</a></li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./bloom-filters-explained.html#summary"></a>Summary</h2>
+<p>The bloom filters are a useful data structure in high-ingestion systems. The bloom filter offers constant time complexity and constant space complexity. The tradeoff is the bloom filter yielding a probabilistic result.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./bloom-filters-explained.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./bloom-filters-explained.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./bloom-filters-explained.html#references"></a>References</h2>
+<ul>
+<li><a href="https://redis.io/docs/stack/bloom/" rel="noopener noreferrer" target="_blank">RedisBloom</a>, redis.io</li>
+<li><a href="https://redis.com/solutions/use-cases/deduplication/" rel="noopener noreferrer" target="_blank">Deduplication with redis</a>, redis.com</li>
+<li>Rob Edwards, <a href="https://www.youtube.com/watch?v=heEDL9usFgs" rel="noopener noreferrer" target="_blank">Bloom Filters</a> (2018), youtube.com</li>
+<li>Suresh Kondamudi, <a href="http://highscalability.com/blog/2016/4/4/how-to-remove-duplicates-in-a-large-dataset-reducing-memory.html" rel="noopener noreferrer" target="_blank">How To Remove Duplicates In A Large Dataset Reducing Memory Requirements By 99%</a> (2016), highscalability.com</li>
+<li><a href="https://redis.com/blog/bloom-filter/" rel="noopener noreferrer" target="_blank">Bloom Filter Datatype for Redis</a> (2022), redis.com</li>
+<li>Burton H. Bloom, <a href="https://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf" rel="noopener noreferrer" target="_blank">Space/Time Trade-offs in Hash Coding with Allowable Errors</a> (1970), uta.edu</li>
+<li>Paulo Almeida et al., <a href="https://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf" rel="noopener noreferrer" target="_blank">Scalable Bloom Filters</a> (2007)</li>
+<li>Andrei Broder, Michael Mitzenmacher, <a href="https://www.eecs.harvard.edu/~michaelm/postscripts/im2005b.pdf" rel="noopener noreferrer" target="_blank">Network Applications of Bloom Filters: A Survey</a> (2004), harvard.edu</li>
+<li>Alfredo Luque, <a href="https://github.com/iamthebot/hyperbloom" rel="noopener noreferrer" target="_blank">Hyperbloom</a> (2014), GitHub.com</li>
+<li>Bonomi, F., et al., <a href="https://theory.stanford.edu/~rinap/papers/esa2006b.pdf" rel="noopener noreferrer" target="_blank">An Improved Construction for Counting Bloom Filters</a> (2006), harvard.edu</li>
+<li>Tarkoma, S., et al., <a href="https://ieeexplore.ieee.org/document/5751342" rel="noopener noreferrer" target="_blank">Theory and Practice of Bloom Filters for Distributed Systems</a> (2012), ieee.org</li>
+<li>Guy Royse, <a href="https://www.youtube.com/watch?v=Z9_wrhdbSC4" rel="noopener noreferrer" target="_blank">How to Use Bloom Filters in Redis</a> (2020), youtube.com</li>
+<li>Akash Jain, <a href="https://octo.vmware.com/bloom-filter/" rel="noopener noreferrer" target="_blank">Probabilistic Data Structures for Big Data and Streaming Applications</a> (2021), octo.vmware.com</li>
+<li>Assoc. Prof. Milko Marinov, <a href="http://infotech-bg.com/sites/default/files/presentations/2021/A02.pdf" rel="noopener noreferrer" target="_blank">A Bloom Filter Application for Processing Big Datasets through MapReduce Framework</a> (2021), infotech-bg.com</li>
+</ul></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-03-10</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Bloom Filters Explained" data-url="https://systemdesign.one/bloom-filters-explained/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/bloom-filters-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/bloom-filters-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Bloom Filters Explained" data-url="https://systemdesign.one/bloom-filters-explained/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="probabilistic data structure to check membership of an item in constant time and space" data-image="bloom-filters-explained/bloom-filter.webp" data-sharer="pinterest" data-url="https://systemdesign.one/bloom-filters-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="probabilistic data structure to check membership of an item in constant time and space" data-sharer="tumblr" data-title="Bloom Filters Explained" data-url="https://systemdesign.one/bloom-filters-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Bloom Filters Explained" data-url="https://systemdesign.one/bloom-filters-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/bloom-filters-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="probabilistic data structure to check membership of an item in constant time and space" data-image="bloom-filters-explained/bloom-filter.webp" data-sharer="vk" data-title="Bloom Filters Explained" data-url="https://systemdesign.one/bloom-filters-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="./software-engineer-interview-learning-resources.html" rel="prev" title="Software Engineer Interview Learning Resources"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Software Engineer Interview Learning Resources</a>
+<a class="next offline-link" href="./quotient-filter-explained.html" rel="next" title="Quotient Filter Explained">Quotient Filter Explained<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./bloom-filters-explained.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./bloom-filters-explained.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

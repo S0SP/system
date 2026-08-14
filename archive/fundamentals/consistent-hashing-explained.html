@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Consistent Hashing Explained - System Design</title><meta content="1. Hashed IP addresses are used to assign a position for the nodes 2. Hash ring is traversed until a node is found" name="Description"/><meta content="Consistent Hashing Explained" property="og:title"/>
+<meta content="1. Hashed IP addresses are used to assign a position for the nodes 2. Hash ring is traversed until a node is found" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/consistent-hashing-explained/" property="og:url"/><meta content="https://systemdesign.one/consistent-hashing-explained/What-is-consistent-hashing.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2022-12-18T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-03-01T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/consistent-hashing-explained/What-is-consistent-hashing.webp" name="twitter:image"/>
+<meta content="Consistent Hashing Explained" name="twitter:title"/>
+<meta content="1. Hashed IP addresses are used to assign a position for the nodes 2. Hash ring is traversed until a node is found" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/consistent-hashing-explained/" rel="canonical"/><link href="https://systemdesign.one/knowledge-test-consistent-hashing/" rel="prev"/><link href="https://systemdesign.one/system-design-interview-cheatsheet/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/consistent-hashing-explained</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./consistent-hashing-explained.html#how-does-consistent-hashingwork">How does consistent hashing work?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#introduction">Introduction</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#partitioning">Partitioning</a>
+<ul>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#random-assignment">Random assignment</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#single-globalcache">Single global cache</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#key-range-partitioning">Key range partitioning</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#static-hash-partitioning">Static hash partitioning</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#further-system-design-learning-resources">Further system design learning resources</a>
+<ul>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#consistent-hashing">Consistent hashing</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#consistent-hashing-implementation">Consistent hashing implementation</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#what-is-the-asymptotic-complexity-of-consistent-hashing">What is the asymptotic complexity of consistent hashing?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#how-to-handle-concurrency-in-consistent-hashing">How to handle concurrency in consistent hashing?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#what-hash-functions-are-used-in-consistent-hashing">What hash functions are used in consistent hashing?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#what-are-the-benefits-of-consistent-hashing">What are the benefits of consistent hashing?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#what-are-the-drawbacks-of-consistent-hashing">What are the drawbacks of consistent hashing?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#what-are-the-consistent-hashing-examples">What are the consistent hashing examples?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#consistent-hashing-algorithm-real-world-implementation">Consistent hashing algorithm real-world implementation</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#consistent-hashing-optimization">Consistent hashing optimization</a>
+<ul>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#multi-probe-consistent-hashing">Multi-probe consistent hashing</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#consistent-hashing-with-boundedloads">Consistent hashing with bounded loads</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#questions-and-solutions">Questions and Solutions</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./consistent-hashing-explained.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Consistent Hashing Explained</h1><h2 class="single-subtitle">Distributed Hashing Technique</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2022-12-18">2022-12-18</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 3972 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 19 minutes </div>
+</div><div class="featured-image"><img alt="/consistent-hashing-explained/What-is-consistent-hashing.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/What-is-consistent-hashing.webp, /consistent-hashing-explained/What-is-consistent-hashing.webp 1.5x, /consistent-hashing-explained/What-is-consistent-hashing.webp 2x" height="592" sizes="699px" src="../assets/images/img_89b5cb46309f.webp" title="1. Hashed IP addresses are used to assign a position for the nodes 2. Hash ring is traversed until a node is found" width="800"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<p><a href="https://newsletter.systemdesign.one/p/what-is-consistent-hashing" rel="noopener noreferrer" target="_blank">Consistent hashing</a> is used in the system design of distributed systems such as the <a class="offline-link" href="../case-studies/url-shortening-system-design.html" rel="noopener noreffer">URL shortener</a>, and <a class="offline-link" href="../case-studies/system-design-pastebin.html" rel="noopener noreffer">Pastebin</a>. I highly recommend reading the related articles to improve your system design skills.</p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-consistent-hashingwork"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#how-does-consistent-hashingwork"></a>How does consistent hashing work?</h2>
+<p>At a high level, consistent hashing performs the following operations:</p>
+<ol>
+<li>The output of the hash function is placed on a virtual ring structure (known as the hash ring)</li>
+<li>The hashed IP addresses of the nodes are used to assign a position for the nodes on the hash ring</li>
+<li>The key of a data object is hashed using the same hash function to find the position of the key on the hash ring</li>
+<li>The hash ring is traversed in the clockwise direction starting from the position of the key until a node is found</li>
+<li>The data object is stored or retrieved from the node that was found</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be useful for you:</p>
+<ul>
+<li>Node: a server that provides functionality to other services</li>
+<li>Hash function: a mathematical function used to map data of arbitrary size to fixed-size values</li>
+<li>Data partitioning: a technique of distributing data across multiple nodes to improve the <a class="offline-link" href="./what-is-code-splitting-in-react.html" rel="noopener noreffer">performance</a> and <a class="offline-link" href="./micro-frontends.html" rel="noopener noreffer">scalability</a> of the system</li>
+<li>Data replication: a technique of storing multiple copies of the same data on different nodes to improve the availability and durability of the system</li>
+<li>Hotspot: A performance-degraded node in a distributed system due to a large share of data storage and a high volume of retrieval or storage requests</li>
+<li><a class="offline-link" href="./gossip-protocol.html" rel="noopener noreffer">Gossip protocol</a>: peer-to-peer communication technique used by nodes to periodically exchange state information</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#requirements"></a>Requirements</h2>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>Design an algorithm to horizontally scale the <a class="offline-link" href="./caching-patterns.html" rel="noopener noreffer">cache</a> servers</li>
+<li>The algorithm must minimize the occurrence of hot spots in the network</li>
+<li>The algorithm must be able to handle <a class="offline-link" href="../case-studies/scalable-software-architecture.html" rel="noopener noreffer">internet-scale</a> dynamic load</li>
+<li>The algorithm must reuse existing network protocols such as TCP/IP</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>Scalable</li>
+<li>High availability</li>
+<li>Low latency</li>
+<li>Reliable</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="introduction"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#introduction"></a>Introduction</h2>
+<p>A website can become extremely popular in a relatively short time frame. The increased load might swamp and degrade the performance of the website. The <a class="offline-link" href="./caching-patterns.html" rel="noopener noreffer">cache</a> server is used to improve the latency and reduce the load on the system. The cache servers must scale to meet the dynamic demand as a fixed collection of cache servers will not be able to handle the dynamic load. In addition, the occurrence of multiple cache misses might swamp the origin server.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Cache replication&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/cache-replication.webp" href="https://systemdesign.one/consistent-hashing-explained/cache-replication.webp" rel="noopener noreferrer" target="_blank" title="Cache replication">
+<img alt="Cache replication" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/cache-replication.webp, /consistent-hashing-explained/cache-replication.webp 1.5x, /consistent-hashing-explained/cache-replication.webp 2x" height="506" sizes="683px" src="../assets/images/img_60609c32f944.webp" width="1051"/>
+</a><figcaption class="image-caption">Figure 1: Cache replication</figcaption>
+</figure>
+<p>The replication of the cache improves the availability of the system. However, replication of the cache does not solve the dynamic load problem as only a limited data set can be cached<sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:1" role="doc-noteref">1</a></sup>. The tradeoffs of the cache replication approach are the following:</p>
+<ul>
+<li>only a limited data set is cached</li>
+<li><a class="offline-link" href="./consistency-patterns.html" rel="noopener noreffer">consistency</a> between cache replicas is expensive to maintain</li>
+</ul>
+<p>The <strong>spread</strong> is the number of cache servers holding the same key-value pair (data object). The <strong>load</strong> is the number of distinct data objects assigned to a cache server. The optimal configuration for the high performance of a cache server is to keep the spread and the load at a minimum<sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Dynamic hashing&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/dynamic-hashing.webp" href="https://systemdesign.one/consistent-hashing-explained/dynamic-hashing.webp" rel="noopener noreferrer" target="_blank" title="Dynamic hashing">
+<img alt="Dynamic hashing" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/dynamic-hashing.webp, /consistent-hashing-explained/dynamic-hashing.webp 1.5x, /consistent-hashing-explained/dynamic-hashing.webp 2x" height="385" sizes="683px" src="../assets/images/img_59190bd67e26.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 2: Dynamic hashing</figcaption>
+</figure>
+<p>The data set must be partitioned (<a class="offline-link" href="../case-studies/mysql-sharding.html" rel="noopener noreffer">shard</a>) among multiple cache servers (<strong>nodes</strong>) to horizontally scale. The replication and partitioning of nodes are orthogonal to each other. Multiple data partitions are stored on a single node for improved fault tolerance and increased throughput. The reasons for partitioning are the following<sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>a cache server is memory bound</li>
+<li>increased throughput</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="partitioning"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#partitioning"></a>Partitioning</h2>
+<p>The data set is partitioned among multiple nodes to horizontally scale out. The different techniques for partitioning the cache servers are the following<sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>Random assignment</li>
+<li>Single global cache</li>
+<li>Key range partitioning</li>
+<li>Static hash partitioning</li>
+<li>Consistent hashing</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="random-assignment"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#random-assignment"></a>Random assignment</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Partitioning; Random assignment&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Partitioning-Random-assignment.webp" href="https://systemdesign.one/consistent-hashing-explained/Partitioning-Random-assignment.webp" rel="noopener noreferrer" target="_blank" title="Partitioning; Random assignment">
+<img alt="Partitioning; Random assignment" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Partitioning-Random-assignment.webp, /consistent-hashing-explained/Partitioning-Random-assignment.webp 1.5x, /consistent-hashing-explained/Partitioning-Random-assignment.webp 2x" height="627" sizes="683px" src="../assets/images/img_6ef8d8cdef41.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 3: Partitioning; Random assignment</figcaption>
+</figure>
+<p>The server distributes the data objects randomly across the cache servers. The random assignment of a large data set results in a relatively uniform distribution of data. However, the client cannot easily identify the node to retrieve the data due to random distribution. In conclusion, the random assignment solution will not scale to handle the dynamic load.</p>
+<hr/>
+<h3 class="headerLink" id="single-globalcache"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#single-globalcache"></a>Single global cache</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Partitioning; Single global cache&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/single-global-cache.webp" href="https://systemdesign.one/consistent-hashing-explained/single-global-cache.webp" rel="noopener noreferrer" target="_blank" title="Partitioning; Single global cache">
+<img alt="Partitioning; Single global cache" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/single-global-cache.webp, /consistent-hashing-explained/single-global-cache.webp 1.5x, /consistent-hashing-explained/single-global-cache.webp 2x" height="406" sizes="683px" src="../assets/images/img_0b7c0bf28122.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 4: Partitioning; Single global cache</figcaption>
+</figure>
+<p>The server stores the whole data set on a single global cache server. The data objects are easily retrieved by the client at the expense of degraded performance and decreased availability of the system. In conclusion, the single global cache solution will not <a class="offline-link" href="../case-studies/hotstar-scaling.html" rel="noopener noreffer">scale</a> to handle the dynamic load.</p>
+<hr/>
+<h3 class="headerLink" id="key-range-partitioning"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#key-range-partitioning"></a>Key range partitioning</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Key range partitioning&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/key-range-partitioning.webp" href="https://systemdesign.one/consistent-hashing-explained/key-range-partitioning.webp" rel="noopener noreferrer" target="_blank" title="Key range partitioning">
+<img alt="Key range partitioning" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/key-range-partitioning.webp, /consistent-hashing-explained/key-range-partitioning.webp 1.5x, /consistent-hashing-explained/key-range-partitioning.webp 2x" height="380" sizes="683px" src="../assets/images/img_34ba9ee15631.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 5: Key range partitioning</figcaption>
+</figure>
+<p>The cache servers are partitioned using the key range of the data set. The client can easily retrieve the data from cache servers. The data set is not necessarily uniformly distributed among the cache servers as there might be more keys in a certain key range. In conclusion, the key range partitioning solution will not scale to handle the dynamic load.</p>
+<hr/>
+<h3 class="headerLink" id="static-hash-partitioning"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#static-hash-partitioning"></a>Static hash partitioning</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Static hash partitioning&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/static-hash-partitioning.webp" href="https://systemdesign.one/consistent-hashing-explained/static-hash-partitioning.webp" rel="noopener noreferrer" target="_blank" title="Static hash partitioning">
+<img alt="Static hash partitioning" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/static-hash-partitioning.webp, /consistent-hashing-explained/static-hash-partitioning.webp 1.5x, /consistent-hashing-explained/static-hash-partitioning.webp 2x" height="613" sizes="683px" src="../assets/images/img_d716d8afdb1b.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 6: Static hash partitioning</figcaption>
+</figure>
+<p>The identifiers (internet protocol address or domain name) of the nodes are placed on an array of length N. The modulo hash service computes the hash of the data key and executes a modulo N operation to locate the array index (node identifier) to store or retrieve a key. The time complexity to locate a node identifier (<strong>ID</strong>) in static hash partitioning is constant O(1).</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Static hash partitioning<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p><strong>node ID = hash(key) mod N</strong></p>
+<p>where N is the array’s length and the key is the key of the data object.</p>
+</div>
+</div>
+</div>
+<p>A collision occurs when multiple nodes are assigned to the same position on the array. The techniques to resolve a collision are <a href="https://en.wikipedia.org/wiki/Open_addressing" rel="noopener noreferrer" target="_blank">open addressing</a> and <a href="https://en.wikipedia.org/wiki/Hash_table#Collision_resolution" rel="noopener noreferrer" target="_blank">chaining</a>. The occurrence of a collision degrades the time complexity of the cache nodes.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Static hash partitioning; Node failure&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/static-hash-partitioning-node-failure.webp" href="https://systemdesign.one/consistent-hashing-explained/static-hash-partitioning-node-failure.webp" rel="noopener noreferrer" target="_blank" title="Static hash partitioning; Node failure">
+<img alt="Static hash partitioning; Node failure" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/static-hash-partitioning-node-failure.webp, /consistent-hashing-explained/static-hash-partitioning-node-failure.webp 1.5x, /consistent-hashing-explained/static-hash-partitioning-node-failure.webp 2x" height="620" sizes="683px" src="../assets/images/img_533fa49afb74.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 7: Static hash partitioning; Node failure</figcaption>
+</figure>
+<p>The static hash partitioning is not horizontally scalable. The removal of a node (due to a server crash) breaks the existing mappings between the keys and nodes. The keys must be rehashed to restore mapping between keys and nodes<sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Static hash partitioning; Node added&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/static-hash-partitioning-node-added.webp" href="https://systemdesign.one/consistent-hashing-explained/static-hash-partitioning-node-added.webp" rel="noopener noreferrer" target="_blank" title="Static hash partitioning; Node added">
+<img alt="Static hash partitioning; Node added" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/static-hash-partitioning-node-added.webp, /consistent-hashing-explained/static-hash-partitioning-node-added.webp 1.5x, /consistent-hashing-explained/static-hash-partitioning-node-added.webp 2x" height="467" sizes="683px" src="../assets/images/img_a4275568f490.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 8: Static hash partitioning; Node added</figcaption>
+</figure>
+<p>New nodes must be provisioned to handle the increasing load. The addition of a node breaks the existing mappings between the keys and nodes. The following are the drawbacks of static hash partitioning:</p>
+<ul>
+<li>nodes will not horizontally scale to handle the dynamic load</li>
+<li>the addition or removal of a node breaks the mapping between keys and nodes</li>
+<li>massive data movement when the number of nodes changes</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: Static hash partitioning; Data movement due to node failure&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Static-hash-partitioning-data-movement.webp" href="https://systemdesign.one/consistent-hashing-explained/Static-hash-partitioning-data-movement.webp" rel="noopener noreferrer" target="_blank" title="Static hash partitioning; Data movement due to node failure">
+<img alt="Static hash partitioning; Data movement due to node failure" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Static-hash-partitioning-data-movement.webp, /consistent-hashing-explained/Static-hash-partitioning-data-movement.webp 1.5x, /consistent-hashing-explained/Static-hash-partitioning-data-movement.webp 2x" height="169" sizes="683px" src="../assets/images/img_f065550806d2.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 9: Static hash partitioning; Data movement due to node failure</figcaption>
+</figure>
+<p>In conclusion, the data set must be rehashed or moved between nodes when the number of nodes changes. The majority of the requests in the meantime will result in cache misses. The requests are delegated to the origin server on cache misses. The heavy load on the origin server might swamp and degrade the service<sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="consistent-hashing"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#consistent-hashing"></a>Consistent hashing</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Consistent hashing&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/consistent-hashing.webp" href="https://systemdesign.one/consistent-hashing-explained/consistent-hashing.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing">
+<img alt="Consistent hashing" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/consistent-hashing.webp, /consistent-hashing-explained/consistent-hashing.webp 1.5x, /consistent-hashing-explained/consistent-hashing.webp 2x" height="751" sizes="683px" src="../assets/images/img_0e8eed861ebd.webp" width="1188"/>
+</a><figcaption class="image-caption">Figure 10: Consistent hashing</figcaption>
+</figure>
+<p>Consistent hashing is a distributed systems technique that operates by assigning the data objects and nodes a position on a virtual ring structure (hash ring). <a href="https://newsletter.systemdesign.one/p/what-is-consistent-hashing" rel="noopener noreferrer" target="_blank">Consistent hashing</a> minimizes the number of keys to be remapped when the total number of nodes changes<sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Hash function mapping&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Hash-function-mapping.webp" href="https://systemdesign.one/consistent-hashing-explained/Hash-function-mapping.webp" rel="noopener noreferrer" target="_blank" title="Hash function mapping">
+<img alt="Hash function mapping" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Hash-function-mapping.webp, /consistent-hashing-explained/Hash-function-mapping.webp 1.5x, /consistent-hashing-explained/Hash-function-mapping.webp 2x" height="645" sizes="683px" src="../assets/images/img_60b5ea06a33e.webp" width="1111"/>
+</a><figcaption class="image-caption">Figure 11: Hash function mapping</figcaption>
+</figure>
+<p>The basic gist behind the <a href="https://newsletter.systemdesign.one/p/what-is-consistent-hashing" rel="noopener noreferrer" target="_blank">consistent hashing</a> algorithm is to hash both node identifiers and data keys using the same hash function. A uniform and independent hashing function such as message-digest 5 (<a href="https://en.wikipedia.org/wiki/MD5" rel="noopener noreferrer" target="_blank"><strong>MD5</strong></a>) is used to find the position of the nodes and keys (data objects) on the hash ring. The output range of the hash function must be of reasonable size to prevent collisions.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: Consistent hash ring&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hash-ring.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hash-ring.webp" rel="noopener noreferrer" target="_blank" title="Consistent hash ring">
+<img alt="Consistent hash ring" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hash-ring.webp, /consistent-hashing-explained/Consistent-hash-ring.webp 1.5x, /consistent-hashing-explained/Consistent-hash-ring.webp 2x" height="578" sizes="683px" src="../assets/images/img_7d5187ca7bfa.webp" width="950"/>
+</a><figcaption class="image-caption">Figure 12: Consistent hash ring</figcaption>
+</figure>
+<p>The output space of the hash function is treated as a fixed circular space to form the hash ring. The largest hash value wraps around the smallest hash value. The hash ring is considered to have a finite number of positions<sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Consistent hashing; Positioning the nodes on the hash ring&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Positioning-the-nodes-on-the-hash-ring.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Positioning-the-nodes-on-the-hash-ring.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Positioning the nodes on the hash ring">
+<img alt="Consistent hashing; Positioning the nodes on the hash ring" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Positioning-the-nodes-on-the-hash-ring.webp, /consistent-hashing-explained/Consistent-hashing-Positioning-the-nodes-on-the-hash-ring.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Positioning-the-nodes-on-the-hash-ring.webp 2x" height="675" sizes="683px" src="../assets/images/img_02a3adec22ca.webp" width="1174"/>
+</a><figcaption class="image-caption">Figure 13: Consistent hashing; Positioning the nodes on the hash ring</figcaption>
+</figure>
+<p>The following operations are executed to locate the position of a node on the hash ring<sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ol>
+<li>Hash the internet protocol (<strong>IP</strong>) address or domain name of the node using a hash function</li>
+<li>The hash code is base converted</li>
+<li>Modulo the hash code with the total number of available positions on the hash ring</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 14: Consistent hashing; Node position&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Node-position.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Node-position.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Node position">
+<img alt="Consistent hashing; Node position" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Node-position.webp, /consistent-hashing-explained/Consistent-hashing-Node-position.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Node-position.webp 2x" height="986" sizes="683px" src="../assets/images/img_a193138814a4.webp" width="1388"/>
+</a><figcaption class="image-caption">Figure 14: Consistent hashing; Node position</figcaption>
+</figure>
+<p>Suppose the hash function produces an output space size of 10 bits (2¹⁰ = 1024), the hash ring formed is a virtual circle with a number range starting from 0 to 1023. The hashed value of the IP address of a node is used to assign a location for the node on the hash ring.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 15: Consistent hashing; Storing a data object (key)&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Storing-data-object.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Storing-data-object.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Storing a data object (key)">
+<img alt="Consistent hashing; Storing a data object (key)" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Storing-data-object.webp, /consistent-hashing-explained/Consistent-hashing-Storing-data-object.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Storing-data-object.webp 2x" height="1133" sizes="683px" src="../assets/images/img_c57b9abdfa81.webp" width="1622"/>
+</a><figcaption class="image-caption">Figure 15: Consistent hashing; Storing a data object (key)</figcaption>
+</figure>
+<p>The key of the data object is hashed using the same hash function to locate the position of the key on the hash ring. The hash ring is traversed in the clockwise direction starting from the position of the key until a node is found. The data object is stored on the node that was found. In simple words, the first node with a position value greater than the position of the key stores the data object<sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 16: Consistent hashing; Retrieving a data object (key)&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Retrieving-data-object.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Retrieving-data-object.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Retrieving a data object (key)">
+<img alt="Consistent hashing; Retrieving a data object (key)" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Retrieving-data-object.webp, /consistent-hashing-explained/Consistent-hashing-Retrieving-data-object.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Retrieving-data-object.webp 2x" height="1158" sizes="683px" src="../assets/images/img_9361789f129a.webp" width="1598"/>
+</a><figcaption class="image-caption">Figure 16: Consistent hashing; Retrieving a data object (key)</figcaption>
+</figure>
+<p>The key of the data object is hashed using the same hash function to locate the position of the key on the hash ring. The hash ring is traversed in the clockwise direction starting from the position of the key until a node is found. The data object is retrieved from the node that was found. In simple words, the first node with a position value greater than the position of the key must hold the data object.</p>
+<p>Each node is responsible for the region on the ring between the node and its predecessor node on the hash ring. The origin server must be queried on a cache miss. In conclusion, the following operations are performed for consistent hashing<sup id="fnref:7"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li>The output of the hash function such as MD5 is placed on the hash ring</li>
+<li>The IP address of the nodes is hashed to find the position of the nodes on the hash ring</li>
+<li>The key of the data object is hashed using the same hash function to locate the position of the key on the hash ring</li>
+<li>Traverse the hash ring in the clockwise direction starting from the position of the key until the next node to identify the correct node to store or retrieve the data object</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 17: Consistent hashing; Deletion of a node&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Deletion-of-node.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Deletion-of-node.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Deletion of a node">
+<img alt="Consistent hashing; Deletion of a node" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Deletion-of-node.webp, /consistent-hashing-explained/Consistent-hashing-Deletion-of-node.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Deletion-of-node.webp 2x" height="688" sizes="683px" src="../assets/images/img_0b2aa34bed32.webp" width="1325"/>
+</a><figcaption class="image-caption">Figure 17: Consistent hashing; Deletion of a node</figcaption>
+</figure>
+<p>The failure (crash) of a node results in the movement of data objects from the failed node to the immediate neighboring node in the clockwise direction. The remaining nodes on the hash ring are unaffected<sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 18: Consistent hashing; Addition of a node&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Addition-of-node.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Addition-of-node.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Addition of a node">
+<img alt="Consistent hashing; Addition of a node" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Addition-of-node.webp, /consistent-hashing-explained/Consistent-hashing-Addition-of-node.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Addition-of-node.webp 2x" height="673" sizes="683px" src="../assets/images/img_89563889c64b.webp" width="1358"/>
+</a><figcaption class="image-caption">Figure 18: Consistent hashing; Addition of a node</figcaption>
+</figure>
+<p>When a new node is provisioned and added to the hash ring, the keys (data objects) that fall within the range of the new node are moved out from the immediate neighboring node in the clockwise direction.</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Consistent hashing<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p><strong>Average number of keys stored on a node = k/N</strong></p>
+<p>where k is the total number of keys (data objects) and N is the number of nodes.</p>
+</div>
+</div>
+</div>
+<p>The deletion or addition of a node results in the movement of an average number of keys stored on a single node. <a href="https://newsletter.systemdesign.one/p/what-is-consistent-hashing" rel="noopener noreferrer" target="_blank">Consistent hashing</a> aid cloud computing by minimizing the movement of data when the total number of nodes changes due to dynamic load<sup id="fnref:8"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 19: Consistent hashing; Non-uniform positioning of nodes&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Non-uniform-positioning-nodes.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Non-uniform-positioning-nodes.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Non-uniform positioning of nodes">
+<img alt="Consistent hashing; Non-uniform positioning of nodes" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Non-uniform-positioning-nodes.webp, /consistent-hashing-explained/Consistent-hashing-Non-uniform-positioning-nodes.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Non-uniform-positioning-nodes.webp 2x" height="784" sizes="683px" src="../assets/images/img_1b242f49e9bb.webp" width="1251"/>
+</a><figcaption class="image-caption">Figure 19: Consistent hashing; Non-uniform positioning of nodes</figcaption>
+</figure>
+<p>There is a chance that nodes are not uniformly distributed on the consistent hash ring. The nodes that receive a huge amount of traffic become hot spots resulting in <a href="https://en.wikipedia.org/wiki/Cascading_failure" rel="noopener noreferrer" target="_blank">cascading failure</a> of the nodes.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 20: Consistent hashing; Virtual nodes&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-Virtual-nodes.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-Virtual-nodes.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing; Virtual nodes">
+<img alt="Consistent hashing; Virtual nodes" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-Virtual-nodes.webp, /consistent-hashing-explained/Consistent-hashing-Virtual-nodes.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-Virtual-nodes.webp 2x" height="825" sizes="683px" src="../assets/images/img_567c5b22be9d.webp" width="1335"/>
+</a><figcaption class="image-caption">Figure 20: Consistent hashing; Virtual nodes</figcaption>
+</figure>
+<p>The nodes are assigned to multiple positions on the hash ring by hashing the node IDs through distinct hash functions to ensure uniform distribution of keys among the nodes. The technique of assigning multiple positions to a node is known as a <strong>virtual node</strong>. The virtual nodes improve the load balancing of the system and prevent hot spots. The number of positions for a node is decided by the heterogeneity of the node. In other words, the nodes with a higher capacity are assigned more positions on the hash ring<sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The data objects can be replicated on adjacent nodes to minimize the data movement when a node crashes or when a node is added to the hash ring. In conclusion, <a href="https://newsletter.systemdesign.one/p/what-is-consistent-hashing" rel="noopener noreferrer" target="_blank">consistent hashing</a> resolves the problem of dynamic load.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="consistent-hashing-implementation"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#consistent-hashing-implementation"></a>Consistent hashing implementation</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 21: Consistent hashing implementation; Binary search tree storing the node positions&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Binary-search-tree-storing-node-positions.webp" href="https://systemdesign.one/consistent-hashing-explained/Binary-search-tree-storing-node-positions.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing implementation; Binary search tree storing the node positions">
+<img alt="Consistent hashing implementation; Binary search tree storing the node positions" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Binary-search-tree-storing-node-positions.webp, /consistent-hashing-explained/Binary-search-tree-storing-node-positions.webp 1.5x, /consistent-hashing-explained/Binary-search-tree-storing-node-positions.webp 2x" height="309" sizes="683px" src="../assets/images/img_51e0dd4b141f.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 21: Consistent hashing implementation; Binary search tree storing the node positions</figcaption>
+</figure>
+<p>The self-balancing binary search tree (<strong>BST</strong>) data structure is used to store the positions of the nodes on the hash ring. The BST offers logarithmic O(log n) time complexity for search, insert, and delete operations. The keys of the BST contain the positions of the nodes on the hash ring.</p>
+<p>The BST data structure is stored on a centralized highly available service. As an alternative, the BST data structure is stored on each node, and the state information between the nodes is synchronized through the <a class="offline-link" href="./gossip-protocol.html" rel="noopener noreffer">gossip protocol</a><sup id="fnref:7"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 22: Consistent hashing implementation; Insertion of a data object (key)&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Insertion-of-data-object.webp" href="https://systemdesign.one/consistent-hashing-explained/Insertion-of-data-object.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing implementation; Insertion of a data object (key)">
+<img alt="Consistent hashing implementation; Insertion of a data object (key)" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Insertion-of-data-object.webp, /consistent-hashing-explained/Insertion-of-data-object.webp 1.5x, /consistent-hashing-explained/Insertion-of-data-object.webp 2x" height="431" sizes="683px" src="../assets/images/img_e7ab13aa29d6.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 22: Consistent hashing implementation; Insertion of a data object (key)</figcaption>
+</figure>
+<p>In the diagram, suppose the hash of an arbitrary key ‘xyz’ yields the hash code output 5. The successor BST node is 6 and the data object with the key ‘xyz’ is stored on the node that is at position 6. In general, the following operations are executed to insert a key (data object):</p>
+<ol>
+<li>Hash the key of the data object</li>
+<li>Search the BST in logarithmic time to find the BST node immediately greater than the hashed output</li>
+<li>Store the data object in the successor node</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 23: Consistent hashing implementation; Insertion of a node&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Insertion-of-node.webp" href="https://systemdesign.one/consistent-hashing-explained/Insertion-of-node.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing implementation; Insertion of a node">
+<img alt="Consistent hashing implementation; Insertion of a node" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Insertion-of-node.webp, /consistent-hashing-explained/Insertion-of-node.webp 1.5x, /consistent-hashing-explained/Insertion-of-node.webp 2x" height="304" sizes="683px" src="../assets/images/img_0bf46ffa09f1.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 23: Consistent hashing implementation; Insertion of a node</figcaption>
+</figure>
+<p>The insertion of a new node results in the movement of data objects that fall within the range of the new node from the successor node. Each node might store an internal or an external BST to track the keys allocated in the node. The following operations are executed to insert a node on the hash ring:</p>
+<ol>
+<li>Insert the hash of the node ID in BST in logarithmic time</li>
+<li>Identify the keys that fall within the subrange of the new node from the successor node on BST</li>
+<li>Move the keys to the new node</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 24: Consistent hashing implementation; Deletion of a node&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Deletion-of-node.webp" href="https://systemdesign.one/consistent-hashing-explained/Deletion-of-node.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing implementation; Deletion of a node">
+<img alt="Consistent hashing implementation; Deletion of a node" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Deletion-of-node.webp, /consistent-hashing-explained/Deletion-of-node.webp 1.5x, /consistent-hashing-explained/Deletion-of-node.webp 2x" height="304" sizes="683px" src="../assets/images/img_28417a626036.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 24: Consistent hashing implementation; Deletion of a node</figcaption>
+</figure>
+<p>The deletion of a node results in the movement of data objects that fall within the range of the decommissioned node to the successor node. An additional external BST can be used to track the keys allocated in the node. The following operations are executed to delete a node on the hash ring:</p>
+<ol>
+<li>Delete the hash of the decommissioned node ID in BST in logarithmic time</li>
+<li>Identify the keys that fall within the range of the decommissioned node</li>
+<li>Move the keys to the successor node</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-the-asymptotic-complexity-of-consistent-hashing"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#what-is-the-asymptotic-complexity-of-consistent-hashing"></a>What is the asymptotic complexity of consistent hashing?</h2>
+<p>The asymptotic complexity of consistent hashing operations are the following:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time Complexity</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add a node</td>
+<td>O(k/n + logn)</td>
+<td>O(k/n) for redistribution of keys O(logn) for binary search tree traversal</td>
+</tr>
+<tr>
+<td>Remove a node</td>
+<td>O(k/n + logn)</td>
+<td>O(k/n) for redistribution of keys O(logn) for binary search tree traversal</td>
+</tr>
+<tr>
+<td>Add a key</td>
+<td>O(logn)</td>
+<td>O(logn) for binary search tree traversal</td>
+</tr>
+<tr>
+<td>Remove a key</td>
+<td>O(logn)</td>
+<td>O(logn) for binary search tree traversal</td>
+</tr>
+</tbody>
+</table></div>
+<p>where k = total number of keys, n = total number of nodes <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-to-handle-concurrency-in-consistent-hashing"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#how-to-handle-concurrency-in-consistent-hashing"></a>How to handle concurrency in consistent hashing?</h2>
+<p>The BST that stores the positions of the nodes is a mutable data structure that must be synchronized when multiple nodes are added or removed at the same time on the hash ring. The <a href="https://en.wikipedia.org/wiki/Readers%E2%80%93writer_lock" rel="noopener noreferrer" target="_blank">readers-writer lock</a> is used to synchronize BST at the expense of a slight increase in latency.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-hash-functions-are-used-in-consistent-hashing"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#what-hash-functions-are-used-in-consistent-hashing"></a>What hash functions are used in consistent hashing?</h2>
+<p>An optimal hash function for consistent hashing must be fast and produce uniform output. The cryptographic hash functions such as <a href="https://en.wikipedia.org/wiki/MD5" rel="noopener noreferrer" target="_blank">MD5</a>, and the secure hash algorithms <a href="https://en.wikipedia.org/wiki/SHA-1" rel="noopener noreferrer" target="_blank">SHA-1</a> and <a href="https://en.wikipedia.org/wiki/SHA-2" rel="noopener noreferrer" target="_blank">SHA-256</a> are not relatively fast. <a href="https://en.wikipedia.org/wiki/MurmurHash" rel="noopener noreferrer" target="_blank">MurmurHash</a> is a relatively cheaper hash function. The non-cryptographic hash functions like <a href="https://github.com/cespare/xxhash" rel="noopener noreferrer" target="_blank">xxHash</a>, <a href="https://github.com/dgryski/go-metro" rel="noopener noreferrer" target="_blank">MetroHash</a>, or <a href="https://github.com/dgryski/go-sip13" rel="noopener noreferrer" target="_blank">SipHash1–3</a> are other potential candidates<sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-are-the-benefits-of-consistent-hashing"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#what-are-the-benefits-of-consistent-hashing"></a>What are the benefits of consistent hashing?</h2>
+<p>The following are the advantages of consistent hashing<sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:3" role="doc-noteref">3</a></sup>:</p>
+<ul>
+<li>horizontally scalable</li>
+<li>minimized data movement when the number of nodes changes</li>
+<li>quick replication and partitioning of data</li>
+</ul>
+<p>The following are the advantages of virtual nodes<sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>load handled by a node is uniformly distributed across the remaining available nodes during downtime</li>
+<li>the newly provisioned node accepts an equivalent amount of load from the available nodes</li>
+<li>fair distribution of load among heterogenous nodes</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-are-the-drawbacks-of-consistent-hashing"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#what-are-the-drawbacks-of-consistent-hashing"></a>What are the drawbacks of consistent hashing?</h2>
+<p>The following are the disadvantages of consistent hashing<sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>cascading failure due to hot spots</li>
+<li>non-uniform distribution of nodes and data</li>
+<li>oblivious to the heterogeneity in the performance of nodes</li>
+</ul>
+<p>The following are the disadvantages of virtual nodes <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>when a specific data object becomes extremely popular, <a href="https://newsletter.systemdesign.one/p/what-is-consistent-hashing" rel="noopener noreferrer" target="_blank">consistent hashing</a> will still send all the requests for the popular data object to the same subset of nodes resulting in a degradation of the service</li>
+<li><a class="offline-link" href="./back-of-the-envelope.html" rel="noopener noreffer">capacity planning</a> is trickier with virtual nodes</li>
+<li>memory costs and operational complexity increase due to the maintenance of BST</li>
+<li>replication of data objects is challenging due to the additional logic to identify the distinct physical nodes</li>
+<li>downtime of a virtual node affects multiple nodes on the ring</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-are-the-consistent-hashing-examples"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#what-are-the-consistent-hashing-examples"></a>What are the consistent hashing examples?</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 25: Consistent hashing example: Discord&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-example-Discord.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-example-Discord.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing example: Discord">
+<img alt="Consistent hashing example: Discord" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-example-Discord.webp, /consistent-hashing-explained/Consistent-hashing-example-Discord.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-example-Discord.webp 2x" height="1134" sizes="683px" src="../assets/images/img_89075b33e3a7.webp" width="1541"/>
+</a><figcaption class="image-caption">Figure 25: Consistent hashing example: Discord</figcaption>
+</figure>
+<p>The discord server (discord space or <a class="offline-link" href="../case-studies/chat-application-architecture.html" rel="noopener noreffer">chat</a> room) is hosted on a set of nodes. The client of the discord chat application identifies the set of nodes that hosts a specific discord server using consistent hashing<sup id="fnref:9"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:9" role="doc-noteref">9</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 26: Consistent hashing example: Amazon Dynamo&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-example-Amazon-Dynamo.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-example-Amazon-Dynamo.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing example: Amazon Dynamo">
+<img alt="Consistent hashing example: Amazon Dynamo" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-example-Amazon-Dynamo.webp, /consistent-hashing-explained/Consistent-hashing-example-Amazon-Dynamo.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-example-Amazon-Dynamo.webp 2x" height="1149" sizes="683px" src="../assets/images/img_82dfd83586e9.webp" width="1502"/>
+</a><figcaption class="image-caption">Figure 26: Consistent hashing example: Amazon Dynamo</figcaption>
+</figure>
+<p>The distributed NoSQL data stores such as Amazon DynamoDB, Apache Cassandra, and Riak use consistent hashing to dynamically partition the data set across the set of nodes. The data is partitioned for incremental scalability<sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 27: Consistent hashing example: Vimeo&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-example-Vimeo.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-example-Vimeo.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing example: Vimeo">
+<img alt="Consistent hashing example: Vimeo" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-example-Vimeo.webp, /consistent-hashing-explained/Consistent-hashing-example-Vimeo.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-example-Vimeo.webp 2x" height="1108" sizes="683px" src="../assets/images/img_e6560ca7698e.webp" width="1502"/>
+</a><figcaption class="image-caption">Figure 27: Consistent hashing example: Vimeo</figcaption>
+</figure>
+<p>The video storage and streaming service Vimeo uses consistent hashing for load balancing the traffic to stream videos<sup id="fnref:8"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 28: Consistent hashing example: Netflix&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Consistent-hashing-example-Netflix.webp" href="https://systemdesign.one/consistent-hashing-explained/Consistent-hashing-example-Netflix.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing example: Netflix">
+<img alt="Consistent hashing example: Netflix" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Consistent-hashing-example-Netflix.webp, /consistent-hashing-explained/Consistent-hashing-example-Netflix.webp 1.5x, /consistent-hashing-explained/Consistent-hashing-example-Netflix.webp 2x" height="1136" sizes="683px" src="../assets/images/img_f443a4c57f9d.webp" width="1452"/>
+</a><figcaption class="image-caption">Figure 28: Consistent hashing example: Netflix</figcaption>
+</figure>
+<p>The video streaming service Netflix uses consistent hashing to distribute the uploaded video content across the <a class="offline-link" href="../case-studies/cdn-explained.html" rel="noopener noreffer">content delivery network</a> (<strong>CDN</strong>)<sup id="fnref:10"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="consistent-hashing-algorithm-real-world-implementation"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#consistent-hashing-algorithm-real-world-implementation"></a>Consistent hashing algorithm real-world implementation</h2>
+<p>The clients of Memcached (Ketama), and <a class="offline-link" href="../white-papers/amazon-dynamo-architecture.html" rel="noopener noreffer">Amazon Dynamo</a> support consistent hashing out of the box <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:11" role="doc-noteref">11</a></sup>. The HAProxy includes the bounded-load consistent hashing algorithm for load balancing the traffic<sup id="fnref:8"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:8" role="doc-noteref">8</a></sup>. As an alternative, the consistent hashing algorithm can be implemented, in the language of choice.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="consistent-hashing-optimization"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#consistent-hashing-optimization"></a>Consistent hashing optimization</h2>
+<p>Some of the popular variants of <a href="https://newsletter.systemdesign.one/p/what-is-consistent-hashing" rel="noopener noreferrer" target="_blank">consistent hashing</a> are the following:</p>
+<ul>
+<li>Multi-probe consistent hashing</li>
+<li>Consistent hashing with bounded loads</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="multi-probe-consistent-hashing"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#multi-probe-consistent-hashing"></a>Multi-probe consistent hashing</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 29: Consistent hashing optimization; Multi-probe consistent hashing&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Multi-probe-consistent-hashing.webp" href="https://systemdesign.one/consistent-hashing-explained/Multi-probe-consistent-hashing.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing optimization; Multi-probe consistent hashing">
+<img alt="Consistent hashing optimization; Multi-probe consistent hashing" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Multi-probe-consistent-hashing.webp, /consistent-hashing-explained/Multi-probe-consistent-hashing.webp 1.5x, /consistent-hashing-explained/Multi-probe-consistent-hashing.webp 2x" height="1105" sizes="683px" src="../assets/images/img_3ae2f9d881aa.webp" width="1418"/>
+</a><figcaption class="image-caption">Figure 29: Consistent hashing optimization; Multi-probe consistent hashing</figcaption>
+</figure>
+<p>The Multi-probe consistent hashing offers linear O(n) space complexity to store the positions of nodes on the hash ring. There are no virtual nodes but a node is assigned only a single position on the hash ring. The amortized time complexity for the addition and removal of nodes is constant O(1). However, the key (data object) lookups are relatively slower.</p>
+<p>The basic gist of multi-probe consistent hashing is to hash the key (data object) multiple times using distinct hash functions on lookup and the closest node in the clockwise direction returns the data object<sup id="fnref:12"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<hr/>
+<h3 class="headerLink" id="consistent-hashing-with-boundedloads"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#consistent-hashing-with-boundedloads"></a>Consistent hashing with bounded loads</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 30: Consistent hashing optimization; Bounded-load consistent hashing&lt;/h2&gt;" data-thumbnail="/consistent-hashing-explained/Bounded-load-consistent-hashing.webp" href="https://systemdesign.one/consistent-hashing-explained/Bounded-load-consistent-hashing.webp" rel="noopener noreferrer" target="_blank" title="Consistent hashing optimization; Bounded-load consistent hashing">
+<img alt="Consistent hashing optimization; Bounded-load consistent hashing" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistent-hashing-explained/Bounded-load-consistent-hashing.webp, /consistent-hashing-explained/Bounded-load-consistent-hashing.webp 1.5x, /consistent-hashing-explained/Bounded-load-consistent-hashing.webp 2x" height="1023" sizes="683px" src="../assets/images/img_503fb41937b1.webp" width="1464"/>
+</a><figcaption class="image-caption">Figure 30: Consistent hashing optimization; Bounded-load consistent hashing</figcaption>
+</figure>
+<p>The consistent hashing with bounded load puts an upper limit on the load received by a node on the hash ring, relative to the average load of the whole hash ring. The distribution of requests is the same as consistent hashing as long as the nodes are not overloaded<sup id="fnref:13"><a class="footnote-ref offline-link" href="./consistent-hashing-explained.html#fn:13" role="doc-noteref">13</a></sup>.</p>
+<p>When a specific data object becomes extremely popular, the node hosting the data object receives a significant amount of traffic resulting in the degradation of the service. If a node is overloaded, the incoming request is delegated to a fallback node. The list of fallback nodes will be the same for the same request hash. In simple words, the same node(s) will consistently be the “second choice” for a popular data object. The fallback nodes resolve the popular data object caching problem.</p>
+<p>If a node is overloaded, the list of the fallback nodes will usually be different for different request hashes. In other words, the requests to an overloaded node are distributed among the available nodes instead of a single fallback node.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#summary"></a>Summary</h2>
+<p>Consistent hashing is popular among distributed systems. The most common use cases of consistent hashing are data partitioning and load balancing.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-and-solutions"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#questions-and-solutions"></a>Questions and Solutions</h2>
+<p>If you would like to challenge your knowledge on the topic, visit the article: <a href="https://systemdesign.one/knowledge-test-consistent-hashing/" rel="noopener noreferrer" target="_blank">Knowledge Test</a></p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./consistent-hashing-explained.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Lindsey Kuper, <a href="https://www.youtube.com/watch?v=uNQGP0yupn0&amp;list=PLNPUF5QyWU8PydLG2cIJrCvnn5I_exhYx&amp;index=18" rel="noopener noreferrer" target="_blank">UC Santa Cruz CSE138 (Distributed Systems) Lecture 15: introduction to sharding; consistent hashing</a> (2021), youtube.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>David Karger, Eric Lehman, Tom Leighton, Rina Panigrahy, Matthew Levine, Daniel Lewin, <a href="https://github.com/papers-we-love/papers-we-love/blob/master/distributed_systems/consistent-hashing-and-random-trees.pdf" rel="noopener noreferrer" target="_blank">Consistent Hashing and Random Trees: Distributed Caching Protocols for Relieving Hot Spots on the World Wide Web</a> (1997), GitHub.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Tom White, <a href="http://tom-e-white.com/2007/11/consistent-hashing.html" rel="noopener noreferrer" target="_blank">Consistent Hashing</a> (2007), tom-e-white.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Srushtika Neelakantam, <a href="https://ably.com/blog/implementing-efficient-consistent-hashing" rel="noopener noreferrer" target="_blank">Consistent hashing explained</a> (2018), ably.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Giuseppe DeCandia, Deniz Hastorun, Madan Jampani, Gunavardhan Kakulapati, Avinash Lakshman, Alex Pilchin, Swaminathan Sivasubramanian, Peter Vosshall and Werner Vogels, <a href="https://github.com/papers-we-love/papers-we-love/blob/master/datastores/dynamo-amazons-highly-available-key-value-store.pdf" rel="noopener noreferrer" target="_blank">Dynamo: Amazon’s Highly Available Key-value Store</a> (2007), GitHub.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Damian Gryski, <a href="https://dgryski.medium.com/consistent-hashing-algorithmic-tradeoffs-ef6b8e2fcae8" rel="noopener noreferrer" target="_blank">Consistent Hashing: Algorithmic Tradeoffs</a> (2018), medium.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p><a href="http://people.csail.mit.edu/moitra/854.html" rel="noopener noreferrer" target="_blank">MIT 6.854 Spring 2016 Lecture 3: Consistent Hashing and Random Trees</a> (2016), mit.edu <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p><a href="https://medium.com/vimeo-engineering-blog/improving-load-balancing-with-a-new-consistent-hashing-algorithm-9f1bd75709ed" rel="noopener noreferrer" target="_blank">Improving load balancing with a new consistent-hashing algorithm</a> (2016), Vimeo Engineering Blog <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p>Stanislav Vishnevskiy, <a href="https://discord.com/blog/how-discord-scaled-elixir-to-5-000-000-concurrent-users" rel="noopener noreferrer" target="_blank">How discord scaled elixir to 5,000,000 concurrent users</a> (2017), discord.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Mohit Vora, Andrew Berglund, Videsh Sadafal, David Pfitzner, and Ellen Livengood, <a href="https://netflixtechblog.com/distributing-content-to-open-connect-3e3e391d4dc9?gi=294346617760" rel="noopener noreferrer" target="_blank">Distributing Content to Open Connect</a> (2017), netflixtechblog.com <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p><a href="https://www.last.fm/user/RJ/journal/2007/04/10/rz_libketama_-_a_consistent_hashing_algo_for_memcache_clients" rel="noopener noreferrer" target="_blank">libketama - a consistent hashing algo for Memcache clients</a> (2007), last.fm <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p>Ben Appleton, Michael O’Reilly, <a href="https://arxiv.org/abs/1505.00062" rel="noopener noreferrer" target="_blank">Multi-Probe Consistent Hashing</a> (2015), arxiv.org <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Vahab Mirrokni, Mikkel Thorup, and Morteza Zadimoghaddam, <a href="https://arxiv.org/abs/1608.01350" rel="noopener noreferrer" target="_blank">Consistent Hashing with Bounded Loads</a> (2017), arxiv.org <a class="footnote-backref offline-link" href="./consistent-hashing-explained.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-03-01</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Consistent Hashing Explained" data-url="https://systemdesign.one/consistent-hashing-explained/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/consistent-hashing-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/consistent-hashing-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Consistent Hashing Explained" data-url="https://systemdesign.one/consistent-hashing-explained/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="1. Hashed IP addresses are used to assign a position for the nodes 2. Hash ring is traversed until a node is found" data-image="consistent-hashing-explained/What-is-consistent-hashing.webp" data-sharer="pinterest" data-url="https://systemdesign.one/consistent-hashing-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="1. Hashed IP addresses are used to assign a position for the nodes 2. Hash ring is traversed until a node is found" data-sharer="tumblr" data-title="Consistent Hashing Explained" data-url="https://systemdesign.one/consistent-hashing-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Consistent Hashing Explained" data-url="https://systemdesign.one/consistent-hashing-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/consistent-hashing-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="1. Hashed IP addresses are used to assign a position for the nodes 2. Hash ring is traversed until a node is found" data-image="consistent-hashing-explained/What-is-consistent-hashing.webp" data-sharer="vk" data-title="Consistent Hashing Explained" data-url="https://systemdesign.one/consistent-hashing-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev" href="https://systemdesign.one/knowledge-test-consistent-hashing/" rel="noopener noreferrer" target="_blank" title="Knowledge Test: Consistent Hashing Explained"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Knowledge Test: Consistent Hashing Explained</a>
+<a class="next offline-link" href="./system-design-interview-cheatsheet.html" rel="next" title="System Design Interview Cheat Sheet">System Design Interview Cheat Sheet<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./consistent-hashing-explained.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./consistent-hashing-explained.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

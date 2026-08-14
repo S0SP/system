@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Live Comment System Design - System Design</title><meta content="building the live commenting real-time platform" name="Description"/><meta content="Live Comment System Design" property="og:title"/>
+<meta content="building the live commenting real-time platform" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/live-comment-system-design/" property="og:url"/><meta content="https://systemdesign.one/live-comment-system-design/live-comment.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-04-08T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-05-18T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/live-comment-system-design/live-comment.webp" name="twitter:image"/>
+<meta content="Live Comment System Design" name="twitter:title"/>
+<meta content="building the live commenting real-time platform" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/live-comment-system-design/" rel="canonical"/><link href="https://systemdesign.one/leaderboard-system-design/" rel="prev"/><link href="https://systemdesign.one/real-time-presence-platform-system-design/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/live-comment-system-design</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./live-comment-system-design.html#how-does-the-live-commentwork">How Does the Live Comment Work?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#what-is-a-livevideo">What is a Live Video?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#what-are-live-comments">What are Live Comments?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#questions-to-ask-the-interviewer">Questions to ask the Interviewer</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#candidate">Candidate</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#interviewer">Interviewer</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#live-commenting-apidesign">Live Commenting API Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-does-the-receiver-subscribe-to-a-specific-livevideo">How does the receiver subscribe to a specific live video?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-does-the-receiver-unsubscribe-from-a-livevideo">How does the receiver unsubscribe from a live video?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-does-the-client--publish-a-livecomment">How does the client  publish a live comment?</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#further-system-design-learning-resources">Further System Design Learning Resources</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#live-comment-system-databasedesign">Live Comment System Database Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#database-schemadesign">Database Schema Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#comments-table">Comments table</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#videos-table">Videos table</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#users-table">Users table</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#sql">SQL</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#write-a-sql-query-to-fetch-the-latest-ten-comments-on-the-live-video-with-35-as-the-video-id">Write a SQL query to fetch the latest ten comments on the live video with “35” as the video ID</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#write-a-sql-query-to-insert-a-new-live-comment">Write a SQL query to insert a new live comment</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#write-a-sql-query-to-fetch-the-total-count-of-comments-on-each-video">Write a SQL query to fetch the total count of comments on each video</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#type-of-datastore">Type of Data Store</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#capacity-planning">Capacity Planning</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#traffic">Traffic</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#storage">Storage</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#bandwidth">Bandwidth</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#memory">Memory</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#further-system-design-learning-resources-1">Further System Design Learning Resources</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#live-commenting-high-level-design">Live Commenting High-Level Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#write-globally-and-readlocally">Write Globally and Read Locally</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#write-locally-and-readglobally">Write Locally and Read Globally</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#prototyping-a-live-commentservice">Prototyping a Live Comment Service</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#distribution-of-livecomments">Distribution of Live Comments</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#live-commenting-with-pub-subserver">Live Commenting With Pub-Sub Server</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#using-apache-kafka-as-the-pub-sub-server">Using Apache Kafka as the Pub-Sub Server</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#using-redis-as-the-pub-sub-server">Using Redis as the Pub-Sub Server</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#using-redis-streams-as-the-pub-sub-server">Using Redis Streams as the Pub-Sub Server</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#an-abstract-real-time-platform">An Abstract Real-Time Platform</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#further-system-design-learning-resources-2">Further System Design Learning Resources</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#live-comment-system-design-deepdive">Live Comment System Design Deep Dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-does-the-gateway-server-manage-client-connections">How Does the Gateway Server Manage Client Connections?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-to-handle-live-comments-on-multiple-livevideos">How to Handle Live Comments on Multiple Live Videos?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-to-support-massive-concurrent-clients-on-multiple-livevideos">How to Support Massive Concurrent Clients on Multiple Live Videos?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#scaling-live-comments-to-handle-peakload">Scaling Live Comments to Handle Peak Load</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#what-is-the-subscribe-workflow-and-publish-workflow-for-live-comments">What Is the Subscribe Workflow and Publish Workflow for Live Comments?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-to-deploy-the-live-comment-service-across-multiple-datacenters">How to Deploy the Live Comment Service Across Multiple Data Centers?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-to-support-the-typing-indicators-on-livevideo">How to Support the Typing Indicators on Live Video?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#how-to-display-the-total-count-of-comments-on-each-livevideo">How to Display the Total Count of Comments on Each Live Video?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#latency">Latency</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#concurrency">Concurrency</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#high-availability">High Availability</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#fault-tolerance">Fault Tolerance</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#development-and-deployment">Development and Deployment</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#durability">Durability</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#operational-complexity">Operational Complexity</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./live-comment-system-design.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Live Comment System Design</h1><h2 class="single-subtitle">Real-Time Live Commenting Platform</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/deep-dive/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Deep Dive</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-04-08">2023-04-08</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 9373 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 45 minutes </div>
+</div><div class="featured-image"><img alt="/live-comment-system-design/live-comment.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment.webp, /live-comment-system-design/live-comment.webp 1.5x, /live-comment-system-design/live-comment.webp 2x" height="984" sizes="699px" src="../assets/images/img_95afc12015e4.webp" title="building the live commenting real-time platform" width="1454"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<h2 class="headerLink" id="how-does-the-live-commentwork"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-does-the-live-commentwork"></a>How Does the Live Comment Work?</h2>
+<p>At a <strong>high level</strong>, the Live Comment service performs the following operations:</p>
+<ul>
+<li>gateway server fans out live comments to the clients through <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" rel="noopener noreferrer" target="_blank">server-sent events</a> (<strong>SSE</strong>)</li>
+<li>the client subscribes to a live video on the gateway server over Hypertext Transfer Protocol (<strong>HTTP</strong>)</li>
+<li>in-memory subscription store on the gateway server keeps the viewership associativity</li>
+<li>gateway server subscribes to a live video on the endpoint store</li>
+<li>endpoint store keeps the set of gateway servers subscribed to a particular live video</li>
+<li>heartbeat signal or time to live (<strong>TTL</strong>) on keys on the subscription store can be used to drain the inactive SSE connections</li>
+<li>ending of a live video can trigger an update on the endpoint store</li>
+<li>dispatcher broadcasts the live comments to the dispatcher in peer data centers</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-a-livevideo"><a class="header-mark offline-link" href="./live-comment-system-design.html#what-is-a-livevideo"></a>What is a Live Video?</h2>
+<p>Live video is the streaming of video over the internet in real-time without prior recording and storage. Television broadcasts, video game streams, and social media videos are often live-streamed <sup id="fnref:1"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Facebook Likes; Typing indicators; Live comments&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/likes-typing-indicator-live-comment.webp" href="https://systemdesign.one/live-comment-system-design/likes-typing-indicator-live-comment.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Facebook Likes; Typing indicators; Live comments">
+<img alt="Figure 1: Facebook Likes; Typing indicators; Live comments" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/likes-typing-indicator-live-comment.webp, /live-comment-system-design/likes-typing-indicator-live-comment.webp 1.5x, /live-comment-system-design/likes-typing-indicator-live-comment.webp 2x" height="1669" sizes="683px" src="../assets/images/img_ca89d2acd055.webp" width="3281"/>
+</a><figcaption class="image-caption">Figure 1: Facebook Likes; Typing indicators; Live comments</figcaption>
+</figure>
+<p>Live video is different from regular videos because live video results in spiky traffic patterns. Usually, Live videos are more engaging and tend to be watched thrice more than regular videos. On top of that, social networks such as Facebook show live videos at the top of the newsfeed, thereby increasing the probability of live videos being watched by the users (<strong>clients</strong>) <sup id="fnref:2"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-are-live-comments"><a class="header-mark offline-link" href="./live-comment-system-design.html#what-are-live-comments"></a>What are Live Comments?</h2>
+<p>
+</p><div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+
+</div>
+<div id="id-1">Live comments; Source: video by <a href="https://pixabay.com/users/josephredfield-8385382/" rel="noopener noreferrer" target="_blank">Joseph Redfield Nino</a> from <a href="https://pixabay.com/videos/livestreaming-instagram-facebook-26774/" rel="noopener noreferrer" target="_blank">Pixabay</a></div><p></p>
+<p>Real-time experience makes the platform feel like a place of activity for the clients <sup id="fnref:3"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:3" role="doc-noteref">3</a></sup>. Live commenting is a feature that allows clients to publish real-time comments on live videos. The live comments are usually a mixture of feedback from the clients on the live video or casual conversations between clients. Besides, live comments enable the streamer of the live video to engage with the clients during the live video broadcast.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./live-comment-system-design.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>Node: a server that provides functionality to other services</li>
+<li>Data replication: a technique of storing multiple copies of the same data on different nodes to improve the availability and durability of the system</li>
+<li>Data partitioning: a technique of distributing data across multiple nodes to improve the performance and <a class="offline-link" href="../fundamentals/micro-frontends.html" rel="noopener noreffer">scalability</a> of the system</li>
+<li>API: a software intermediary that allows two services to talk with each other</li>
+<li>Fault tolerance: the ability of a service to recover from a failure without losing data</li>
+<li>High availability: the ability of a service to remain reachable and not lose data even when a failure occurs</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-to-ask-the-interviewer"><a class="header-mark offline-link" href="./live-comment-system-design.html#questions-to-ask-the-interviewer"></a>Questions to ask the Interviewer</h2>
+<h3 class="headerLink" id="candidate"><a class="header-mark offline-link" href="./live-comment-system-design.html#candidate"></a>Candidate</h3>
+<ol>
+<li>What are the primary use cases of the system?</li>
+<li>Do live commenting service support only text?</li>
+<li>Are the clients distributed across the globe?</li>
+<li>What is the amount of Daily Active Users (<strong>DAU</strong>)?</li>
+<li>What is the system’s total number of daily live videos?</li>
+<li>What is the average amount of live comments on a live video?</li>
+<li>What is the anticipated read: write ratio of live comments?</li>
+<li>What is the peak amount of concurrent users watching the same live video?</li>
+<li>Should the comments on streamed videos be archived to save storage?</li>
+</ol>
+<hr/>
+<h3 class="headerLink" id="interviewer"><a class="header-mark offline-link" href="./live-comment-system-design.html#interviewer"></a>Interviewer</h3>
+<ol>
+<li>Clients can interact with each other in real-time over live comments on a Facebook live video</li>
+<li>Yes</li>
+<li>Yes</li>
+<li>100 million DAU</li>
+<li>200 million daily live videos</li>
+<li>10</li>
+<li>100: 1</li>
+<li>80 million</li>
+<li>Yes, there is no need to support the replay of live comments</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./live-comment-system-design.html#requirements"></a>Requirements</h2>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./live-comment-system-design.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>The <strong>publishers</strong> (client) can write real-time live comments on a Facebook live video</li>
+<li>The <strong>receivers</strong> (clients) watching the Facebook live video should be able to view the live comments in real time</li>
+<li>The receiver should be able to view an active real-time feed of live comments on each live video while scrolling across the Facebook newsfeed</li>
+<li>The <strong>typing indicators</strong> (somebody is typing feature) should be supported</li>
+<li>The total count of comments should be visible on each live video</li>
+<li>The live comment service should handle clients across the globe</li>
+<li>The live comment service should handle millions of concurrent clients</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./live-comment-system-design.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>Highly availability</li>
+<li>Fault-tolerant</li>
+<li>Low latency</li>
+<li>Scalability</li>
+<li>Eventual <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a></li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="live-commenting-apidesign"><a class="header-mark offline-link" href="./live-comment-system-design.html#live-commenting-apidesign"></a>Live Commenting API Design</h2>
+<p>The real-time Application Programming Interface (<strong>API</strong>) can be implemented for faster user experiences and instant delivery of live comments. The average time for a human to blink is 100 ms, and the average reaction time for a human is around 250 ms. Therefore, the actions performed within 250 ms are perceived as real-time or live <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:5" role="doc-noteref">5</a></sup>. An event-driven architecture can be used to build a real-time data platform. The general subscription models for an API are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>push-based (server-initiated)</li>
+<li>pull-based (client-initiated)</li>
+</ul>
+<p>The popular protocols for an event-driven API are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Protocol</th>
+<th>Description</th>
+<th>Use Cases</th>
+<th>Subscription Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Webhook</td>
+<td>HTTP-based callback function that allows lightweight, event-driven infrequent communication between APIs</td>
+<td>trigger automation workflows</td>
+<td>push-based</td>
+</tr>
+<tr>
+<td>WebSub</td>
+<td>communication channel for frequent messages between web content publishers and subscribers based on HTTP webhooks</td>
+<td>news aggregator platforms, stock exchanges, and air traffic networks</td>
+<td>push-based</td>
+</tr>
+<tr>
+<td>WebSockets</td>
+<td>provides full-duplex communication channels over a single TCP connection with lower overhead than half-duplex alternatives such as HTTP polling</td>
+<td>financial tickers, location-based apps, and chat solutions</td>
+<td>pull-based</td>
+</tr>
+<tr>
+<td>SSE</td>
+<td>lightweight and subscribe-only protocol for event-driven data streams</td>
+<td>live score updates</td>
+<td>pull-based</td>
+</tr>
+<tr>
+<td>MQTT</td>
+<td>protocol for streaming data between devices with limited CPU power and low bandwidth networks</td>
+<td>Internet of Things</td>
+<td>pull-based</td>
+</tr>
+</tbody>
+</table></div>
+<p>The communication protocol and subscription model chosen should be ideal to build a reliable and scalable live comment service. The pull-based subscription model is the optimal choice for the delivery of live comments to the receivers for the following reasons <sup id="fnref:6"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>the receiver only needs to view the live comments when the receiver is online (connected or subscribed to the live video)</li>
+<li>the receiver can ignore the comments when disconnected or unsubscribed</li>
+<li>non-trivial to predict the total count of clients that will be subscribed to watching a live video</li>
+<li>the receivers will be geographically distributed across the globe</li>
+<li>the connection from the receiver might be unpredictable</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: REST compared with SSE&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/rest-compared-with-sse.webp" href="https://systemdesign.one/live-comment-system-design/rest-compared-with-sse.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: REST compared with SSE">
+<img alt="Figure 2: REST compared with SSE" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/rest-compared-with-sse.webp, /live-comment-system-design/rest-compared-with-sse.webp 1.5x, /live-comment-system-design/rest-compared-with-sse.webp 2x" height="1716" sizes="683px" src="../assets/images/img_f58e1c4bd6b6.webp" width="2960"/>
+</a><figcaption class="image-caption">Figure 2: REST compared with SSE</figcaption>
+</figure>
+<p>The client creates a regular HTTP long poll connection with the server with <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" rel="noopener noreferrer" target="_blank">server-sent events</a> (<strong>SSE</strong>). The server can push a continuous stream of data to the client on the same connection as events occur. The client doesn’t need to perform subsequent requests <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: HTTP long poll with SSE&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/http-long-poll-with-sse.webp" href="https://systemdesign.one/live-comment-system-design/http-long-poll-with-sse.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: HTTP long poll with SSE">
+<img alt="Figure 3: HTTP long poll with SSE" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/http-long-poll-with-sse.webp, /live-comment-system-design/http-long-poll-with-sse.webp 1.5x, /live-comment-system-design/http-long-poll-with-sse.webp 2x" height="1339" sizes="683px" src="../assets/images/img_45531fa6fd20.webp" width="2074"/>
+</a><figcaption class="image-caption">Figure 3: HTTP long poll with SSE</figcaption>
+</figure>
+<p>The only difference for SSE from a regular HTTP request is that the <em>Accept</em> header on the HTTP request holds the value <em>text/event-stream</em>. The <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventSource" rel="noopener noreferrer" target="_blank">EventSource interface</a> is used by the client to receive and process server-sent events independently in <em>text/event-stream</em> format without closing the connection. All modern web browsers support the EventSource interface natively. The EventSource interface can be implemented on <a href="https://github.com/inaka/EventSource" rel="noopener noreferrer" target="_blank">iOS</a> and <a href="https://github.com/tylerjroach/eventsource-android" rel="noopener noreferrer" target="_blank">Android</a> platforms with lightweight libraries <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Complexity inversion in an event-driven API&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/complexity-inversion-event-driven-api.webp" href="https://systemdesign.one/live-comment-system-design/complexity-inversion-event-driven-api.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Complexity inversion in an event-driven API">
+<img alt="Figure 4: Complexity inversion in an event-driven API" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/complexity-inversion-event-driven-api.webp, /live-comment-system-design/complexity-inversion-event-driven-api.webp 1.5x, /live-comment-system-design/complexity-inversion-event-driven-api.webp 2x" height="1326" sizes="683px" src="../assets/images/img_e7b0a360d346.webp" width="2184"/>
+</a><figcaption class="image-caption">Figure 4: Complexity inversion in an event-driven API</figcaption>
+</figure>
+<p>The client is responsible for maintaining the state and execution of requests in the Representational state transfer (<strong>REST</strong>) paradigm. On the contrary, the server is responsible for maintaining the state and pushing updates to the client in an event-driven architecture. In layman’s terms, the complexity of the receiver is kept minimum in an event-driven API as the receiver only has to create an SSE connection to view the live comments on a Facebook live video <sup id="fnref:6"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:6" role="doc-noteref">6</a></sup>. In conclusion, SSE is the optimal protocol for the live comment service due to the following reasons <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>SSE works over traditional HTTP</li>
+<li>SSE streams chunks of data over the same open HTTP connection</li>
+</ul>
+<p>The predefined fields of an SSE connection are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>event</td>
+<td>the event type defined by the server</td>
+</tr>
+<tr>
+<td>data</td>
+<td>the payload of the event</td>
+</tr>
+<tr>
+<td>id</td>
+<td>ID for each event</td>
+</tr>
+<tr>
+<td>retry</td>
+<td>the client attempts to reconnect with the server after a specific timeframe if the connection was closed</td>
+</tr>
+</tbody>
+</table></div>
+<p>The following are the drawbacks of SSE <sup id="fnref:6"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>the data format is restricted to transporting UTF-8 messages with no support for binary data</li>
+<li>only up to six concurrent SSE connections can be opened per web browser on pre-HTTP/2 networks</li>
+</ul>
+<p>The components in the system expose the Application Programming Interface (API) endpoints to the client through Representational State Transfer (REST).
+The description of HTTP <strong>Request headers</strong> is the following:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>accept</td>
+<td>type of content the client can understand</td>
+</tr>
+<tr>
+<td>authorization</td>
+<td>authorize your user account</td>
+</tr>
+<tr>
+<td>content-encoding</td>
+<td>compression type used by the data payload</td>
+</tr>
+<tr>
+<td>method</td>
+<td>HTTP Verb</td>
+</tr>
+<tr>
+<td>content-type</td>
+<td>type of data format (JSON or XML)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The description of HTTP <strong>Response headers</strong> is the following:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>status code</td>
+<td>shows if the request was successful</td>
+</tr>
+<tr>
+<td>content-type</td>
+<td>type of data format</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-the-receiver-subscribe-to-a-specific-livevideo"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-does-the-receiver-subscribe-to-a-specific-livevideo"></a>How does the receiver subscribe to a specific live video?</h3>
+<p>The client must subscribe to a live video for viewing the live comments. The client executes an HTTP PUT request for subscribing to a live video. The PUT requests are idempotent. The PUT method is used instead of the GET method because the in-memory subscription store will be modified when a client subscribes to a live video.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/videos/:video-id/subscriptions
+method: PUT
+accept: text/event-stream
+authorization: Bearer &lt;JWT&gt;
+content-length: 20
+content-type: application/json
+content-encoding: gzip
+
+{
+  user_id: &lt;int&gt;
+}
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/videos/</span><span class="o">:</span><span class="nx">video</span><span class="o">-</span><span class="nx">id</span><span class="o">/</span><span class="nx">subscriptions</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">PUT</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">text</span><span class="o">/</span><span class="nx">event</span><span class="o">-</span><span class="nx">stream</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">20</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+
+<span class="p">{</span>
+  <span class="nx">user_id</span><span class="o">:</span> <span class="o">&lt;</span><span class="kr">int</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The <em>accept: text/event-stream</em> HTTP request header indicates that the client is waiting for an open connection to the event stream from the server to fetch live comments <sup id="fnref:9"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:9" role="doc-noteref">9</a></sup>. The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 200 OK
+content-type: text/event-stream
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">text</span><span class="o">/</span><span class="nx">event</span><span class="o">-</span><span class="nx">stream</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The <em>content-type: text/event-stream</em> HTTP response header indicates that the server established an open connection to the event stream to dispatch events to the client. The response event stream contains the live comments.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='id: 1
+event: comment
+data: {"awesome"}
+data: {"hey there"}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">id</span><span class="o">:</span> <span class="mi">1</span>
+<span class="nx">event</span><span class="o">:</span> <span class="nx">comment</span>
+<span class="nx">data</span><span class="o">:</span> <span class="p">{</span><span class="s2">"awesome"</span><span class="p">}</span>
+<span class="nx">data</span><span class="o">:</span> <span class="p">{</span><span class="s2">"hey there"</span><span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-the-receiver-unsubscribe-from-a-livevideo"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-does-the-receiver-unsubscribe-from-a-livevideo"></a>How does the receiver unsubscribe from a live video?</h3>
+<p>The client should unsubscribe from a live video to stop receiving live comments. The client executes an HTTP DELETE request for unsubscribing from a live video <sup id="fnref:9"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:9" role="doc-noteref">9</a></sup>. The DELETE requests are idempotent.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/videos/:video-id/subscriptions/:subscription-id
+method: DELETE
+authorization: Bearer &lt;JWT&gt;
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/videos/</span><span class="o">:</span><span class="nx">video</span><span class="o">-</span><span class="nx">id</span><span class="o">/</span><span class="nx">subscriptions</span><span class="o">/:</span><span class="nx">subscription</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">DELETE</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 200 OK
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>204 No Content</em> when the client successfully unsubscribes from a live video. The HTTP response body will be empty.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 204 No Content
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">204</span> <span class="nx">No</span> <span class="nx">Content</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-the-client--publish-a-livecomment"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-does-the-client--publish-a-livecomment"></a>How does the client  publish a live comment?</h3>
+<p>The client executes an HTTP POST request to publish a live comment.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/videos/:video-id/comments
+method: POST
+accept: application/json
+authorization: Bearer &lt;JWT&gt;
+content-length: 2000
+content-type: application/json
+content-encoding: gzip
+
+{
+  user_id: &lt;int&gt;,
+  comment: &lt;object&gt;
+}
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/videos/</span><span class="o">:</span><span class="nx">video</span><span class="o">-</span><span class="nx">id</span><span class="o">/</span><span class="nx">comments</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">POST</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">2000</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+
+<span class="p">{</span>
+  <span class="nx">user_id</span><span class="o">:</span> <span class="o">&lt;</span><span class="kr">int</span><span class="o">&gt;</span><span class="p">,</span>
+  <span class="nx">comment</span><span class="o">:</span> <span class="o">&lt;</span><span class="nx">object</span><span class="o">&gt;</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 200 OK
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>Alternatively, the server responds with status code <em>201 created</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 201 created
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">201</span> <span class="nx">created</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>400 bad request</em> for indicating a failed request due to an invalid request payload from the client.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 400 bad request
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">400</span> <span class="nx">bad</span> <span class="nx">request</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The client receives a status code <em>403 forbidden</em> when the client has valid credentials but insufficient privileges to act on the resource.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 403 forbidden
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">403</span> <span class="nx">forbidden</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./live-comment-system-design.html#further-system-design-learning-resources"></a>Further System Design Learning Resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="live-comment-system-databasedesign"><a class="header-mark offline-link" href="./live-comment-system-design.html#live-comment-system-databasedesign"></a>Live Comment System Database Design</h2>
+<p>The live comment service is a read-heavy system. In simple words, the predominant usage pattern is the client viewing live comments.</p>
+<h3 class="headerLink" id="database-schemadesign"><a class="header-mark offline-link" href="./live-comment-system-design.html#database-schemadesign"></a>Database Schema Design</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Live comment database schema&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-database-schema.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-database-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Live comment database schema">
+<img alt="Figure 5: Live comment database schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-database-schema.webp, /live-comment-system-design/live-comment-database-schema.webp 1.5x, /live-comment-system-design/live-comment-database-schema.webp 2x" height="829" sizes="683px" src="../assets/images/img_409ecf93ae60.webp" width="2140"/>
+</a><figcaption class="image-caption">Figure 5: Live comment database schema</figcaption>
+</figure>
+<p>The major entities of the relational database are the comments table, the videos table, and the users table. The relationship between the users and the comments tables is <strong>1-to-many</strong>. The relationship between the videos and the comments tables is <strong>1-to-many</strong>. The relationship between the users and videos tables is <strong>1-to-many</strong>.</p>
+<h4 class="headerLink" id="comments-table"><a class="header-mark offline-link" href="./live-comment-system-design.html#comments-table"></a>Comments table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>ID to identify the comment</td>
+</tr>
+<tr>
+<td>user_id (Foreign key)</td>
+<td>publisher of the comment</td>
+</tr>
+<tr>
+<td>video_id (Foreign key)</td>
+<td>ID of the associated video</td>
+</tr>
+<tr>
+<td>content</td>
+<td>content of the comment</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp of creation</td>
+</tr>
+</tbody>
+</table></div>
+<h4 class="headerLink" id="videos-table"><a class="header-mark offline-link" href="./live-comment-system-design.html#videos-table"></a>Videos table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>identifier of the video</td>
+</tr>
+<tr>
+<td>title</td>
+<td>title of the video</td>
+</tr>
+<tr>
+<td>user_id (Foreign key)</td>
+<td>streamer of the live video</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp of creation</td>
+</tr>
+</tbody>
+</table></div>
+<h4 class="headerLink" id="users-table"><a class="header-mark offline-link" href="./live-comment-system-design.html#users-table"></a>Users table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>identifier of the user</td>
+</tr>
+<tr>
+<td>name</td>
+<td>name of the user</td>
+</tr>
+<tr>
+<td>email</td>
+<td>email of the user</td>
+</tr>
+<tr>
+<td>profile_image</td>
+<td>URL to fetch the profile image of user</td>
+</tr>
+<tr>
+<td>last_login</td>
+<td>last login timestamp of the user</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp of user account creation</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="sql"><a class="header-mark offline-link" href="./live-comment-system-design.html#sql"></a>SQL</h3>
+<p>Structured Query Language (<strong>SQL</strong>) is a domain-specific language for managing data stored in the relational database management system.</p>
+<h4 class="headerLink" id="write-a-sql-query-to-fetch-the-latest-ten-comments-on-the-live-video-with-35-as-the-video-id"><a class="header-mark offline-link" href="./live-comment-system-design.html#write-a-sql-query-to-fetch-the-latest-ten-comments-on-the-live-video-with-35-as-the-video-id"></a>Write a SQL query to fetch the latest ten comments on the live video with “35” as the video ID</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='SELECT *
+FROM comments
+WHERE video_id="35"
+ORDER BY created_at DESC
+LIMIT 10;' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">comments</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">video_id</span><span class="o">=</span><span class="s2">"35"</span><span class="w">
+</span><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<h4 class="headerLink" id="write-a-sql-query-to-insert-a-new-live-comment"><a class="header-mark offline-link" href="./live-comment-system-design.html#write-a-sql-query-to-insert-a-new-live-comment"></a>Write a SQL query to insert a new live comment</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='INSERT INTO comments (id, user_id, video_id, content, created_at)
+VALUES (3, "42", "35", "awesome", "2050-08-22");' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">comments</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">video_id</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="s2">"42"</span><span class="p">,</span><span class="w"> </span><span class="s2">"35"</span><span class="p">,</span><span class="w"> </span><span class="s2">"awesome"</span><span class="p">,</span><span class="w"> </span><span class="s2">"2050-08-22"</span><span class="p">);</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<h4 class="headerLink" id="write-a-sql-query-to-fetch-the-total-count-of-comments-on-each-video"><a class="header-mark offline-link" href="./live-comment-system-design.html#write-a-sql-query-to-fetch-the-total-count-of-comments-on-each-video"></a>Write a SQL query to fetch the total count of comments on each video</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT COUNT(id), video_id
+FROM comments
+GROUP BY video_id;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="n">id</span><span class="p">),</span><span class="w"> </span><span class="n">video_id</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">comments</span><span class="w">
+</span><span class="w"></span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">video_id</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="type-of-datastore"><a class="header-mark offline-link" href="./live-comment-system-design.html#type-of-datastore"></a>Type of Data Store</h3>
+<p>The content of live comments contains only textual data and does not include any media files. A very fast and reliable database that not only persistently store data but also access the data quickly is a key feature for building the live comment service. The persistent storage of live comments is needed to retrieve the comments at a later point in time. In addition, the data kept in persistent storage can be used for auditing purposes <sup id="fnref:10"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The relational database offers well-defined structures for comments, users, and videos. The relational database will be an optimal choice when the dataset is small. However, the relational database will be a suboptimal solution for live comment service due to the following scalability limitations <sup id="fnref:5"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>the internal data structure adds delay to the data operations</li>
+<li>complex queries are needed to reintegrate data because of data segregation</li>
+</ul>
+<p>The creation of database indexes on <em>video_id</em> and <em>created_at</em> columns will improve the performance of the read operations at the expense of slow write operations. The NoSQL database such as <a href="https://cassandra.apache.org/_/index.html" rel="noopener noreferrer" target="_blank">Apache Cassandra</a> can be used as persistent data storage for live comments due to the following reasons <sup id="fnref:5"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>Log-structured merge-tree (<strong>LSM</strong>) based storage engine offers extremely high performance on writes</li>
+<li>schemaless data model reduces the overhead of joining different tables</li>
+<li>optimized natively for time series data</li>
+</ul>
+<p>Apache Cassandra is not optimized for read operations due to the nature of the LSM-based storage engine. An in-memory database such as Redis can be used in combination with Apache Cassandra to improve the read performance and make the data storage layer scalable and performant for live comments. The geo-replication enabled Redis <a class="offline-link" href="../fundamentals/caching-patterns.html" rel="noopener noreffer">cache</a> with a time to live (<strong>TTL</strong>) of 1 second can be added as a cache layer on top of Apache Cassandra to improve the read performance. In addition, live comments published on an extremely popular live video can be kept in the cache  on network edges to improve the latency <sup id="fnref:10"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<p>The sets data type in Redis can be used to efficiently store the live comments. The native deduplication logic of sets data type ensures that live comments are stored in memory without having an additional logic to prevent repeated live comments. The <a href="https://redis.io/docs/data-types/sorted-sets/" rel="noopener noreferrer" target="_blank">sorted set</a> data type in Redis can be used for data integrity by maintaining the reverse chronological ordering of live comments. The sorted set data type can make use of the timestamp on live comments for sorting the live comments without implementing a custom sorting algorithm. The metadata of the publisher of a live comment can be stored in Redis hash data type for quick retrieval <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Live comments; AP in CAP Theorem&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-cap-theorem.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-cap-theorem.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Live comments; AP in CAP Theorem">
+<img alt="Figure 6: Live comments; AP in CAP Theorem" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-cap-theorem.webp, /live-comment-system-design/live-comment-cap-theorem.webp 1.5x, /live-comment-system-design/live-comment-cap-theorem.webp 2x" height="722" sizes="683px" src="../assets/images/img_0c01107b379d.webp" width="1548"/>
+</a><figcaption class="image-caption">Figure 6: Live comments; AP in CAP Theorem</figcaption>
+</figure>
+<p>The receivers who are geographically located closer to the publisher of the live comment will see the live comment instantly while the receivers who are located on a different continent might see the live comment with a slight delay (lower than 250 ms) to favor availability and partition tolerance in the CAP theorem <sup id="fnref:10"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="capacity-planning"><a class="header-mark offline-link" href="./live-comment-system-design.html#capacity-planning"></a>Capacity Planning</h2>
+<p>The rate of clients viewing the live comments is significantly higher than the rate of clients publishing the live comments. The calculated numbers are approximations. A few helpful tips on <a class="offline-link" href="../fundamentals/back-of-the-envelope.html" rel="noopener noreffer">capacity planning</a> during system design are the following:</p>
+<ul>
+<li>1 million requests/day = 12 requests/second</li>
+<li>round off the numbers for quicker calculations</li>
+<li>write down the units while doing conversions</li>
+</ul>
+<h3 class="headerLink" id="traffic"><a class="header-mark offline-link" href="./live-comment-system-design.html#traffic"></a>Traffic</h3>
+<p>The live comment service is a read-heavy system. The Daily Active Users (<strong>DAU</strong>) count is 100 million. On average, the total number of daily live videos is 200 million. A live video receives 10 comments on average.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DAU (write)</td>
+<td>2 billion</td>
+</tr>
+<tr>
+<td>QPS (write)</td>
+<td>12 thousand</td>
+</tr>
+<tr>
+<td>read: write</td>
+<td>100: 1</td>
+</tr>
+<tr>
+<td>QPS (read)</td>
+<td>1.2 million</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="storage"><a class="header-mark offline-link" href="./live-comment-system-design.html#storage"></a>Storage</h3>
+<p>The comments on a streamed live video can be archived and kept in a cold store to save storage costs. In addition, comments older than a specific time frame can be removed to minimize storage costs. The storage size of each character on a live comment is assumed to be 1 byte.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Size (bytes)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>20</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>20</td>
+</tr>
+<tr>
+<td>video_id</td>
+<td>20</td>
+</tr>
+<tr>
+<td>content</td>
+<td>2000</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>10</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>storage for a day</td>
+<td>12k comments/sec * 2 KB/comment * 86400 sec/day</td>
+<td>2 TB</td>
+</tr>
+</tbody>
+</table></div>
+<p>In total, a live comment is approximately 2 KB in size. The replication factor for storage can be set to three for improved durability and disaster recovery.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="bandwidth"><a class="header-mark offline-link" href="./live-comment-system-design.html#bandwidth"></a>Bandwidth</h3>
+<p><strong>Ingress</strong> is the network traffic that enters the server when live comments are written. <strong>Egress</strong> is the network traffic that exits the servers when live comments are viewed. The network bandwidth is spread out across the globe depending on the location of the clients.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ingress</td>
+<td>2 billion comments/day * 2 KB/comment * 10^(-5) day/sec</td>
+<td>40 MB/sec</td>
+</tr>
+<tr>
+<td>Egress</td>
+<td>200 billion comments/day * 2 KB/comment * 10^(-5) day/sec</td>
+<td>4 GB/sec</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="memory"><a class="header-mark offline-link" href="./live-comment-system-design.html#memory"></a>Memory</h3>
+<p>The in-memory subscription store keeps the client viewership associations.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subscription store</td>
+<td>100 million users/day * 16 bytes/user</td>
+<td>1.6 GB/day</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./live-comment-system-design.html#further-system-design-learning-resources-1"></a>Further System Design Learning Resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="live-commenting-high-level-design"><a class="header-mark offline-link" href="./live-comment-system-design.html#live-commenting-high-level-design"></a>Live Commenting High-Level Design</h2>
+<h3 class="headerLink" id="write-globally-and-readlocally"><a class="header-mark offline-link" href="./live-comment-system-design.html#write-globally-and-readlocally"></a>Write Globally and Read Locally</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Write globally and read locally through asynchronous database replication&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/write-globally-read-locally.webp" href="https://systemdesign.one/live-comment-system-design/write-globally-read-locally.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Write globally and read locally through asynchronous database replication">
+<img alt="Figure 7: Write globally and read locally through asynchronous database replication" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/write-globally-read-locally.webp, /live-comment-system-design/write-globally-read-locally.webp 1.5x, /live-comment-system-design/write-globally-read-locally.webp 2x" height="1180" sizes="683px" src="../assets/images/img_b88d309751c7.webp" width="2232"/>
+</a><figcaption class="image-caption">Figure 7: Write globally and read locally through asynchronous database replication</figcaption>
+</figure>
+<p>The database can be configured to asynchronously replicate the data across the database servers in data centers located on distinct continents. In layman’s terms, the data is always fetched by the server from the database servers in the local data center while the data updates are asynchronously written to database servers in data centers across the globe. This technique is known as <strong>writing globally and reading locally</strong>. For instance, when a client located in the US publishes a live comment on a Facebook live video, the clients located in Europe will not see the live comment instantaneously due to the asynchronous nature of data replication. The following are the drawbacks of writing globally and reading locally approach for implementing live comment service <sup id="fnref:12"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:12" role="doc-noteref">12</a></sup>:</p>
+<ul>
+<li>significant bandwidth usage on data replication</li>
+<li>live comments will not be real-time due to asynchronous replication</li>
+<li>poor overall latency</li>
+</ul>
+<p>In summary, do not use the writing globally and reading locally approach for implementing live comments.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="write-locally-and-readglobally"><a class="header-mark offline-link" href="./live-comment-system-design.html#write-locally-and-readglobally"></a>Write Locally and Read Globally</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Write locally and read globally through timestamp query (pull-based model)&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/write-locally-read-globally-pull-based.webp" href="https://systemdesign.one/live-comment-system-design/write-locally-read-globally-pull-based.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Write locally and read globally through timestamp query (pull-based model)">
+<img alt="Figure 8: Write locally and read globally through timestamp query (pull-based model)" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/write-locally-read-globally-pull-based.webp, /live-comment-system-design/write-locally-read-globally-pull-based.webp 1.5x, /live-comment-system-design/write-locally-read-globally-pull-based.webp 2x" height="1180" sizes="683px" src="../assets/images/img_0b62e2b6dfcc.webp" width="2232"/>
+</a><figcaption class="image-caption">Figure 8: Write locally and read globally through timestamp query (pull-based model)</figcaption>
+</figure>
+<p>The data is always written to the database server in the local data center while the data is fetched by querying the servers in data centers across the globe as shown in Figure 8. This technique is known as the <strong>pull-based model of writing locally and reading globally</strong>. The timestamp on the live comments can be used to check if there are newer comments published since the last query execution. The server in the local data center will consolidate all the published live comments and return the response to the client. The bandwidth usage is relatively lower because the data is not replicated globally. However, the pull-based model will result in degraded latency because the server must query all the data centers across the globe on each read operation <sup id="fnref:12"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:12" role="doc-noteref">12</a></sup>. In summary, do not use the pull-based model of writing locally and reading globally approach for implementing live comments.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: Write locally and read globally through broadcasting (push-based model)&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/write-locally-read-globally-push-based.webp" href="https://systemdesign.one/live-comment-system-design/write-locally-read-globally-push-based.webp" rel="noopener noreferrer" target="_blank" title="Figure 9: Write locally and read globally through broadcasting (push-based model)">
+<img alt="Figure 9: Write locally and read globally through broadcasting (push-based model)" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/write-locally-read-globally-push-based.webp, /live-comment-system-design/write-locally-read-globally-push-based.webp 1.5x, /live-comment-system-design/write-locally-read-globally-push-based.webp 2x" height="1180" sizes="683px" src="../assets/images/img_76a074e8e3ce.webp" width="2232"/>
+</a><figcaption class="image-caption">Figure 9: Write locally and read globally through broadcasting (push-based model)</figcaption>
+</figure>
+<p>The data is always written to the distributed database server in the local data center. In Figure 9, when a client publishes a live comment on a Facebook live video, the write operation is broadcast by the server to multiple data centers across the globe. This technique is known as the <strong>push-based model of writing locally and reading globally</strong>. The push-based model of writing locally and reading globally significantly reduces the usage of expensive bandwidth and improves the latency resulting in real-time live comments <sup id="fnref:12"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:12" role="doc-noteref">12</a></sup>. In summary, use the push-based model of writing locally and reading globally for implementing live comments.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="prototyping-a-live-commentservice"><a class="header-mark offline-link" href="./live-comment-system-design.html#prototyping-a-live-commentservice"></a>Prototyping a Live Comment Service</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Prototyping a Live comment service&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/prototyping-live-comment.webp" href="https://systemdesign.one/live-comment-system-design/prototyping-live-comment.webp" rel="noopener noreferrer" target="_blank" title="Figure 10: Prototyping a Live comment service">
+<img alt="Figure 10: Prototyping a Live comment service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/prototyping-live-comment.webp, /live-comment-system-design/prototyping-live-comment.webp 1.5x, /live-comment-system-design/prototyping-live-comment.webp 2x" height="1240" sizes="683px" src="../assets/images/img_2592023a0833.webp" width="2143"/>
+</a><figcaption class="image-caption">Figure 10: Prototyping a Live comment service</figcaption>
+</figure>
+<p>The clients watching a live video are known as <strong>receivers</strong> and the clients publishing live comments on a live video are known as <strong>publishers</strong>. The server holding the SSE connections to the receivers is known as the <strong>gateway server</strong>. A dedicated disk-based <strong>subscription store</strong> can be provisioned to persist the lifecycle of the client connections. The <strong>dispatcher</strong> is an abstraction layer for publishing data objects such as live comments or <a class="offline-link" href="./distributed-counter-system-design.html" rel="noopener noreffer">Facebook likes</a> by the client. The following operations are performed when a live comment is published on a live video <sup id="fnref:13"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ol>
+<li>receiver subscribes to a live video on the gateway server</li>
+<li>gateway server persists the metadata of the client connection in the subscription store</li>
+<li>the publisher publishes a live comment on a live video</li>
+<li>dispatcher queries the subscription store for all viewership associations on the live video</li>
+<li>dispatcher publishes the live comment to the gateway server</li>
+<li>gateway server delivers the live comment to all subscribed receivers</li>
+</ol>
+<p>The gateway server maintains the SSE connections with the clients. The subscription store should be replicated at least thrice for reliability and durability <sup id="fnref:13"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:13" role="doc-noteref">13</a></sup>. The subscription store will become a bottleneck to scaling the live comment service because every read and write operation on live comments must query the subscription store. On top of that, the client connections to a specific live video are short-lived because clients scroll through the Facebook newsfeed. As a result, the subscription store must be updated frequently. In summary, the current prototype will not meet the requirements of a scalable and reliable live comment service.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="distribution-of-livecomments"><a class="header-mark offline-link" href="./live-comment-system-design.html#distribution-of-livecomments"></a>Distribution of Live Comments</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Distribution of live comments through SSE&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/distribution-live-comment.webp" href="https://systemdesign.one/live-comment-system-design/distribution-live-comment.webp" rel="noopener noreferrer" target="_blank" title="Figure 11: Distribution of live comments through SSE">
+<img alt="Figure 11: Distribution of live comments through SSE" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/distribution-live-comment.webp, /live-comment-system-design/distribution-live-comment.webp 1.5x, /live-comment-system-design/distribution-live-comment.webp 2x" height="942" sizes="683px" src="../assets/images/img_e11f498a0ef8.webp" width="1756"/>
+</a><figcaption class="image-caption">Figure 11: Distribution of live comments through SSE</figcaption>
+</figure>
+<p>The receiver can periodically request (pull-based) the server to check whether new live comments were published. The periodic polling of the server will result in empty responses consuming unnecessary bandwidth. Moreover, the polling interval for live comments should be lower than 250 ms for a real-time experience. The increased polling frequency will highly likely overload the servers. The push-based approach using SSE persistent connections is optimal for the real-time delivery of live comments to the receivers <sup id="fnref:12"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: In-memory subscription store on gateway server keeping viewership associations&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/subscription-store-gateway.webp" href="https://systemdesign.one/live-comment-system-design/subscription-store-gateway.webp" rel="noopener noreferrer" target="_blank" title="Figure 12: In-memory subscription store on gateway server keeping viewership associations">
+<img alt="Figure 12: In-memory subscription store on gateway server keeping viewership associations" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/subscription-store-gateway.webp, /live-comment-system-design/subscription-store-gateway.webp 1.5x, /live-comment-system-design/subscription-store-gateway.webp 2x" height="1243" sizes="683px" src="../assets/images/img_11b73cda9806.webp" width="2073"/>
+</a><figcaption class="image-caption">Figure 12: In-memory subscription store on gateway server keeping viewership associations</figcaption>
+</figure>
+<p>The SSE connections to the client are non-blocking fire-and-forget for improved performance <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>. An in-memory subscription store using Redis can be provisioned locally on the gateway server to store the one-to-one associations between the receivers and the Facebook live video. The <a href="https://redis.io/docs/data-types/sets/" rel="noopener noreferrer" target="_blank">sets</a> data type in Redis can be used to efficiently store the ephemeral viewership associations. The subscription store is queried to identify the receivers who should receive the live comments on a specific live video <sup id="fnref:12"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Live comment delivery through the real-time platform&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-delivery-real-time-platform.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-delivery-real-time-platform.webp" rel="noopener noreferrer" target="_blank" title="Figure 13: Live comment delivery through the real-time platform">
+<img alt="Figure 13: Live comment delivery through the real-time platform" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-delivery-real-time-platform.webp, /live-comment-system-design/live-comment-delivery-real-time-platform.webp 1.5x, /live-comment-system-design/live-comment-delivery-real-time-platform.webp 2x" height="776" sizes="683px" src="../assets/images/img_e4be89d31fb4.webp" width="1765"/>
+</a><figcaption class="image-caption">Figure 13: Live comment delivery through the real-time platform</figcaption>
+</figure>
+<p>An abstract and scalable real-time platform can be built for real-time experiences such as displaying <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">real-time presence</a>, push notifications, <a class="offline-link" href="./distributed-counter-system-design.html" rel="noopener noreffer">Facebook likes</a>, <a class="offline-link" href="./distributed-counter-system-design.html" rel="noopener noreffer">Facebook reactions</a>, typing indicators, and live comments. The real-time platform can be reused across multiple platforms such as Facebook, Messenger, Instagram, Twitch, TikTok, LinkedIn, or YouTube <sup id="fnref:13"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:13" role="doc-noteref">13</a></sup>. A dynamically configurable plugin system architecture should be implemented to create an abstract real-time platform. Plugins are embedded executable code for additional logic that gets invoked on distinct events such as the publishing of a live comment <sup id="fnref:3"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:3" role="doc-noteref">3</a></sup>. The principle behind building a scalable distributed system is to start small and iteratively add simple layers to the architecture <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>. The general guidelines for horizontally scaling a service are the following <sup id="fnref:14"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:14" role="doc-noteref">14</a></sup>:</p>
+<ul>
+<li>keep the service stateless</li>
+<li>partition the service</li>
+<li>replicate the service</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="live-commenting-with-pub-subserver"><a class="header-mark offline-link" href="./live-comment-system-design.html#live-commenting-with-pub-subserver"></a>Live Commenting With Pub-Sub Server</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 14: Pub-sub server for live comments&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-pub-sub.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-pub-sub.webp" rel="noopener noreferrer" target="_blank" title="Figure 14: Pub-sub server for live comments">
+<img alt="Figure 14: Pub-sub server for live comments" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-pub-sub.webp, /live-comment-system-design/live-comment-pub-sub.webp 1.5x, /live-comment-system-design/live-comment-pub-sub.webp 2x" height="785" sizes="683px" src="../assets/images/img_e504369d2540.webp" width="1516"/>
+</a><figcaption class="image-caption">Figure 14: Pub-sub server for live comments</figcaption>
+</figure>
+<p><a href="https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern" rel="noopener noreferrer" target="_blank">Publish-Subscribe</a> (<strong>pub-sub</strong>) pattern allows services running on distinct technologies to communicate with each other <sup id="fnref:11"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:11" role="doc-noteref">11</a></sup>. The pub-sub technique using the message bus enables a producer to send live comments (<strong>messages</strong>) to multiple consumers. The services can communicate with each other instantly without having preset intervals for polling data from relevant data sources in a reactive architecture <sup id="fnref:5"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<hr/>
+<h4 class="headerLink" id="using-apache-kafka-as-the-pub-sub-server"><a class="header-mark offline-link" href="./live-comment-system-design.html#using-apache-kafka-as-the-pub-sub-server"></a>Using Apache Kafka as the Pub-Sub Server</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 15: Live comments; Apache Kafka as the pub-sub server&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/kafka-pub-sub.webp" href="https://systemdesign.one/live-comment-system-design/kafka-pub-sub.webp" rel="noopener noreferrer" target="_blank" title="Figure 15: Live comments; Apache Kafka as the pub-sub server">
+<img alt="Figure 15: Live comments; Apache Kafka as the pub-sub server" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/kafka-pub-sub.webp, /live-comment-system-design/kafka-pub-sub.webp 1.5x, /live-comment-system-design/kafka-pub-sub.webp 2x" height="910" sizes="683px" src="../assets/images/img_eb2f36281c06.webp" width="1986"/>
+</a><figcaption class="image-caption">Figure 15: Live comments; Apache Kafka as the pub-sub server</figcaption>
+</figure>
+<p>Apache Kafka is configured as the pub-sub server to decouple the producers and consumers. The live comment service can be reliably scaled through the separation of concerns. The streaming protocol of <a href="https://kafka.apache.org/protocol.html" rel="noopener noreferrer" target="_blank">Kafka</a> offers lower overheads per message and provides ordering guarantees, integrity guarantees, and idempotency. Besides, the Kafka streaming protocol enables sharding the data before <a class="offline-link" href="./what-is-critical-rendering-path.html" rel="noopener noreffer">streaming</a> the data to consumers <sup id="fnref:6"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>. The system design of live comments is challenging for the following reasons:</p>
+<ul>
+<li>clients will continuously scroll through the Facebook <a class="offline-link" href="./feed-architecture.html" rel="noopener noreffer">newsfeed</a></li>
+<li>live videos visible on the viewport of the client will change frequently</li>
+</ul>
+<p>There will be multiple receivers (<strong>consumers</strong>) watching a live video. The live comments published on the live video should be consumed by all the receivers. When the client scrolls through the Facebook newsfeed or navigates outside the comments panel, the client is not supposed to see the live comments anymore. The consumer should dynamically unsubscribe from the  specific live video (<strong>Kafka topic</strong>) to stop seeing the live comments on the specific live video. However, unsubscribing from a Kafka topic is an expensive operation <sup id="fnref:15"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:15" role="doc-noteref">15</a></sup>, <sup id="fnref:16"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:16" role="doc-noteref">16</a></sup>. In addition, tracking the gateway servers consuming specific live videos is non-trivial resulting in oversubscription to all Kafka topics. The limitations of using Apache Kafka for building the live comment service can be summarized as the following <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li>degraded latency because consumers use a pull-based model</li>
+<li>limited scalability because each consumer should subscribe to all the Kafka topics and consume all the messages</li>
+<li>operational complexity of Apache Kafka is relatively high</li>
+</ul>
+<p>The Kafka topics can be partitioned by the stream IDs at the expense of unbalanced partitions. Consumers can subscribe to specific partitions using <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> <sup id="fnref:3"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:3" role="doc-noteref">3</a></sup>. Nonetheless, the consumers will not know in advance the stream IDs that the clients will be interested in. In a typical scenario, a server will have a diverse set of clients interested in almost all the live videos resulting in subscriptions to all the live videos. <a href="https://pulsar.apache.org/" rel="noopener noreferrer" target="_blank">Apache Pulsar</a> also runs into a similar set of challenges as Apache Kafka for the use case of live comment service <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>. In summary, do not use Apache Kafka as the pub-sub server for implementing live comments.</p>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="using-redis-as-the-pub-sub-server"><a class="header-mark offline-link" href="./live-comment-system-design.html#using-redis-as-the-pub-sub-server"></a>Using Redis as the Pub-Sub Server</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 16: Live comments; Redis cluster as the pub-sub server&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/redis-cluster-pub-sub.webp" href="https://systemdesign.one/live-comment-system-design/redis-cluster-pub-sub.webp" rel="noopener noreferrer" target="_blank" title="Figure 16: Live comments; Redis cluster as the pub-sub server">
+<img alt="Figure 16: Live comments; Redis cluster as the pub-sub server" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/redis-cluster-pub-sub.webp, /live-comment-system-design/redis-cluster-pub-sub.webp 1.5x, /live-comment-system-design/redis-cluster-pub-sub.webp 2x" height="1162" sizes="683px" src="../assets/images/img_ce01bea4c39f.webp" width="1748"/>
+</a><figcaption class="image-caption">Figure 16: Live comments; Redis cluster as the pub-sub server</figcaption>
+</figure>
+<p>The clients must use a protocol named REdis Serialization Protocol (<strong>RESP</strong>) for communicating with the Redis server. Redis can be used as the <a href="https://redis.io/docs/manual/pubsub/" rel="noopener noreferrer" target="_blank">pub-sub</a> server to transmit live comments (<strong>messages</strong>) between nodes <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>. The Redis cluster can be used to <a class="offline-link" href="./scalable-software-architecture.html" rel="noopener noreffer">scale</a> the pub-sub server. The Redis pub-sub server replicates every incoming message to all nodes because Redis does not know the set of clients (receivers) on a specific node resulting in degraded performance. The <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> algorithm is used for load-balancing client subscriptions to live videos between a set of independent Redis nodes for improved scalability. <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">Consistent hashing</a> significantly reduces the movement of live connections between nodes on a node failure or node addition. In layman’s terms, the incoming messages are published to all Redis nodes but the server only listens on a small set of nodes for a specific subscription (live video) for improved scalability. The Redis replicas should be provisioned on every node to perform automatic failover when a node failure occurs <sup id="fnref:3"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>A TCP connection is maintained between the producer to Redis and Redis to the consumer for delivering messages. As an unconventional workaround, the server could terminate the TCP connection between the consumer node and the pub-sub server for unsubscribing the consumer from a topic (live video) when the client scrolls through the Facebook newsfeed. The drawbacks of using the Redis pub-sub server for live comment service are the following:</p>
+<ul>
+<li>no guaranteed  at least one-time message delivery</li>
+<li>reliability of message delivery depends on the TCP connection</li>
+<li>messages might get lost due to a lack of message persistence</li>
+</ul>
+<p>In conclusion, do not use the Redis pub-sub server solution for implementing live comments.</p>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="using-redis-streams-as-the-pub-sub-server"><a class="header-mark offline-link" href="./live-comment-system-design.html#using-redis-streams-as-the-pub-sub-server"></a>Using Redis Streams as the Pub-Sub Server</h4>
+<hr/>
+<p>The Redis stream is a data structure that can be used like an append-only log for improving the responsiveness of the system. In simple words, Redis streams are functionally very equivalent to Apache Kafka. The Redis streams as the pub-sub server offer the following benefits <sup id="fnref:17"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:17" role="doc-noteref">17</a></sup>, <sup id="fnref:18"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:18" role="doc-noteref">18</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:19"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:19" role="doc-noteref">19</a></sup>, <sup id="fnref:20"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:20" role="doc-noteref">20</a></sup>, <sup id="fnref:21"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:21" role="doc-noteref">21</a></sup>:</p>
+<ul>
+<li>guaranteed at least one-time delivery of messages</li>
+<li>reliable messages through persistence with Append Only File (<strong>AOF</strong>) or Redis Database (<strong>RDB</strong>) persistency methods</li>
+<li>more tolerant to network partitions</li>
+<li>improved latency due to efficient in-memory storage</li>
+<li>relatively trivial to provision and operate</li>
+<li>messages can be consumed either in blocking or non-blocking methods</li>
+</ul>
+<p>The Redis Sentinel or Redis Active-Active configuration provides high availability for the cluster at the expense of increased operational complexity. The Redis Sentinel is a distributed system that monitors and provides failover policies to Redis instances. Redis streams could dynamically unsubscribe consumers  from a specific topic (live video). However, there is a risk of data loss in Redis streams because the data is only periodically written to disk. The memory limitation could also be a bottleneck to building a scalable live commenting service <sup id="fnref:19"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:19" role="doc-noteref">19</a></sup>, <sup id="fnref:21"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:21" role="doc-noteref">21</a></sup>. In conclusion, do not use Redis streams as the pub-sub server solution for implementing live comments.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="an-abstract-real-time-platform"><a class="header-mark offline-link" href="./live-comment-system-design.html#an-abstract-real-time-platform"></a>An Abstract Real-Time Platform</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 17: Live comment; High-level design&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-high-level-design.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-high-level-design.webp" rel="noopener noreferrer" target="_blank" title="Figure 17: Live comment; High-level design">
+<img alt="Figure 17: Live comment; High-level design" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-high-level-design.webp, /live-comment-system-design/live-comment-high-level-design.webp 1.5x, /live-comment-system-design/live-comment-high-level-design.webp 2x" height="1772" sizes="683px" src="../assets/images/img_98c82e9d4a2a.webp" width="2687"/>
+</a><figcaption class="image-caption">Figure 17: Live comment; High-level design</figcaption>
+</figure>
+<p>An in-memory <strong>subscription store</strong> can be provisioned using Redis on the same machine where the gateway server runs. The in-memory subscription store will hold the mapping between live videos and receivers (client connections). The gateway server can perform throttling and include additional product logic. A dedicated disk-based <strong>endpoint store</strong> can be used to identify the gateway servers interested in a specific live video. The endpoint store will contain a mapping between the live videos and a set of gateway servers. The following operations are performed when a live comment is published on a live video <sup id="fnref:13"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ol>
+<li>receiver subscribes to a live video on the gateway server</li>
+<li>the gateway server updates the subscription store with viewership association and informs the endpoint store that the gateway server is interested in the specific live video</li>
+<li>the publisher writes a live comment on the specific live video</li>
+<li>dispatcher queries one of the replicas of the endpoint store to fetch the set of subscribed gateway servers</li>
+<li>the dispatcher forwards the live comment to the subscribed gateway servers</li>
+<li>the gateway server checks the local in-memory subscription store and fans out the live comment to subscribed receivers</li>
+</ol>
+<p>The following operations can be executed for removing the expired records from the in-memory subscription store on the gateway server:</p>
+<ul>
+<li>the gateway server can send periodic heartbeat signals to the receivers to check if they are still connected</li>
+<li>Redis TTL keys can expire the subscription record when the heartbeat signals show a failure</li>
+<li>client-side JavaScript logic can trigger an event when the client scrolls away from the live video</li>
+</ul>
+<p>The endpoint store should remove the live video only when the set of gateway servers subscribed to the live video is empty. Redis set data type allows checking the cardinality of the set in constant time complexity. The ending of a live video can trigger the expiry of the records in the disk-based endpoint store. In summary, the current architecture can satisfy the requirements of a scalable and reliable live comment service.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-2"><a class="header-mark offline-link" href="./live-comment-system-design.html#further-system-design-learning-resources-2"></a>Further System Design Learning Resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="live-comment-system-design-deepdive"><a class="header-mark offline-link" href="./live-comment-system-design.html#live-comment-system-design-deepdive"></a>Live Comment System Design Deep Dive</h2>
+<p>Live experiences are underpinned by real-time, event-driven APIs for meeting the requirements of clients. A real-time platform is predicated upon low latency, data integrity, fault tolerance, availability, and scalability <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<h3 class="headerLink" id="how-does-the-gateway-server-manage-client-connections"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-does-the-gateway-server-manage-client-connections"></a>How Does the Gateway Server Manage Client Connections?</h3>
+<p>An <a href="https://en.wikipedia.org/wiki/Actor_model" rel="noopener noreferrer" target="_blank">actor</a> is an extremely lightweight object that can receive messages and take actions to handle the messages. The actor is decoupled from the source of the message. The actor is only responsible for recognizing the type of message received and performing the required action. A thread will be assigned to an actor when a message must be processed. The thread is released once the message is processed and the thread is assigned to the next actor. The total count of threads will be proportional to the count of CPU cores. A relatively small count of threads can handle a significant number of concurrent actors because a thread is assigned to an actor only during the execution time <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:22"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:22" role="doc-noteref">22</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 18: Gateway server; Client connection management using the actor model&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/actor-model-gateway-server.webp" href="https://systemdesign.one/live-comment-system-design/actor-model-gateway-server.webp" rel="noopener noreferrer" target="_blank" title="Figure 18: Gateway server; Client connection management using the actor model">
+<img alt="Figure 18: Gateway server; Client connection management using the actor model" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/actor-model-gateway-server.webp, /live-comment-system-design/actor-model-gateway-server.webp 1.5x, /live-comment-system-design/actor-model-gateway-server.webp 2x" height="887" sizes="683px" src="../assets/images/img_90acfd03e5b3.webp" width="1206"/>
+</a><figcaption class="image-caption">Figure 18: Gateway server; Client connection management using the actor model</figcaption>
+</figure>
+<p>An SSE persistent client connection can be assigned to an actor. When an actor receives a message, the handler on the actor defines how the message will be published to the client connection. The actor-style programming can be implemented with actor frameworks such as <a href="https://akka.io/" rel="noopener noreferrer" target="_blank">Akka</a> (Java, Scala), <a href="https://pykka.readthedocs.io/en/latest/index.html" rel="noopener noreferrer" target="_blank">Pykka</a> (Python), or <a href="https://cloudi.org/" rel="noopener noreferrer" target="_blank">Cloudi</a> (Erlang) for building highly concurrent, distributed, and resilient message-driven applications <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:22"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:22" role="doc-noteref">22</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 19: Gateway server; Broadcasting live comments using the actor model&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/actor-model-broadcast.webp" href="https://systemdesign.one/live-comment-system-design/actor-model-broadcast.webp" rel="noopener noreferrer" target="_blank" title="Figure 19: Gateway server; Broadcasting live comments using the actor model">
+<img alt="Figure 19: Gateway server; Broadcasting live comments using the actor model" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/actor-model-broadcast.webp, /live-comment-system-design/actor-model-broadcast.webp 1.5x, /live-comment-system-design/actor-model-broadcast.webp 2x" height="1052" sizes="683px" src="../assets/images/img_cb929af844be.webp" width="1515"/>
+</a><figcaption class="image-caption">Figure 19: Gateway server; Broadcasting live comments using the actor model</figcaption>
+</figure>
+<p>The (child) actors are managed by the supervisor actor. The following operations are executed when a live comment is published by the dispatcher <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li>the dispatcher publishes a live comment to the supervisor actor in the gateway server over the HTTP</li>
+<li>the supervisor actor broadcasts the live comment to all the child actors</li>
+<li>child actors use the connection handle to forward the live comment to the receivers</li>
+</ol>
+<p>The client (receiver) will render the received live comment on the web browser.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-handle-live-comments-on-multiple-livevideos"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-to-handle-live-comments-on-multiple-livevideos"></a>How to Handle Live Comments on Multiple Live Videos?</h3>
+<p>There might be multiple clients watching distinct live videos connected to the same gateway server. The actors on the gateway server should not publish the live comment on a specific live video to all the connected clients because some of the clients might be watching a different live video. In Figure 20, clients connected to the same gateway server are watching distinct live videos with live video IDs <em>blue</em> and <em>red</em>. When the client publishes a live comment on the live video with <em>blue</em> as the ID, only the clients watching the live video with <em>blue</em> as the ID should be able to view the published live comment.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 20: Gateway server; Publishing live comments on multiple live videos using a subscription&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-multiple-videos.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-multiple-videos.webp" rel="noopener noreferrer" target="_blank" title="Figure 20: Gateway server; Publishing live comments on multiple live videos using a subscription">
+<img alt="Figure 20: Gateway server; Publishing live comments on multiple live videos using a subscription" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-multiple-videos.webp, /live-comment-system-design/live-comment-multiple-videos.webp 1.5x, /live-comment-system-design/live-comment-multiple-videos.webp 2x" height="1565" sizes="683px" src="../assets/images/img_7e2d2b652f10.webp" width="2520"/>
+</a><figcaption class="image-caption">Figure 20: Gateway server; Publishing live comments on multiple live videos using a subscription</figcaption>
+</figure>
+<p>An in-memory subscription store using Redis can be provisioned to run on the same machine where the gateway server runs. The client starting to watch a live video subscribes to the specific live video on the gateway server over HTTP. The <strong>subscription store</strong> will keep an in-memory mapping between a live video and the set of receivers. An in-memory subscription store is used by the gateway server for storing viewership associativity for the following reasons <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li>subscription data is local to clients connected to the gateway server</li>
+<li>the client connections are strongly tied to the lifecycle of the gateway server</li>
+</ul>
+<p>In layman’s terms, an in-memory subscription store is used to identify the live video watched by each client connected to the gateway server. The following operations are executed when a client publishes a live comment on the live video with <em>blue</em> as the ID <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li>the dispatcher publishes a live comment to the supervisor actor in the gateway server over the HTTP</li>
+<li>the supervisor actor queries the local in-memory subscription store to identify the clients subscribed to the live video with <em>blue</em> as the ID</li>
+<li>the supervisor actor broadcasts the live comment to all the subscribed child actors</li>
+<li>child actors use the connection handle to forward the live comment to the receivers</li>
+</ol>
+<p>The local in-memory subscription store allows the efficient publishing of live comments on multiple live videos.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-support-massive-concurrent-clients-on-multiple-livevideos"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-to-support-massive-concurrent-clients-on-multiple-livevideos"></a>How to Support Massive Concurrent Clients on Multiple Live Videos?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 21: Dispatcher broadcasting live comments between gateway servers&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/dispatcher-broadcast-live-comments.webp" href="https://systemdesign.one/live-comment-system-design/dispatcher-broadcast-live-comments.webp" rel="noopener noreferrer" target="_blank" title="Figure 21: Dispatcher broadcasting live comments between gateway servers">
+<img alt="Figure 21: Dispatcher broadcasting live comments between gateway servers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/dispatcher-broadcast-live-comments.webp, /live-comment-system-design/dispatcher-broadcast-live-comments.webp 1.5x, /live-comment-system-design/dispatcher-broadcast-live-comments.webp 2x" height="1436" sizes="683px" src="../assets/images/img_e4a46b0bdcce.webp" width="2211"/>
+</a><figcaption class="image-caption">Figure 21: Dispatcher broadcasting live comments between gateway servers</figcaption>
+</figure>
+<p>The gateway server should be partitioned by provisioning multiple instances of gateway servers to handle massive concurrent clients as shown in Figure 21. An additional service known as the <strong>dispatcher</strong> is provisioned to broadcast live comments between multiple gateway servers <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>. The clients connected to a gateway server might be watching only a subset of live videos. It is inefficient for the dispatcher to broadcast the live comments on all live videos to all gateway servers because some gateway servers might be subscribed to only a subset of live videos.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 22: Dispatcher broadcasting live comments to all gateway servers&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/dispatcher-broadcast-all-gateway.webp" href="https://systemdesign.one/live-comment-system-design/dispatcher-broadcast-all-gateway.webp" rel="noopener noreferrer" target="_blank" title="Figure 22: Dispatcher broadcasting live comments to all gateway servers">
+<img alt="Figure 22: Dispatcher broadcasting live comments to all gateway servers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/dispatcher-broadcast-all-gateway.webp, /live-comment-system-design/dispatcher-broadcast-all-gateway.webp 1.5x, /live-comment-system-design/dispatcher-broadcast-all-gateway.webp 2x" height="1436" sizes="683px" src="../assets/images/img_3a187ef88e45.webp" width="2211"/>
+</a><figcaption class="image-caption">Figure 22: Dispatcher broadcasting live comments to all gateway servers</figcaption>
+</figure>
+<p>For example, in Figure 22, clients connected to gateway server 1 are only watching the live video with <em>blue</em> as the video ID. When the dispatcher publishes live comments on live video with <em>red</em> as the video ID to the gateway server 1, the published live comments will be processed and subsequently ignored by the gateway server 1 resulting in wasted computing resources. The dispatcher should not publish live comments on all live videos to all the gateway servers for improved performance <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 23: Gateway servers subscribing to an in-memory endpoint store in the dispatcher&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/gateway-server-subscribe-endpoint-store.webp" href="https://systemdesign.one/live-comment-system-design/gateway-server-subscribe-endpoint-store.webp" rel="noopener noreferrer" target="_blank" title="Figure 23: Gateway servers subscribing to an in-memory endpoint store in the dispatcher">
+<img alt="Figure 23: Gateway servers subscribing to an in-memory endpoint store in the dispatcher" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/gateway-server-subscribe-endpoint-store.webp, /live-comment-system-design/gateway-server-subscribe-endpoint-store.webp 1.5x, /live-comment-system-design/gateway-server-subscribe-endpoint-store.webp 2x" height="1284" sizes="683px" src="../assets/images/img_45a64fff8cb2.webp" width="2653"/>
+</a><figcaption class="image-caption">Figure 23: Gateway servers subscribing to an in-memory endpoint store in the dispatcher</figcaption>
+</figure>
+<p>An in-memory endpoint store using Redis can be provisioned to run locally on the same machine as the dispatcher. The client starting to watch a live video subscribes on the gateway server over HTTP. The subscription store in the gateway server will keep the mapping between the specific live video and the set of receivers. The gateway server will subscribe to the specific live video on the dispatcher over HTTP. An in-memory <strong>endpoint store</strong> on the dispatcher will keep the mapping between a live video and the set of subscribed gateway servers. An in-memory endpoint store is used by the dispatcher for keeping the subscription data of the gateway servers due to the following reasons <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li>efficiently dispatch live comments across multiple gateway servers</li>
+<li>identify the gateway servers subscribed to a particular live video</li>
+</ul>
+<p>In layman’s terms, an in-memory endpoint store in the dispatcher is used to identify the live video subscription by the gateway servers for improved performance.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 24: Dispatcher publishing live comments to the subscribed gateways servers&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/dispatcher-publish-subscribed-gateway-servers.webp" href="https://systemdesign.one/live-comment-system-design/dispatcher-publish-subscribed-gateway-servers.webp" rel="noopener noreferrer" target="_blank" title="Figure 24: Dispatcher publishing live comments to the subscribed gateways servers">
+<img alt="Figure 24: Dispatcher publishing live comments to the subscribed gateways servers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/dispatcher-publish-subscribed-gateway-servers.webp, /live-comment-system-design/dispatcher-publish-subscribed-gateway-servers.webp 1.5x, /live-comment-system-design/dispatcher-publish-subscribed-gateway-servers.webp 2x" height="1537" sizes="683px" src="../assets/images/img_44e916aded27.webp" width="3008"/>
+</a><figcaption class="image-caption">Figure 24: Dispatcher publishing live comments to the subscribed gateways servers</figcaption>
+</figure>
+<p>The following operations ate executed when the client publishes a live comment on the live video with <em>red</em> as the ID <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li>the dispatcher queries the local in-memory endpoint store to identify the subscribed gateway servers on the live video with <em>red</em> as the ID</li>
+<li>the dispatcher publishes the live comment to the subscribed gateway servers over HTTP</li>
+<li>the gateway server queries the local in-memory subscription store to identify the clients subscribed to the live video with <em>red</em> as the ID</li>
+<li>the gateway server broadcasts the live comment to all the subscribed clients through SSE</li>
+</ol>
+<p>The major drawback of the current architecture is that the dispatcher becomes the bottleneck for scalability. The performance of the live comment will degrade on peak load because there is only a single instance of dispatcher deployed.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scaling-live-comments-to-handle-peakload"><a class="header-mark offline-link" href="./live-comment-system-design.html#scaling-live-comments-to-handle-peakload"></a>Scaling Live Comments to Handle Peak Load</h3>
+<p>When an extremely high rate of live comments is published per second, the single instance of dispatcher will degrade the overall performance of the live comment service. The dispatcher can be replicated for horizontal scaling. The dispatcher should be made stateless for replicating the dispatcher. The dispatcher can become stateless by moving out gateway subscription state to an external store.</p>
+<p>A disk-based key-value store known as the <strong>endpoint store</strong> can persist the subscription associations between a live video and the set of gateway servers. The endpoint store must be replicated for scalability and high availability. The endpoint store should only persist the gateway server subscription local to the data center. DynamoDB, Redis, or MongoDB can be used to provision the endpoint store. In addition, the endpoint store provides durability in case the dispatcher fails. Any dispatcher will be able to identify the set of subscribed gateway servers by querying the external endpoint store <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 25: Scaling the dispatcher using a key-value endpoint store&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/scaling-dispatcher.webp" href="https://systemdesign.one/live-comment-system-design/scaling-dispatcher.webp" rel="noopener noreferrer" target="_blank" title="Figure 25: Scaling the dispatcher using a key-value endpoint store">
+<img alt="Figure 25: Scaling the dispatcher using a key-value endpoint store" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/scaling-dispatcher.webp, /live-comment-system-design/scaling-dispatcher.webp 1.5x, /live-comment-system-design/scaling-dispatcher.webp 2x" height="1537" sizes="683px" src="../assets/images/img_1aeb78d35157.webp" width="3008"/>
+</a><figcaption class="image-caption">Figure 25: Scaling the dispatcher using a key-value endpoint store</figcaption>
+</figure>
+<p>The dispatcher communicates with gateway servers over HTTP. Any dispatcher instance will be able to publish live comments to any gateway server. The following operations are executed when the client publishes a live comment on a live video with <em>red</em> as the ID <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li>the dispatcher independently queries the external endpoint store to identify the set of subscribed gateway servers on the live video with <em>red</em> as the ID</li>
+<li>the dispatcher publishes the live comment to the set of subscribed gateway servers over HTTP</li>
+<li>the gateway server queries the local in-memory subscription store to identify the clients subscribed to the live video with <em>red</em> as the ID</li>
+<li>the gateway server broadcasts the live comment to all the subscribed clients through SSE</li>
+</ol>
+<p>The endpoint store doesn’t need to be partitioned due to the small dataset.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="what-is-the-subscribe-workflow-and-publish-workflow-for-live-comments"><a class="header-mark offline-link" href="./live-comment-system-design.html#what-is-the-subscribe-workflow-and-publish-workflow-for-live-comments"></a>What Is the Subscribe Workflow and Publish Workflow for Live Comments?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 26: Live comment; Subscribe workflow when the client starts watching a live video&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/subscribe-workflow.webp" href="https://systemdesign.one/live-comment-system-design/subscribe-workflow.webp" rel="noopener noreferrer" target="_blank" title="Figure 26: Live comment; Subscribe workflow when the client starts watching a live video">
+<img alt="Figure 26: Live comment; Subscribe workflow when the client starts watching a live video" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/subscribe-workflow.webp, /live-comment-system-design/subscribe-workflow.webp 1.5x, /live-comment-system-design/subscribe-workflow.webp 2x" height="1148" sizes="683px" src="../assets/images/img_946f4c5a2dda.webp" width="1661"/>
+</a><figcaption class="image-caption">Figure 26: Live comment; Subscribe workflow when the client starts watching a live video</figcaption>
+</figure>
+<p>The following operations are executed for the subscription when the client starts watching a live video <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li>the client subscribes to the gateway server over HTTP</li>
+<li>the gateway stores the viewership associations on the in-memory subscription store</li>
+<li>the gateway server makes a subscription request on the endpoint store by creating an entry on the key-value store</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 27: Live comment; Publish workflow when the client publishes a live comment&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/publish-workflow.webp" href="https://systemdesign.one/live-comment-system-design/publish-workflow.webp" rel="noopener noreferrer" target="_blank" title="Figure 27: Live comment; Publish workflow when the client publishes a live comment">
+<img alt="Figure 27: Live comment; Publish workflow when the client publishes a live comment" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/publish-workflow.webp, /live-comment-system-design/publish-workflow.webp 1.5x, /live-comment-system-design/publish-workflow.webp 2x" height="1772" sizes="683px" src="../assets/images/img_49f111380725.webp" width="2687"/>
+</a><figcaption class="image-caption">Figure 27: Live comment; Publish workflow when the client publishes a live comment</figcaption>
+</figure>
+<p>The following operations are executed when the client publishes  a live comment on the live video <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li>the load balancer distributes the live comment published by the client to any random dispatcher over HTTP</li>
+<li>the dispatcher queries the endpoint store for identifying the set of gateway servers subscribed to the particular live video</li>
+<li>the dispatcher forwards the live comment to the set of subscribed gateway servers over the HTTP</li>
+<li>the gateway servers query the local in-memory subscription store to identify the subscribed clients for the particular live video</li>
+<li>the gateway servers broadcast the live comments to the subscribed clients over SSE</li>
+</ol>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-deploy-the-live-comment-service-across-multiple-datacenters"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-to-deploy-the-live-comment-service-across-multiple-datacenters"></a>How to Deploy the Live Comment Service Across Multiple Data Centers?</h3>
+<p>The live comment service should be deployed across multiple data centers (<strong>DC</strong>) for scalability and performance. There might be a scenario when no clients are watching a particular live video on some data centers. The dispatcher can query the local endpoint store to identify if there are any gateway servers subscribed to the particular live video in the local data center. The endpoint store keeps only gateway servers subscription local to the data center <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<p>For instance, in Figure 28, no clients are watching the video with <em>red</em> as the video ID on data centers one and three. When a client publishes a live comment on the live video with <em>red</em> as the video ID, only the dispatcher on data center two should broadcast the live comment to the subscribed gateway servers. The dispatcher must broadcast the live comment to the dispatchers in peer data centers for ensuring that the clients subscribed to the particular live video on peer data centers receives the live comment in real-time.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 28: Publishing the live comment across data centers through broadcasting&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-cross-data-center.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-cross-data-center.webp" rel="noopener noreferrer" target="_blank" title="Figure 28: Publishing the live comment across data centers through broadcasting">
+<img alt="Figure 28: Publishing the live comment across data centers through broadcasting" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-cross-data-center.webp, /live-comment-system-design/live-comment-cross-data-center.webp 1.5x, /live-comment-system-design/live-comment-cross-data-center.webp 2x" height="1848" sizes="683px" src="../assets/images/img_9334a0e5a54e.webp" width="3532"/>
+</a><figcaption class="image-caption">Figure 28: Publishing the live comment across data centers through broadcasting</figcaption>
+</figure>
+<p>The following operations are executed when the client publishes a live comment on the live video <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ol>
+<li><a href="https://en.wikipedia.org/wiki/GeoDNS" rel="noopener noreferrer" target="_blank">GeoDNS</a> routes the live comment to a dispatcher on the data center closest to the client</li>
+<li>the dispatcher broadcasts the live comment to dispatchers on peer data centers over HTTP</li>
+<li>the dispatcher queries the local endpoint store to check if there are any subscribed gateway servers on the particular live video</li>
+<li>the subscribed gateway server queries the local in-memory subscription store to identify the subscribed clients</li>
+<li>the gateway server fans out the live comment to the subscribed clients over SSE</li>
+</ol>
+<p>The current architecture is scalable and will satisfy the requirements of live comment system design. The alternative approaches for implementing cross-data center live comment service are the following:</p>
+<ul>
+<li>cross-data center subscription</li>
+<li>endpoint store configured for the entire region</li>
+</ul>
+<p>When the client starts watching a live video, the gateway server could perform a cross-data center subscription. However, the client connections are ephemeral because the client might scroll through the Facebook newsfeed, and the gateway servers subscription should be frequently updated across cross-data centers causing poor performance and degraded latency.</p>
+<p>Alternatively, the endpoint store can be configured globally for keeping gateway servers subscriptions across multiple data centers covering an entire region. When a key-value store such as DynamoDB is used for the endpoint store, the <a href="https://en.wikipedia.org/wiki/Quorum_%28distributed_computing%29" rel="noopener noreferrer" target="_blank">quorum</a> should be tuned to higher <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a> to ensure that all subscribed gateway servers will receive live comments. However, the global endpoint store will result in some clients not receiving the live comments due to eventual consistency and also cause poor latency.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-support-the-typing-indicators-on-livevideo"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-to-support-the-typing-indicators-on-livevideo"></a>How to Support the Typing Indicators on Live Video?</h3>
+<p>The JavaScript logic using <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener" rel="noopener noreferrer" target="_blank">event listeners</a> on the client can trigger events when the user starts typing a live comment. The real-time platform can broadcast the typing event to the subscribed clients. The web browser on the subscribed clients can display the typing indicator.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-display-the-total-count-of-comments-on-each-livevideo"><a class="header-mark offline-link" href="./live-comment-system-design.html#how-to-display-the-total-count-of-comments-on-each-livevideo"></a>How to Display the Total Count of Comments on Each Live Video?</h3>
+<p><a href="https://en.wikipedia.org/wiki/HyperLogLog" rel="noopener noreferrer" target="_blank">HyperLogLog</a> can be used to show the approximate count of total comments on each live video in a space-efficient manner. <a href="https://redis.io/docs/data-types/hyperloglogs/" rel="noopener noreferrer" target="_blank">Redis</a> offers out-of-the-box support for HyperLogLog probabilistic data structure.</p>
+<hr/>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./live-comment-system-design.html#scalability"></a>Scalability</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 29: Performance of live comment distribution&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-performance.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-performance.webp" rel="noopener noreferrer" target="_blank" title="Figure 29: Performance of live comment distribution">
+<img alt="Figure 29: Performance of live comment distribution" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-performance.webp, /live-comment-system-design/live-comment-performance.webp 1.5x, /live-comment-system-design/live-comment-performance.webp 2x" height="1436" sizes="683px" src="../assets/images/img_c5bbe2170128.webp" width="2211"/>
+</a><figcaption class="image-caption">Figure 29: Performance of live comment distribution</figcaption>
+</figure>
+<p>The dispatcher provisioned on a modern server can handle up to 5000 requests per second. A modern gateway server implemented with the actor model can hold up to 100 thousand concurrent SSE client connections. The multiplication factor introduced by the combination of the dispatcher and gateway servers makes the live commenting service extremely scalable. Another multiplication factor is within the gateway server using the <a class="offline-link" href="../fundamentals/actor-model.html" rel="noopener noreffer">actor model</a>. The actor model allows the reuse of a pool of threads for increased throughput. The live comment service can be horizontally scaled by provisioning new servers <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:22"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:22" role="doc-noteref">22</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 30: Load balancing client connection to the gateway servers&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/load-balance-gateway-servers.webp" href="https://systemdesign.one/live-comment-system-design/load-balance-gateway-servers.webp" rel="noopener noreferrer" target="_blank" title="Figure 30: Load balancing client connection to the gateway servers">
+<img alt="Figure 30: Load balancing client connection to the gateway servers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/load-balance-gateway-servers.webp, /live-comment-system-design/load-balance-gateway-servers.webp 1.5x, /live-comment-system-design/load-balance-gateway-servers.webp 2x" height="1107" sizes="683px" src="../assets/images/img_23e4c49c788a.webp" width="1874"/>
+</a><figcaption class="image-caption">Figure 30: Load balancing client connection to the gateway servers</figcaption>
+</figure>
+<p>Load balancers should be introduced between different layers of the system for scalability and improved fault tolerance. The services should utilize the full capacity of the servers for scalability <sup id="fnref:23"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:23" role="doc-noteref">23</a></sup>. Autoscaling can be enabled to meet elastic demand and deal with potential traffic spikes. Horizontal scaling comes with the tradeoff of a complex architecture, and increased infrastructure and maintenance costs <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="latency"><a class="header-mark offline-link" href="./live-comment-system-design.html#latency"></a>Latency</h3>
+<p>The live comment service is deployed on multiple data centers to keep the clients closer to the servers to improve the latency. <a href="https://samza.apache.org/" rel="noopener noreferrer" target="_blank">Apache Samza</a> can be used to measure the end-to-end latency of the live comment microservice system <sup id="fnref:24"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:24" role="doc-noteref">24</a></sup>. The latency of the live comment service is quite low due to the following reasons <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:23"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:23" role="doc-noteref">23</a></sup>:</p>
+<ul>
+<li>there is only one key value lookup from the (disk-based) endpoint store</li>
+<li>there is only one in-memory lookup from the subscription store</li>
+<li>the network hops are very few</li>
+</ul>
+<p>Additionally, Redis can be configured in the cache-aside pattern for improving the performance of endpoint store lookups because frequent disk I/O might become a bottleneck. The TTL on the Redis cache must be set to a reasonably short timeframe for cache invalidation.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="concurrency"><a class="header-mark offline-link" href="./live-comment-system-design.html#concurrency"></a>Concurrency</h3>
+<p>The gateway servers can be tuned to improve the count of concurrent connections supported by the server. The following operations could be performed to improve the performance of the gateway servers <sup id="fnref:8"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:23"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:23" role="doc-noteref">23</a></sup>:</p>
+<ul>
+<li>increase the thread count limit by decreasing the stack size per thread</li>
+<li>increase the thread count limit by decreasing the memory allocated to the heap</li>
+<li>increase the limit on the number of open connections between the load balancer and the server</li>
+<li>increase the per-process file descriptor limit</li>
+<li>modify the kernel parameter to increase the size of the backlog of TCP connections accepted by the server</li>
+</ul>
+<p>The <a href="https://en.wikipedia.org/wiki/Readers%E2%80%93writer_lock" rel="noopener noreferrer" target="_blank">readers-writer lock</a> can be used for updating the set of gateway servers subscribed to a particular live video on the endpoint store. The client subscribing to a gateway server is handled by the in-memory subscription store running on Redis. The concurrency problems are automatically solved because the operations on Redis are atomic and single-threaded <sup id="fnref:5"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="high-availability"><a class="header-mark offline-link" href="./live-comment-system-design.html#high-availability"></a>High Availability</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 31: The traffic pattern for live comments on a live video&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/traffic-pattern-live-comment.webp" href="https://systemdesign.one/live-comment-system-design/traffic-pattern-live-comment.webp" rel="noopener noreferrer" target="_blank" title="Figure 31: The traffic pattern for live comments on a live video">
+<img alt="Figure 31: The traffic pattern for live comments on a live video" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/traffic-pattern-live-comment.webp, /live-comment-system-design/traffic-pattern-live-comment.webp 1.5x, /live-comment-system-design/traffic-pattern-live-comment.webp 2x" height="788" sizes="683px" src="../assets/images/img_ea95df927b8c.webp" width="1425"/>
+</a><figcaption class="image-caption">Figure 31: The traffic pattern for live comments on a live video</figcaption>
+</figure>
+<p>The traffic pattern for live comments on extremely popular live videos  is usually very steep from the initial phase until the end of the live video and the traffic subsequently drops to the floor. In layman’s terms, the traffic pattern for live comments on a live video is spiky. When the live video becomes extremely popular, the number of concurrent clients subscribed for viewing the live comments increases causing the <a href="https://en.wikipedia.org/wiki/Thundering_herd_problem" rel="noopener noreferrer" target="_blank">thundering herd problem</a> <sup id="fnref:2"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:2" role="doc-noteref">2</a></sup>. The thundering herd problem from live comments on the live video can be resolved by the following operations <sup id="fnref:13"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:13" role="doc-noteref">13</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>load balancer redirects the clients to gateway servers with free capacity</li>
+<li>include jitter on client reconnection logic</li>
+<li>implement backpressure and exponential backoff on services</li>
+<li>concurrent clients can perform request coalescing for fetching older comments</li>
+<li>predicting the load before hitting the service limits</li>
+</ul>
+<p>The reconnection storms on client SSE connections to the gateway servers on deployment and scale-down events can be prevented by configuring the deployment to keep the existing servers for a few hours after the termination to allow the majority of the existing client SSE connections to close naturally. The tradeoff with the approach is relatively slower deployments <sup id="fnref:3"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:3" role="doc-noteref">3</a></sup>. The services should operate in hot-hot mode with failover for high availability. The read-write operations can be handled by both instances for scalability <sup id="fnref:10"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="fault-tolerance"><a class="header-mark offline-link" href="./live-comment-system-design.html#fault-tolerance"></a>Fault Tolerance</h3>
+<p>The live comment service should be load tested for identifying failures in capacity estimation <sup id="fnref:2"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:2" role="doc-noteref">2</a></sup>. Rate limiters can be used to reduce the load from the service on service degradation or traffic overloading <sup id="fnref:3"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:3" role="doc-noteref">3</a></sup>. A high level of observability through monitoring and alerting should be configured on all the services <sup id="fnref:3"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:23"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:23" role="doc-noteref">23</a></sup>. The live comment service must be deployed across multiple data centers in the same region and across multiple regions across the globe for improved fault tolerance. The deployment of the live comment service on multiple data centers across the globe comes with the challenge of increased engineering, DevOps efforts, and infrastructure costs <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="development-and-deployment"><a class="header-mark offline-link" href="./live-comment-system-design.html#development-and-deployment"></a>Development and Deployment</h3>
+<p>Infrastructure as Code can be used to provision servers on bare metal. Continuous integration and continuous delivery/continuous deployment (<strong>CI/CD</strong>) should be set up for faster development cycles <sup id="fnref:23"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:23" role="doc-noteref">23</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="durability"><a class="header-mark offline-link" href="./live-comment-system-design.html#durability"></a>Durability</h3>
+<p>The live comments should be persisted in a NoSQL database such as Apache Cassandra for durability. The compaction process in Apache Cassandra for removing the tombstones can become a potential performance bottleneck over time. The database can be configured in different clusters for different profiles of data usage to overcome the limitation. For example, different replication rules can be set for different regulatory requirements (HIPAA, GDPR). Database snapshots must be taken at periodic intervals for data recovery. The data can be replicated on multiple hyper scalers within the same region for durability <sup id="fnref:10"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 32: Storing live comments in the NoSQL database&lt;/h2&gt;" data-thumbnail="/live-comment-system-design/live-comment-persistent-storage.webp" href="https://systemdesign.one/live-comment-system-design/live-comment-persistent-storage.webp" rel="noopener noreferrer" target="_blank" title="Figure 32: Storing live comments in the NoSQL database">
+<img alt="Figure 32: Storing live comments in the NoSQL database" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/live-comment-system-design/live-comment-persistent-storage.webp, /live-comment-system-design/live-comment-persistent-storage.webp 1.5x, /live-comment-system-design/live-comment-persistent-storage.webp 2x" height="1772" sizes="683px" src="../assets/images/img_b895237bb21f.webp" width="2687"/>
+</a><figcaption class="image-caption">Figure 32: Storing live comments in the NoSQL database</figcaption>
+</figure>
+<p>The following operations are executed when the client publishes a live comment on the live video:</p>
+<ol>
+<li>the load balancer distributes the live comment published by the client to any random dispatcher over HTTP</li>
+<li>the dispatcher writes the live comment on the comment store (NoSQL) for persistent storage</li>
+<li>the dispatcher queries the endpoint store for identifying the set of gateway servers subscribed to the particular live video</li>
+<li>the dispatcher forwards the live comment to the set of subscribed gateway servers over the HTTP</li>
+<li>the gateway servers query the local in-memory subscription store to identify the subscribed clients for the particular live video</li>
+<li>the gateway servers broadcast the live comments to the subscribed clients over SSE</li>
+</ol>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="operational-complexity"><a class="header-mark offline-link" href="./live-comment-system-design.html#operational-complexity"></a>Operational Complexity</h3>
+<p>Fully managed services hosted on hyper scalers like <a href="https://aws.amazon.com/" rel="noopener noreferrer" target="_blank">AWS</a> can reduce the operational complexity of the live comment service. Alternatively, the dispatcher in the live comment service can be implemented with serverless functions. The benefits of using serverless functions are the following <sup id="fnref:4"><a class="footnote-ref offline-link" href="./live-comment-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>no infrastructure maintenance</li>
+<li>reduced operational costs</li>
+<li>scalability and availability</li>
+<li>reduced latency</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./live-comment-system-design.html#summary"></a>Summary</h2>
+<p>The live comment is a popular system design interview question. The real-time platform built for publishing live comments can display Facebook reactions, likes, concurrent viewer counts, <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">user presence status</a>, online polls, or seen receipts.</p>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./live-comment-system-design.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./live-comment-system-design.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./live-comment-system-design.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="https://www.cloudflare.com/en-gb/learning/video/what-is-live-streaming/" rel="noopener noreferrer" target="_blank">What is live streaming?</a>, cloudflare.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2016/6/27/how-facebook-live-streams-to-800000-simultaneous-viewers.html" rel="noopener noreferrer" target="_blank">How Facebook Live Streams To 800,000 Simultaneous Viewers</a> (2016), highscalability.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Dima Zabello, Kyle Maxwell, and Saurabh Sharma, <a href="https://www.reddit.com/r/RedditEng/comments/pfgz4r/reddits_new_realtime_service/" rel="noopener noreferrer" target="_blank">Reddit’s new real-time service</a>, reddit.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Matthew O’Riordan, <a href="https://www.infoq.com/articles/serverless-websockets-realtime-messaging/" rel="noopener noreferrer" target="_blank">Using Serverless WebSockets to Enable Real-Time Messaging</a> (2022), infoq.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Fernando Doglio, <a href="https://www.memurai.com/blog/using-redis-for-chat-and-messaging" rel="noopener noreferrer" target="_blank">Using Redis for Chat and Messaging</a> (2022), memurai.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Matthew O’Riordan, <a href="https://www.infoq.com/articles/realtime-event-driven-ecosystem/" rel="noopener noreferrer" target="_blank">The Challenges of Building a Reliable Real-Time Event-Driven Ecosystem</a> (2020), infoq.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Akhilesh Gupta, <a href="https://www.infoq.com/presentations/linkedin-play-akka-distributed-systems/" rel="noopener noreferrer" target="_blank">Streaming a Million Likes/Second: Real-Time Interactions on Live Video</a>, infoq.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Akhilesh Gupta, <a href="https://engineering.linkedin.com/blog/2016/10/instant-messaging-at-linkedin--scaling-to-hundreds-of-thousands-" rel="noopener noreferrer" target="_blank">Instant Messaging at LinkedIn: Scaling to Hundreds of Thousands of Persistent Connections on One Machine</a> (2016), engineering.linkedin.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" rel="noopener noreferrer" target="_blank">Using server-sent events</a>, mozilla.org <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Todd Greene, <a href="https://www.youtube.com/watch?v=twJji4DctcE" rel="noopener noreferrer" target="_blank">Efficiently Operating a Mass Real-time Data Infrastructure</a> (2020), AWS Events <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Ajeet Raina, <a href="https://developer.redis.com/howtos/chatapp/" rel="noopener noreferrer" target="_blank">How to build a Chat application using Redis</a>, developer.redis.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p>Ken Deeter, <a href="https://engineering.fb.com/2011/02/07/core-data/live-commenting-behind-the-scenes/" rel="noopener noreferrer" target="_blank">Live Commenting: Behind the Scenes</a> (2011), engineering.fb.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Jeff Barber, <a href="https://www.usenix.org/conference/srecon17americas/program/presentation/erlich" rel="noopener noreferrer" target="_blank">Building Real-Time Infrastructure at Facebook</a> (2017), usenix.org <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p><a href="https://www.amazon.com/Scalability-Startup-Engineers-Artur-Ejsmont/dp/0071843655" rel="noopener noreferrer" target="_blank">Web Scalability for Startup Engineers</a> by Artur Ejsmont (2015) <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:15" role="doc-endnote">
+<p><a href="https://kafka.apache.org/documentation/#brokerconfigs_offsets.retention.minutes" rel="noopener noreferrer" target="_blank">Offsets retention minutes in Kafka</a>, kafka.apache.org <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:15" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:16" role="doc-endnote">
+<p><a href="https://docs.confluent.io/kafka/operations-tools/manage-consumer-groups.html" rel="noopener noreferrer" target="_blank">Manage consumer groups in Kafka</a>, docs.confluent.io <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:16" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:17" role="doc-endnote">
+<p><a href="https://redis.io/docs/data-types/streams/" rel="noopener noreferrer" target="_blank">Redis Streams</a>, redis.io <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:17" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:18" role="doc-endnote">
+<p><a href="https://www.youtube.com/watch?v=Z8qcpXyMAiA" rel="noopener noreferrer" target="_blank">Redis Streams Explained</a> (2021), youtube.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:18" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:19" role="doc-endnote">
+<p>Fernando Doglio, <a href="https://www.memurai.com/blog/apache-kafka-vs-redis-streams" rel="noopener noreferrer" target="_blank">Apache Kafka versus Redis Streams</a> (2021), memurai.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:19" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:20" role="doc-endnote">
+<p><a href="https://redis.io/docs/management/persistence/" rel="noopener noreferrer" target="_blank">Redis persistence</a>, redis.io <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:20" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:21" role="doc-endnote">
+<p>Antirez, <a href="http://antirez.com/news/114" rel="noopener noreferrer" target="_blank">Streams: a new general purpose data structure in Redis</a>, antirez.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:21" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:22" role="doc-endnote">
+<p>Akhilesh Gupta, <a href="https://engineering.linkedin.com/blog/2018/01/now-you-see-me--now-you-dont--linkedins-real-time-presence-platf" rel="noopener noreferrer" target="_blank">Now You See Me, Now You Don’t: LinkedIn’s Real-Time Presence Platform</a> (2018), engineering.linkedin.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:22" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:23" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2010/3/16/justintvs-live-video-broadcasting-architecture.html" rel="noopener noreferrer" target="_blank">Justin.Tv’s Live Video Broadcasting Architecture</a> (2010), highscalability.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:23" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:24" role="doc-endnote">
+<p>Max Wolffe, <a href="https://engineering.linkedin.com/blog/2018/04/samza-aeon--latency-insights-for-asynchronous-one-way-flows" rel="noopener noreferrer" target="_blank">Samza Aeon: Latency Insights for Asynchronous One-Way Flows</a> (2018), engineering.linkedin.com <a class="footnote-backref offline-link" href="./live-comment-system-design.html#fnref:24" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-05-18</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Live Comment System Design" data-url="https://systemdesign.one/live-comment-system-design/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/live-comment-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/live-comment-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Live Comment System Design" data-url="https://systemdesign.one/live-comment-system-design/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="building the live commenting real-time platform" data-image="live-comment-system-design/live-comment.webp" data-sharer="pinterest" data-url="https://systemdesign.one/live-comment-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="building the live commenting real-time platform" data-sharer="tumblr" data-title="Live Comment System Design" data-url="https://systemdesign.one/live-comment-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Live Comment System Design" data-url="https://systemdesign.one/live-comment-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/live-comment-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="building the live commenting real-time platform" data-image="live-comment-system-design/live-comment.webp" data-sharer="vk" data-title="Live Comment System Design" data-url="https://systemdesign.one/live-comment-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="./leaderboard-system-design.html" rel="prev" title="Leaderboard System Design"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Leaderboard System Design</a>
+<a class="next offline-link" href="./real-time-presence-platform-system-design.html" rel="next" title="Real Time Presence Platform System Design">Real Time Presence Platform System Design<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./live-comment-system-design.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./live-comment-system-design.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/><link href="../assets/css/style_ae0d28207a26.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

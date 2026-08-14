@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Back of the Envelope - System Design</title><meta content="back of the envelope calculation is commonly used to evaluate different architectural designs" name="Description"/><meta content="Back of the Envelope" property="og:title"/>
+<meta content="back of the envelope calculation is commonly used to evaluate different architectural designs" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/back-of-the-envelope/" property="og:url"/><meta content="https://systemdesign.one/back-of-the-envelope/back-of-the-envelope.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-05-07T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-05-07T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/back-of-the-envelope/back-of-the-envelope.webp" name="twitter:image"/>
+<meta content="Back of the Envelope" name="twitter:title"/>
+<meta content="back of the envelope calculation is commonly used to evaluate different architectural designs" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/back-of-the-envelope/" rel="canonical"/><link href="https://systemdesign.one/distributed-counter-system-design/" rel="prev"/><link href="https://systemdesign.one/slack-architecture/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/back-of-the-envelope</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./back-of-the-envelope.html#what-is-a-back-of-the-envelope-calculation">What is a Back of the Envelope Calculation?</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#understanding-a-back-of-the-envelope-calculation">Understanding a Back of the Envelope Calculation</a>
+<ul>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#powers-oftwo">Powers of Two</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#availability-numbers">Availability Numbers</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#latency-numbers-every-programmer-shouldknow">Latency Numbers Every Programmer Should Know</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#further-system-design-learning-resources">Further System Design Learning Resources</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#back-of-the-envelope-calculation-in-system-design-interview">Back of the Envelope Calculation in System Design Interview</a>
+<ul>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#tips-for-back-of-the-envelope-calculations">Tips for Back of the Envelope Calculations</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#why-is-the-back-of-the-envelope-analysis-important">Why Is the Back of the Envelope Analysis Important?</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#types-of-back-of-the-envelope-calculations-in-system-design-interviews">Types of Back of the Envelope Calculations in System Design Interviews</a>
+<ul>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#latency-estimation">Latency Estimation</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#resource-estimation">Resource Estimation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#back-of-the-envelope-calculation-example">Back of the Envelope Calculation Example</a>
+<ul>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#traffic">Traffic</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#storage">Storage</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#bandwidth">Bandwidth</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#memory">Memory</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#real-world-back-of-the-envelope-calculations">Real World Back of the Envelope Calculations</a>
+<ul>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#what-does-real-world-back-of-the-envelope-calculation-involve">What Does Real World Back of the Envelope Calculation Involve?</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./back-of-the-envelope.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Back of the Envelope</h1><h2 class="single-subtitle">Capacity Planning System Design</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-05-07">2023-05-07</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 2578 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 13 minutes </div>
+</div><div class="featured-image"><img alt="/back-of-the-envelope/back-of-the-envelope.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/back-of-the-envelope/back-of-the-envelope.webp, /back-of-the-envelope/back-of-the-envelope.webp 1.5x, /back-of-the-envelope/back-of-the-envelope.webp 2x" height="834" sizes="699px" src="../assets/images/img_2f6ae15cd89e.webp" title="back of the envelope calculation is commonly used to evaluate different architectural designs" width="1420"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<h2 class="headerLink" id="what-is-a-back-of-the-envelope-calculation"><a class="header-mark offline-link" href="./back-of-the-envelope.html#what-is-a-back-of-the-envelope-calculation"></a>What is a Back of the Envelope Calculation?</h2>
+<p>The back of the envelope are estimates generated using a combination of <a href="https://en.wikipedia.org/wiki/Thought_experiment" rel="noopener noreferrer" target="_blank">thought experiments</a> and performance numbers through simple arithmetic. The performance numbers of the services involved should be known to conduct back of the envelope calculation. The unknown performance numbers can be determined through prototyping. For instance, measuring the write performance of the cache server can be determined through a prototype <sup id="fnref:1"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The back of the envelope calculation is commonly used to evaluate different architectural designs. Although the optimal design depends on the system requirements, the back of the envelope calculation provides an opportunity to compare different architectural designs without prototyping. In layman’s terms, back of the envelope analysis is a framework for comparing different variants of architectural design  <sup id="fnref:1"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The back of the envelope calculation is also known as <strong>capacity planning</strong>. In general, measuring system performance and performing back of the envelope is important in any deployment to satisfy the service level agreement (<strong>SLA</strong>) <sup id="fnref:2"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:2" role="doc-noteref">2</a></sup>.  The following are some of the popular reasons to perform back of the envelope calculations:</p>
+<ul>
+<li>decide whether the database should be partitioned</li>
+<li>evaluate the feasibility of a proposed architectural design</li>
+<li>identify potential bottlenecks in the system</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="understanding-a-back-of-the-envelope-calculation"><a class="header-mark offline-link" href="./back-of-the-envelope.html#understanding-a-back-of-the-envelope-calculation"></a>Understanding a Back of the Envelope Calculation</h2>
+<p>The back of the envelope calculation should be performed for efficient resource management and to meet scalability requirements <sup id="fnref:3"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:3" role="doc-noteref">3</a></sup>. The different approaches to scaling a web service are the following:</p>
+<ul>
+<li>vertical scaling</li>
+<li>horizontal scaling</li>
+<li>diagonal scaling</li>
+</ul>
+<p><strong>Vertical scaling</strong> is achieved by increasing the number of CPU cores, memory, and disk storage on a single server. However, the server will reach a point of saturation where increasing the number of components does not further increase the throughput.</p>
+<p><strong>Horizontal scaling</strong> is the method of adding multiple machines to scale the web service. The drawback of horizontal scaling is increased complexity.</p>
+<p><strong>Diagonal scaling</strong> is a combination of both vertical and horizontal scaling. Diagonal scaling brings the best of both worlds by increasing or upgrading the components on a single server and replicating the server. Diagonal scaling offers relatively better performance and a reasonable price.</p>
+<p>The back of the envelope calculation allows you to identify the sweet spot between diagonal scaling and a feasible price point. The following concepts should be well understood to perform a quick back of the envelope calculation:</p>
+<ul>
+<li>powers of two</li>
+<li>availability numbers</li>
+<li>latency numbers every programmer should know</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="powers-oftwo"><a class="header-mark offline-link" href="./back-of-the-envelope.html#powers-oftwo"></a>Powers of Two</h3>
+<p>The power of two is a handy reference to perform the back of the envelope.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Power</th>
+<th>Exact Value</th>
+<th>Approx Value</th>
+<th>Bytes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>128</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>256</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>10</td>
+<td>1024</td>
+<td>1 thousand</td>
+<td>1 KB</td>
+</tr>
+<tr>
+<td>16</td>
+<td>65,536</td>
+<td></td>
+<td>64 KB</td>
+</tr>
+<tr>
+<td>20</td>
+<td>1,048,576</td>
+<td>1 million</td>
+<td>1 MB</td>
+</tr>
+<tr>
+<td>30</td>
+<td>1,073,741,824</td>
+<td>1 billion</td>
+<td>1 GB</td>
+</tr>
+<tr>
+<td>32</td>
+<td>4,294,967,296</td>
+<td></td>
+<td>4 GB</td>
+</tr>
+</tbody>
+</table></div>
+<p>A byte is a unit of digital information that consists of 8 bits. The data size of the most commonly used data types can be helpful for the back of the envelope <sup id="fnref:4"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Data Type</th>
+<th>Size (byte)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>int</td>
+<td>4</td>
+</tr>
+<tr>
+<td>float</td>
+<td>8</td>
+</tr>
+<tr>
+<td>boolean</td>
+<td>4</td>
+</tr>
+<tr>
+<td>UTF-8 character</td>
+<td>1</td>
+</tr>
+<tr>
+<td>UTF-8 in Chinese</td>
+<td>3</td>
+</tr>
+<tr>
+<td>UNIX timestamp</td>
+<td>4</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="availability-numbers"><a class="header-mark offline-link" href="./back-of-the-envelope.html#availability-numbers"></a>Availability Numbers</h3>
+<p>High availability is the ability of a service to remain reachable and not lose data even when a failure occurs. High availability is typically measured in terms of a percentage of uptime over a given period. The uptime is the amount of time that a system or service is available and operational.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Availability (percentage)</th>
+<th>Downtime per year</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>99</td>
+<td>3.6 days</td>
+</tr>
+<tr>
+<td>99.99</td>
+<td>52 minutes</td>
+</tr>
+<tr>
+<td>99.999</td>
+<td>5 minutes</td>
+</tr>
+<tr>
+<td>99.9999</td>
+<td>31 seconds</td>
+</tr>
+</tbody>
+</table></div>
+<p>In addition to measuring uptime, high availability can also be measured by other metrics such as mean time between failures (<strong>MTBF</strong>), which measures the average time between system failures, and mean time to repair (<strong>MTTR</strong>), which measures the average time it takes to restore a system after a failure.</p>
+<p>A service-level agreement (<strong>SLA</strong>) is an explicit or implicit contract between a service provider and the users. The SLA documents the set of services the service provider will offer to the user and defines the service standards the provider is obligated to fulfill.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="latency-numbers-every-programmer-shouldknow"><a class="header-mark offline-link" href="./back-of-the-envelope.html#latency-numbers-every-programmer-shouldknow"></a>Latency Numbers Every Programmer Should Know</h3>
+<p>The <a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html" rel="noopener noreferrer" target="_blank">interactive latency tool</a> can be used to visualize the latency of components and operations. The numbers shown are supposed to give a rough idea of the latency of different operations <sup id="fnref:6"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1 cache reference</td>
+<td>0.5 ns</td>
+</tr>
+<tr>
+<td>Branch mispredict</td>
+<td>5   ns</td>
+</tr>
+<tr>
+<td>L2 cache reference</td>
+<td>7   ns</td>
+</tr>
+<tr>
+<td>Mutex lock/unlock</td>
+<td>25   ns</td>
+</tr>
+<tr>
+<td>Main memory reference</td>
+<td>100   ns</td>
+</tr>
+<tr>
+<td>Compress 1K bytes with Zippy</td>
+<td>10 us</td>
+</tr>
+<tr>
+<td>Send 1 KB bytes over 1 Gbps network</td>
+<td>10 us</td>
+</tr>
+<tr>
+<td>Read 4 KB randomly from SSD*</td>
+<td>150 us</td>
+</tr>
+<tr>
+<td>Read 1 MB sequentially from memory</td>
+<td>250 us</td>
+</tr>
+<tr>
+<td>Round trip within same datacenter</td>
+<td>500 us</td>
+</tr>
+<tr>
+<td>Read 1 MB sequentially from SSD*</td>
+<td>1 ms</td>
+</tr>
+<tr>
+<td>HDD seek</td>
+<td>10 ms</td>
+</tr>
+<tr>
+<td>Read 1 MB sequentially from 1 Gbps</td>
+<td>10 ms</td>
+</tr>
+<tr>
+<td>Read 1 MB sequentially from HDD</td>
+<td>30 ms</td>
+</tr>
+<tr>
+<td>Send packet CA-&gt;Netherlands-&gt;CA</td>
+<td>150 ms</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Useful Conversions</strong></p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Time (seconds)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 ns</td>
+<td>10^-9 seconds</td>
+</tr>
+<tr>
+<td>1 us</td>
+<td>10^-6 seconds</td>
+</tr>
+<tr>
+<td>1 ms</td>
+<td>10^-3 seconds</td>
+</tr>
+</tbody>
+</table></div>
+<p>The latency numbers can be summarized as the following <sup id="fnref:1"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>memory is fast and disks are slow</li>
+<li>network bandwidth can be saved by using a compression algorithm</li>
+<li>writes are more expensive than reads</li>
+<li>globally shared data is expensive</li>
+<li>at most 7 round trips between inter-region data centers per second are possible</li>
+<li>approximately 2000 round trips per second can be achieved within a data center</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./back-of-the-envelope.html#further-system-design-learning-resources"></a>Further System Design Learning Resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="back-of-the-envelope-calculation-in-system-design-interview"><a class="header-mark offline-link" href="./back-of-the-envelope.html#back-of-the-envelope-calculation-in-system-design-interview"></a>Back of the Envelope Calculation in System Design Interview</h2>
+<p>The back of the envelope calculation is not mandatory during a system design interview. You should discuss with your interviewer whether back of the envelope calculations are required. The back of the envelope calculations should not take more than five minutes of your system design interview unless stated by the interviewer.</p>
+<p>You can visit <a href="https://www.similarweb.com/" rel="noopener noreferrer" target="_blank">similarweb.com</a> to determine the approximate traffic of popular websites across the internet. It is reasonable to ask the interviewer for the Query per second (<strong>QPS</strong>)  during requirements clarification to make the back of the envelope calculation easier.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Back of the envelope&lt;/h2&gt;" data-thumbnail="/back-of-the-envelope/back-of-the-envelope.gif" href="https://systemdesign.one/back-of-the-envelope/back-of-the-envelope.gif" rel="noopener noreferrer" target="_blank" title="Figure 1: Back of the envelope">
+<img alt="Figure 1: Back of the envelope" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/back-of-the-envelope/back-of-the-envelope.gif, /back-of-the-envelope/back-of-the-envelope.gif 1.5x, /back-of-the-envelope/back-of-the-envelope.gif 2x" height="774" sizes="683px" src="../assets/images/img_b3a1aee35bfe.gif" width="1200"/>
+</a><figcaption class="image-caption">Figure 1: Back of the envelope</figcaption>
+</figure>
+<p>The back of the envelope analysis is supposed to be approximate and is based on assumptions. You are expected to make informed decisions and discuss trade-offs based on the back of the envelope calculations.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="tips-for-back-of-the-envelope-calculations"><a class="header-mark offline-link" href="./back-of-the-envelope.html#tips-for-back-of-the-envelope-calculations"></a>Tips for Back of the Envelope Calculations</h3>
+<p>The back of the envelope calculation is about evaluating your problem-solving skills in the system design interview. The following tips can be helpful for back of the envelope calculation <sup id="fnref:5"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ul>
+<li>rounding and approximation of numbers (For example, 83 becomes 100)</li>
+<li>label the units for easy calculation</li>
+<li>always convert to operations per second</li>
+<li>1 million requests/day = 12 requests/second</li>
+<li>explicitly specify the assumptions</li>
+<li>use numbers along with an abbreviation for the magnitude (1000 = 1K)</li>
+</ul>
+<p>You should make reasonable assumptions, ask clarifying questions and communicate your thought process with the interviewer to achieve  success in the system design interview.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="why-is-the-back-of-the-envelope-analysis-important"><a class="header-mark offline-link" href="./back-of-the-envelope.html#why-is-the-back-of-the-envelope-analysis-important"></a>Why Is the Back of the Envelope Analysis Important?</h3>
+<p>The back of the envelope analysis is important due to the following reasons <sup id="fnref:6"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>evaluating different architectural designs</li>
+<li>validating the proposed architectural design</li>
+<li>uncovering bottlenecks</li>
+<li>ensuring high availability</li>
+<li>improving cost efficiencies</li>
+<li>meeting SLAs</li>
+<li>providing insights into hot workflows and traffic spikes</li>
+<li>predicting system capacity requirements</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="types-of-back-of-the-envelope-calculations-in-system-design-interviews"><a class="header-mark offline-link" href="./back-of-the-envelope.html#types-of-back-of-the-envelope-calculations-in-system-design-interviews"></a>Types of Back of the Envelope Calculations in System Design Interviews</h3>
+<p>The most common types of back of the envelope calculations in system design interviews are the following:</p>
+<ul>
+<li>traffic estimation</li>
+<li>storage estimation</li>
+<li>memory estimation</li>
+<li>bandwidth estimation</li>
+<li>resource estimation</li>
+<li>latency estimation</li>
+</ul>
+<hr/>
+<h4 class="headerLink" id="latency-estimation"><a class="header-mark offline-link" href="./back-of-the-envelope.html#latency-estimation"></a>Latency Estimation</h4>
+<p>When an API endpoint should merge data from multiple resources and the data fetching process is sequential, the latency is calculated as follows:</p>
+<div class="details admonition tip open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-lightbulb fa-fw"></i>Latency for sequential data fetch<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">latency = latency_resource_1 +  latency_resource_2</div>
+</div>
+</div>
+<p>When an API endpoint should merge data from multiple resources and the data fetching process is parallel, the latency is calculated as follows:</p>
+<div class="details admonition tip open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-lightbulb fa-fw"></i>Latency for parallel data fetch<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">latency = max(latency_resource_1, latency_resource_2)</div>
+</div>
+</div>
+<hr/>
+<h4 class="headerLink" id="resource-estimation"><a class="header-mark offline-link" href="./back-of-the-envelope.html#resource-estimation"></a>Resource Estimation</h4>
+<p>You can assume that a modern server contains 32 cores and the system latency should be less than 250 ms for a <a class="offline-link" href="../case-studies/live-comment-system-design.html" rel="noopener noreffer">real-time experience</a>. The CPU frequency (GHz) impacts the performance of the service but is not relevant for the back of the envelope calculation. The following formula is used to calculate the Query per second (<strong>QPS</strong>) given the number of CPU cores and CPU time per second <sup id="fnref:10"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<div class="details admonition tip open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-lightbulb fa-fw"></i>Query per second<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">QPS = number of CPU cores / average time for a request in seconds</div>
+</div>
+</div>
+<p>The initial design should focus on supporting the average traffic because it is the usual condition. The peak traffic must also be considered to make the system fault tolerant and highly available. The different approaches to determining peak traffic are the following <sup id="fnref:5"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>10% per hour rule</li>
+<li>peak traffic = 2 * average traffic</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Real-world peak traffic&lt;/h2&gt;" data-thumbnail="/back-of-the-envelope/real-world-peak-traffic.webp" href="https://systemdesign.one/back-of-the-envelope/real-world-peak-traffic.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Real-world peak traffic">
+<img alt="Figure 2: Real-world peak traffic" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/back-of-the-envelope/real-world-peak-traffic.webp, /back-of-the-envelope/real-world-peak-traffic.webp 1.5x, /back-of-the-envelope/real-world-peak-traffic.webp 2x" height="929" sizes="683px" src="../assets/images/img_9b0345ddabde.webp" width="1904"/>
+</a><figcaption class="image-caption">Figure 2: Real-world peak traffic</figcaption>
+</figure>
+<p>With the 10% per hour rule, when daily traffic is 1 million, you can assume that 10% of the daily traffic occurs within 1 hour. This would result in approximately 30 QPS. Alternatively, you should discuss with your interviewer whether it’s fine to assume the peak traffic to be twice the average traffic.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="back-of-the-envelope-calculation-example"><a class="header-mark offline-link" href="./back-of-the-envelope.html#back-of-the-envelope-calculation-example"></a>Back of the Envelope Calculation Example</h2>
+<p>The following is the back of the envelope calculation for a <a class="offline-link" href="../case-studies/url-shortening-system-design.html" rel="noopener noreffer">URL shortener</a>.</p>
+<h3 class="headerLink" id="traffic"><a class="header-mark offline-link" href="./back-of-the-envelope.html#traffic"></a>Traffic</h3>
+<p>The <a class="offline-link" href="../case-studies/url-shortening-system-design.html" rel="noopener noreffer">URL shortener</a> is a read-heavy service. The Daily Active Users (<strong>DAU</strong>) for writes is 100 million. The Query Per Second (<strong>QPS</strong>) of reads is approximately 100 thousand.</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DAU (write)</td>
+<td>100 million</td>
+</tr>
+<tr>
+<td>QPS (Write)</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>read: write</td>
+<td>100: 1</td>
+</tr>
+<tr>
+<td>QPS (read)</td>
+<td>100 thousand</td>
+</tr>
+<tr>
+<td>time of persistence for a URL</td>
+<td>5 years</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="storage"><a class="header-mark offline-link" href="./back-of-the-envelope.html#storage"></a>Storage</h3>
+<p>The shortened URL persists by default for 5 years in the data store. Each character size is assumed to be 1 byte. A URL record is approximately 2.5 KB in size. Set the replication factor of the storage to a value of at least three for improved durability and disaster recovery.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Back of the envelope; Storage&lt;/h2&gt;" data-thumbnail="/back-of-the-envelope/back-of-the-envelope-storage.webp" href="https://systemdesign.one/back-of-the-envelope/back-of-the-envelope-storage.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Back of the envelope; Storage">
+<img alt="Figure 3: Back of the envelope; Storage" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/back-of-the-envelope/back-of-the-envelope-storage.webp, /back-of-the-envelope/back-of-the-envelope-storage.webp 1.5x, /back-of-the-envelope/back-of-the-envelope-storage.webp 2x" height="528" sizes="683px" src="../assets/images/img_50da52da1b7f.webp" width="1288"/>
+</a><figcaption class="image-caption">Figure 3: Back of the envelope; Storage</figcaption>
+</figure>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="bandwidth"><a class="header-mark offline-link" href="./back-of-the-envelope.html#bandwidth"></a>Bandwidth</h3>
+<p>Ingress is the network traffic that enters the server (client requests).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Back of the envelope; Ingress&lt;/h2&gt;" data-thumbnail="/back-of-the-envelope/back-of-the-envelope-ingress.webp" href="https://systemdesign.one/back-of-the-envelope/back-of-the-envelope-ingress.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Back of the envelope; Ingress">
+<img alt="Figure 4: Back of the envelope; Ingress" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/back-of-the-envelope/back-of-the-envelope-ingress.webp, /back-of-the-envelope/back-of-the-envelope-ingress.webp 1.5x, /back-of-the-envelope/back-of-the-envelope-ingress.webp 2x" height="376" sizes="683px" src="../assets/images/img_6bde683e9f29.webp" width="1230"/>
+</a><figcaption class="image-caption">Figure 4: Back of the envelope; Ingress</figcaption>
+</figure>
+<p>Egress is the network traffic that exits the servers (server responses).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Back of the envelope; Egress&lt;/h2&gt;" data-thumbnail="/back-of-the-envelope/back-of-the-envelope-egress.webp" href="https://systemdesign.one/back-of-the-envelope/back-of-the-envelope-egress.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Back of the envelope; Egress">
+<img alt="Figure 5: Back of the envelope; Egress" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/back-of-the-envelope/back-of-the-envelope-egress.webp, /back-of-the-envelope/back-of-the-envelope-egress.webp 1.5x, /back-of-the-envelope/back-of-the-envelope-egress.webp 2x" height="380" sizes="683px" src="../assets/images/img_898cd6349b3c.webp" width="1206"/>
+</a><figcaption class="image-caption">Figure 5: Back of the envelope; Egress</figcaption>
+</figure>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="memory"><a class="header-mark offline-link" href="./back-of-the-envelope.html#memory"></a>Memory</h3>
+<p>The URL redirection traffic (egress) is cached to improve the latency. Following the <a href="https://en.wikipedia.org/wiki/Pareto_principle" rel="noopener noreferrer" target="_blank">80/20 rule</a>, 80% of egress is served by 20% of URL data stored on the cache servers. The remaining 20% of the egress is served by the data store to improve the latency. A Time-to-live (<a href="https://en.wikipedia.org/wiki/Time_to_live" rel="noopener noreferrer" target="_blank">TTL</a>) of 1 day is reasonable.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Back of the envelope; Memory&lt;/h2&gt;" data-thumbnail="/back-of-the-envelope/back-of-the-envelope-memory.webp" href="https://systemdesign.one/back-of-the-envelope/back-of-the-envelope-memory.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Back of the envelope; Memory">
+<img alt="Figure 6: Back of the envelope; Memory" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/back-of-the-envelope/back-of-the-envelope-memory.webp, /back-of-the-envelope/back-of-the-envelope-memory.webp 1.5x, /back-of-the-envelope/back-of-the-envelope-memory.webp 2x" height="471" sizes="683px" src="../assets/images/img_12ddd2713b59.webp" width="1317"/>
+</a><figcaption class="image-caption">Figure 6: Back of the envelope; Memory</figcaption>
+</figure>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="real-world-back-of-the-envelope-calculations"><a class="header-mark offline-link" href="./back-of-the-envelope.html#real-world-back-of-the-envelope-calculations"></a>Real World Back of the Envelope Calculations</h2>
+<p><a href="https://en.wikipedia.org/wiki/Fermi_problem" rel="noopener noreferrer" target="_blank">Fermi estimation</a> is a method for arriving at an estimate of an uncertain variable of interest. More architectural designs can be evaluated when cheap and quick reasonable estimates of the numbers can be made <sup id="fnref:9"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:9" role="doc-noteref">9</a></sup>.</p>
+<p>The performance of a system is not directly proportional to the system’s capacity. In layman’s terms, the performance of the system depends on the asymptotic complexity of the system implementation. The service should be monitored and benchmarked to perform back of the envelope analysis. For example, it is necessary to know whether the load is read or write heavy, and the rate of concurrency to <a class="offline-link" href="../case-studies/scalable-software-architecture.html" rel="noopener noreffer">scale</a> a database <sup id="fnref:11"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>If you are hosted on the cloud, the service tiers 0 and 1 should be used for the production load to attain high performance. Service tiers 2 and 3 should be used for the testing load to reduce costs. The system can be configured to switch to a different instance type when the current instance type capacity is fully utilized <sup id="fnref:12"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<p>The historical metrics are required to make an educated forecast. The system-level and application-level statistics make up the historical metrics. The estimation provided by the marketing or product team should also be combined with the historical metrics to determine a robust forecast <sup id="fnref:3"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>The linear regression model for forecasting the traffic will not capture the seasonality of the time series. However, in the absence of seasonality, the linear regression model is preferred as it is computationally less expensive than other models. The <a href="https://en.wikipedia.org/wiki/Autoregressive_integrated_moving_average" rel="noopener noreferrer" target="_blank">ARIMA models</a> can be used to explicitly model trend and seasonality in time series for robust forecasts <sup id="fnref:13"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:13" role="doc-noteref">13</a></sup>. The system should degrade gracefully when the capacity limits are exceeded. The following methods can be used for graceful degradation of the service <sup id="fnref:3"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:3" role="doc-noteref">3</a></sup>:</p>
+<ul>
+<li>disable heavy load features</li>
+<li>cache dynamic content into static bits</li>
+<li>serve stale content</li>
+</ul>
+<p>The QPS limit of the services should be tested with production traffic or recorded and replayed production load. On the other hand, the time and effort to run a simulation are wasted because the application logic evolves quickly. On top of that, you should not over-provision the servers to handle peak traffic to save costs and reduce operational complexity <sup id="fnref:3"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="what-does-real-world-back-of-the-envelope-calculation-involve"><a class="header-mark offline-link" href="./back-of-the-envelope.html#what-does-real-world-back-of-the-envelope-calculation-involve"></a>What Does Real World Back of the Envelope Calculation Involve?</h3>
+<p>The real-world back of the envelope calculation involves the following <sup id="fnref:14"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:14" role="doc-noteref">14</a></sup>:</p>
+<ol>
+<li>provision performance environment</li>
+<li>determine the single host load pattern</li>
+<li>develop and run load tests</li>
+<li>analyze and extrapolate results</li>
+</ol>
+<p>The tools for back of the envelope calculation are the following <sup id="fnref:15"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:15" role="doc-noteref">15</a></sup>:</p>
+<ul>
+<li>load and capacity testing</li>
+<li>stress and volume testing</li>
+</ul>
+<p><a href="https://locust.io/" rel="noopener noreferrer" target="_blank">Locust</a> is a popular tool for load testing. The perfect parity with production makes a good load test. The production data can be scrubbed to synthetically generate the production load. In addition, the following metrics should be monitored during a load test <sup id="fnref:14"><a class="footnote-ref offline-link" href="./back-of-the-envelope.html#fn:14" role="doc-noteref">14</a></sup>:</p>
+<ul>
+<li>client-side metrics (error rate, latency)</li>
+<li>server-side metrics (response time, CPU, memory, thread counts)</li>
+<li>auto-scaling trigger frequency</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./back-of-the-envelope.html#summary"></a>Summary</h2>
+<p>The back of the envelope calculation is a vital skill for software engineers preparing for the system design interview. By taking a proactive approach through the back of the envelope analysis, you can overcome the potential bottlenecks and meet the SLAs in real-world architectural design.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./back-of-the-envelope.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./back-of-the-envelope.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./back-of-the-envelope.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="http://highscalability.com/blog/2011/1/26/google-pro-tip-use-back-of-the-envelope-calculations-to-choo.html" rel="noopener noreferrer" target="_blank">Google Pro Tip: Use Back-Of-The-Envelope-Calculations To Choose The Best Design</a> (2011), highscalability.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Mat Keep, <a href="https://www.infoq.com/articles/mongodb-deployment-monitoring/" rel="noopener noreferrer" target="_blank">Preparing for Your First MongoDB Deployment: Capacity Planning and Monitoring</a> (2013), infoq.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p><a href="http://highscalability.com/blog/2009/6/29/how-to-succeed-at-capacity-planning-without-really-trying-an.html" rel="noopener noreferrer" target="_blank">How To Succeed At Capacity Planning Without Really Trying : An Interview With Flickr’s John Allspaw On His New Book</a> (2009), highscalability.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p><a href="https://github.com/donnemartin/system-design-primer#back-of-the-envelope-calculations" rel="noopener noreferrer" target="_blank">System Design Primer</a>, GitHub.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Shawn Bullock, <a href="https://dev.to/ievolved/how-i-calculate-capacity-for-systems-design-3477" rel="noopener noreferrer" target="_blank">How I calculate capacity for Systems Design</a> (2020), dev.to <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Jeffrey Dean, <a href="https://www.youtube.com/watch?v=modXC5IWTJI&amp;t=3414s" rel="noopener noreferrer" target="_blank">Building Software Systems At Google and Lessons Learned</a> (2010), Stanford <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p><a href="http://highscalability.com/blog/2009/2/18/numbers-everyone-should-know.html" rel="noopener noreferrer" target="_blank">Numbers Everyone Should Know</a> (2009), highscalability.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Robin Palotai, <a href="https://www.codementor.io/@robinpalotai/back-of-the-envelope-calculation-for-system-design-interviews-z4ljbsp5l" rel="noopener noreferrer" target="_blank">Back of the Envelope Calculation for System Design Interviews</a> (2019), codementor.io <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p>Carlos Bueno, <a href="https://www.infoq.com/articles/estimation-game-techniques-for-informed-guessing/" rel="noopener noreferrer" target="_blank">The Estimation Game - Techniques for Informed Guessing</a> (2015), infoq.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Erlend Eide, <a href="https://servebolt.com/articles/calculate-how-many-simultaneous-website-visitors/" rel="noopener noreferrer" target="_blank">How to Estimate How Many Website Visitors Your Hosting Can Deal With</a> (2022), servebolt.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>John Allspaw, <a href="https://www.slideshare.net/jallspaw/velocity2008-capacity-management1-484676" rel="noopener noreferrer" target="_blank">Capacity Management for Web Operations</a> (2008), slideshare.net <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p><a href="https://www.youtube.com/watch?v=Lf6B1PxIvAs" rel="noopener noreferrer" target="_blank">Capacity plan optimally in the cloud</a> (2022), AWS Events <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Manuel Pais, <a href="https://www.infoq.com/news/2013/12/twitter-forecasting/" rel="noopener noreferrer" target="_blank">Forecasting at Twitter</a> (2013), infoq.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p>Laxmi Nagarajan, <a href="https://www.youtube.com/watch?v=-3qetLv2Yp0" rel="noopener noreferrer" target="_blank">A quick how-to on capacity planning for an application deployed in AWS</a> (2017), Hasgeek TV <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:15" role="doc-endnote">
+<p>Jordan Sitkin, Luke Demi, <a href="https://www.infoq.com/presentations/coinbase-cryptocurrency/" rel="noopener noreferrer" target="_blank">Capacity Planning for Crypto Mania</a> (2019), infoq.com <a class="footnote-backref offline-link" href="./back-of-the-envelope.html#fnref:15" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-05-07</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Back of the Envelope" data-url="https://systemdesign.one/back-of-the-envelope/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/back-of-the-envelope/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/back-of-the-envelope/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Back of the Envelope" data-url="https://systemdesign.one/back-of-the-envelope/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="back of the envelope calculation is commonly used to evaluate different architectural designs" data-image="back-of-the-envelope/back-of-the-envelope.webp" data-sharer="pinterest" data-url="https://systemdesign.one/back-of-the-envelope/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="back of the envelope calculation is commonly used to evaluate different architectural designs" data-sharer="tumblr" data-title="Back of the Envelope" data-url="https://systemdesign.one/back-of-the-envelope/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Back of the Envelope" data-url="https://systemdesign.one/back-of-the-envelope/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/back-of-the-envelope/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="back of the envelope calculation is commonly used to evaluate different architectural designs" data-image="back-of-the-envelope/back-of-the-envelope.webp" data-sharer="vk" data-title="Back of the Envelope" data-url="https://systemdesign.one/back-of-the-envelope/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="../case-studies/distributed-counter-system-design.html" rel="prev" title="Distributed Counter System Design"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Distributed Counter System Design</a>
+<a class="next offline-link" href="../case-studies/slack-architecture.html" rel="next" title="Slack Architecture">Slack Architecture<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./back-of-the-envelope.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./back-of-the-envelope.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

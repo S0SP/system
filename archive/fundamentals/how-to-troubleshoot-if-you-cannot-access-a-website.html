@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>How to Troubleshoot if You Can’t Access a Particular Website? - System Design</title><meta content="Check the following failures: 1. Client-side 2. Local network 3. DNS 4. Intermediate network components 5. Server-side" name="Description"/><meta content="How to Troubleshoot if You Can’t Access a Particular Website?" property="og:title"/>
+<meta content="Check the following failures: 1. Client-side 2. Local network 3. DNS 4. Intermediate network components 5. Server-side" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" property="og:url"/><meta content="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2022-11-21T00:00:00+00:00" property="article:published_time"/>
+<meta content="2022-11-21T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp" name="twitter:image"/>
+<meta content="How to Troubleshoot if You Can’t Access a Particular Website?" name="twitter:title"/>
+<meta content="Check the following failures: 1. Client-side 2. Local network 3. DNS 4. Intermediate network components 5. Server-side" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" rel="canonical"/><link href="https://systemdesign.one/knowledge-test-how-to-troubleshoot-if-you-cant-access-a-website/" rel="prev"/><link href="https://systemdesign.one/url-shortening-system-design/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#why-some-websites-are-not-opening-inchrome">Why some websites are not opening in chrome?</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#introduction">Introduction</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#client-side-failure">Client-side failure</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#local-networkfailure">Local network failure</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#dns-failure">DNS failure</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#intermediate-network-components-failure">Intermediate network components failure</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#server-side-failure">Server-side failure</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#questions-and-solutions">Questions and Solutions</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">How to Troubleshoot if You Can’t Access a Particular Website?</h1><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2022-11-21">2022-11-21</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 1586 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 8 minutes </div>
+</div><div class="featured-image"><img alt="/troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp, /troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp 1.5x, /troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp 2x" height="538" sizes="699px" src="../assets/images/img_5eebaf2d7589.webp" title="Check the following failures: 1. Client-side 2. Local network 3. DNS 4. Intermediate network components 5. Server-side" width="894"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+<li><em>Product managers</em></li>
+</ul>
+<p><em>There are no prerequisites to reading this article. I assume that you have used a web browser to navigate across the internet and have basic familiarity with the Terminal. This article does not cover an in-depth guide on how to perform certain operations of debugging.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<h2 class="headerLink" id="why-some-websites-are-not-opening-inchrome"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#why-some-websites-are-not-opening-inchrome"></a>Why some websites are not opening in chrome?</h2>
+<p>You must troubleshoot through different layers of the network components to fix the problem. At a high level, you should check the following failures:</p>
+<ol>
+<li>Client-side</li>
+<li>Local network</li>
+<li>DNS</li>
+<li>Intermediate network components</li>
+<li>Server-side</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be useful for you:</p>
+<ul>
+<li>DNS: data store that contains the mapping from domain name to IP address</li>
+<li>HTTP: standard application-level protocol used to exchange files on the internet</li>
+<li>Client: web browser or a mobile device that lets you perform different actions on the internet</li>
+<li>Server: a computer that stores files and information in the form of a website</li>
+<li>URL: web address to identify a web resource on the internet</li>
+<li>Router: a device that enables network packet forwarding and routing, and serves as an access point in a local area network</li>
+<li>Proxy server: an intermediary server separating users from the websites</li>
+<li>Firewall: network security device or software that monitors and filters incoming and outgoing network traffic based on certain policies or rules</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="introduction"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#introduction"></a>Introduction</h2>
+<p>When you type a Uniform Resource Locator (<a href="https://en.wikipedia.org/wiki/URL" rel="noopener noreferrer" target="_blank">URL</a>) of a website into the browser and press Enter, a multitude of actions is executed in the background.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: High-level data workflow of visiting a URL&lt;/h2&gt;" data-thumbnail="/troubleshoot-if-you-cannot-access-website/High-level-data-workflow-of-visiting-URL.webp" href="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/High-level-data-workflow-of-visiting-URL.webp" rel="noopener noreferrer" target="_blank" title="High-level data workflow of visiting a URL">
+<img alt="High-level data workflow of visiting a URL" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/High-level-data-workflow-of-visiting-URL.webp, /troubleshoot-if-you-cannot-access-website/High-level-data-workflow-of-visiting-URL.webp 1.5x, /troubleshoot-if-you-cannot-access-website/High-level-data-workflow-of-visiting-URL.webp 2x" height="917" sizes="683px" src="../assets/images/img_03ea50db087a.webp" width="1256"/>
+</a><figcaption class="image-caption">Figure 1: High-level data workflow of visiting a URL</figcaption>
+</figure>
+<ol>
+<li>The client queries the Domain Name System (<strong>DNS</strong>) server to find the IP address of the website</li>
+<li>The network data packets are routed through the home router</li>
+<li>The client requests the server using Hypertext Transfer Protocol (<strong>HTTP</strong>) Request to visit the website</li>
+<li>The data packets of the HTTP Request are routed through intermediate components such as the Reverse Proxy server</li>
+<li>The client connects to the server and fetches the data</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="client-side-failure"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#client-side-failure"></a>Client-side failure</h2>
+<p>A failure on the <strong>client</strong> (browser) side can occur due to multiple reasons. Some of the popular client-side failures are analyzed by performing the following operations:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Client-side failure&lt;/h2&gt;" data-thumbnail="/troubleshoot-if-you-cannot-access-website/client-side-failure.webp" href="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/client-side-failure.webp" rel="noopener noreferrer" target="_blank" title="Client-side failure">
+<img alt="Client-side failure" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/client-side-failure.webp, /troubleshoot-if-you-cannot-access-website/client-side-failure.webp 1.5x, /troubleshoot-if-you-cannot-access-website/client-side-failure.webp 2x" height="561" sizes="683px" src="../assets/images/img_d765b2a7b1e5.webp" width="1086"/>
+</a><figcaption class="image-caption">Figure 2: Client-side failure</figcaption>
+</figure>
+<ul>
+<li>Invalidate the local client cache</li>
+</ul>
+<p>An update of the website can invalidate the <a href="https://en.wikipedia.org/wiki/Web_cache" rel="noopener noreferrer" target="_blank">client cache</a> for the particular website and make it inaccessible. You can flush the local client cache using browser settings or through a hard refresh of the website.</p>
+<ul>
+<li>Use the incognito mode of the browser</li>
+</ul>
+<p>The <a href="https://support.google.com/chrome/answer/95464?hl=en&amp;co=GENIE.Platform%3DAndroid" rel="noopener noreferrer" target="_blank">incognito mode</a> of the browser prevents the browser extensions or <a href="https://en.wikipedia.org/wiki/HTTP_cookie" rel="noopener noreferrer" target="_blank">cookies</a> from conflicting with the loading of the website.</p>
+<ul>
+<li>Verify the HTTP response status code using the browser DevTools</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Inspecting HTTP response status code using the Chrome DevTools&lt;/h2&gt;" data-thumbnail="/troubleshoot-if-you-cannot-access-website/Inspecting-HTTP-response-status-code-using-Chrome-DevTools.webp" href="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/Inspecting-HTTP-response-status-code-using-Chrome-DevTools.webp" rel="noopener noreferrer" target="_blank" title="Inspecting HTTP response status code using the Chrome DevTools">
+<img alt="Inspecting HTTP response status code using the Chrome DevTools" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/Inspecting-HTTP-response-status-code-using-Chrome-DevTools.webp, /troubleshoot-if-you-cannot-access-website/Inspecting-HTTP-response-status-code-using-Chrome-DevTools.webp 1.5x, /troubleshoot-if-you-cannot-access-website/Inspecting-HTTP-response-status-code-using-Chrome-DevTools.webp 2x" height="542" sizes="683px" src="../assets/images/img_c77c31cb3602.webp" width="1600"/>
+</a><figcaption class="image-caption">Figure 3: Inspecting HTTP response status code using the Chrome DevTools</figcaption>
+</figure>
+<p>The network tab of the browser <a href="https://en.wikipedia.org/wiki/Web_development_tools" rel="noopener noreferrer" target="_blank">DevTools</a> shows the Hypertext Transfer Protocol (<a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol" rel="noopener noreferrer" target="_blank">HTTP</a>) response status code from the website. You can identify if it’s a client-side or server-side error by observing the response status code. The status code range 400–499 shows client-side errors, and the status code range 500–599 shows server-side errors.</p>
+<ul>
+<li>Use an alternate browser</li>
+</ul>
+<p>In the worst case, your browser is outdated or is not compatible with some specific protocol used by the website. You use an <a href="https://en.wikipedia.org/wiki/List_of_web_browsers" rel="noopener noreferrer" target="_blank">alternate browser</a> and access the same website.</p>
+<ul>
+<li>Access an alternate popular website</li>
+</ul>
+<p>You try to access a website that is having downtime due to different reasons such as a server overload. You cannot do anything except wait until the website is back up and running again. You might be able to identify the failure by accessing an alternative popular website such as google.com.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="local-networkfailure"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#local-networkfailure"></a>Local network failure</h2>
+<p>A failure on the local network can occur due to multiple reasons. Some of the popular local network failures are analyzed by performing the following operations:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Local Area Network&lt;/h2&gt;" data-thumbnail="/troubleshoot-if-you-cannot-access-website/local-area-network.webp" href="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/local-area-network.webp" rel="noopener noreferrer" target="_blank" title="Local area network">
+<img alt="Local area network" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/local-area-network.webp, /troubleshoot-if-you-cannot-access-website/local-area-network.webp 1.5x, /troubleshoot-if-you-cannot-access-website/local-area-network.webp 2x" height="355" sizes="683px" src="../assets/images/img_5920542aab1d.webp" width="1048"/>
+</a><figcaption class="image-caption">Figure 4: Local Area Network</figcaption>
+</figure>
+<ul>
+<li>Validate your internet connectivity</li>
+</ul>
+<p>You should ensure that client has access to the internet. Use the client to access a popular website such as google.com to verify internet connectivity.</p>
+<ul>
+<li>Verify the network adapter of your computer</li>
+</ul>
+<p>You use the <a href="https://en.wikipedia.org/wiki/Ping_%28networking_utility%29" rel="noopener noreferrer" target="_blank">ping</a> tool to verify if the <a href="https://en.wikipedia.org/wiki/Network_interface_controller" rel="noopener noreferrer" target="_blank">network adapter</a> of your computer is up and running. You may run the following command on the <a href="https://en.wikipedia.org/wiki/Computer_terminal" rel="noopener noreferrer" target="_blank">Terminal</a>:</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Ping the network adapter of your computer<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">ping 127.0.0.1</div>
+</div>
+</div>
+<p>You reboot the computer to bring the network adapter up and running again.</p>
+<ul>
+<li>Try an alternate network</li>
+</ul>
+<p>You access the website from a mobile device or the client, which is connected to another network. If you can access the website, it is your home network problem.</p>
+<ul>
+<li>Check the home router</li>
+</ul>
+<p>You can usually find the default Internet Protocol (<a href="https://en.wikipedia.org/wiki/IP_address" rel="noopener noreferrer" target="_blank">IP</a>) address of the <a href="https://en.wikipedia.org/wiki/Router_%28computing%29" rel="noopener noreferrer" target="_blank">home router</a> on the label attached to the router. You can use the ping tool to validate if your client can reach the home router by running the following command:</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Ping the home router<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">ping 192.168.0.1</div>
+</div>
+</div>
+<p>If the home router cannot be reached using the ping command, you can soft reset or hard reset the home router.</p>
+<ul>
+<li>Use a cabled network to the router</li>
+</ul>
+<p>You can connect your client to the home router using an <a href="https://en.wikipedia.org/wiki/Ethernet" rel="noopener noreferrer" target="_blank">Ethernet</a> cable. The Wireless Local Area Network (<a href="https://en.wikipedia.org/wiki/Wireless_LAN" rel="noopener noreferrer" target="_blank">WLAN</a> aka WiFi) might be down due to a router problem.</p>
+<ul>
+<li>Verify firewall or proxy server settings</li>
+</ul>
+<p>You should verify the configuration of the local <a href="https://en.wikipedia.org/wiki/Firewall_%28computing%29" rel="noopener noreferrer" target="_blank">firewall</a> or <a href="https://en.wikipedia.org/wiki/Proxy_server" rel="noopener noreferrer" target="_blank">proxy server</a>. The documentation of the firewall software should give further insights to troubleshoot. You could disable the proxy server and retry accessing the website.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="dns-failure"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#dns-failure"></a>DNS failure</h2>
+<p>The failure of the Domain Name System (<a href="https://en.wikipedia.org/wiki/Domain_Name_System" rel="noopener noreferrer" target="_blank">DNS</a>) connectivity can occur due to multiple reasons. Some of the popular DNS connectivity failures are analyzed by performing the following operations:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: DNS failure&lt;/h2&gt;" data-thumbnail="/troubleshoot-if-you-cannot-access-website/DNS-failure.webp" href="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/DNS-failure.webp" rel="noopener noreferrer" target="_blank" title="DNS failure">
+<img alt="DNS failure" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/DNS-failure.webp, /troubleshoot-if-you-cannot-access-website/DNS-failure.webp 1.5x, /troubleshoot-if-you-cannot-access-website/DNS-failure.webp 2x" height="543" sizes="683px" src="../assets/images/img_89e4b9477467.webp" width="1142"/>
+</a><figcaption class="image-caption">Figure 5: DNS failure</figcaption>
+</figure>
+<ul>
+<li>Verify the DNS connectivity</li>
+</ul>
+<p>Use one of the following tools to verify if the DNS resolution works as expected:</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Check DNS resolution<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>dig google.com</p>
+<p>nslookup google.com</p>
+</div>
+</div>
+</div>
+<p><a href="https://en.wikipedia.org/wiki/Dig_%28command%29" rel="noopener noreferrer" target="_blank">dig</a>: Domain Information Groper</p>
+<p><a href="https://en.wikipedia.org/wiki/Nslookup" rel="noopener noreferrer" target="_blank">nslookup</a>: Name server lookup</p>
+<ul>
+<li>Switch to an alternative DNS server</li>
+</ul>
+<p>You can try an alternate DNS server and verify if you can access the website. For example, try Google DNS (8.8.8.8).</p>
+<ul>
+<li>Flush the DNS <a class="offline-link" href="./caching-patterns.html" rel="noopener noreffer">cache</a></li>
+</ul>
+<p>The website might update its IP address. The DNS cache on your client or the cache on your home router might be pointing to an outdated IP address. You can force flush the cache on the client and the home router.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="intermediate-network-components-failure"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#intermediate-network-components-failure"></a>Intermediate network components failure</h2>
+<p>Multiple intermediate components exist in a large-scale system. For example, Internet Service Provider (<a href="https://en.wikipedia.org/wiki/Internet_service_provider" rel="noopener noreferrer" target="_blank">ISP</a>) routers, and <a class="offline-link" href="../case-studies/cdn-explained.html" rel="noopener noreffer">Content Delivery Networks</a> (<a href="https://en.wikipedia.org/wiki/Content_delivery_network" rel="noopener noreferrer" target="_blank">CDN</a>). A failure of the intermediate components might occur due to multiple reasons. Some of the popular failures of intermediate components are analyzed by performing the following operations:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Network path&lt;/h2&gt;" data-thumbnail="/troubleshoot-if-you-cannot-access-website/network-path.webp" href="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/network-path.webp" rel="noopener noreferrer" target="_blank" title="Network path">
+<img alt="Network path" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/network-path.webp, /troubleshoot-if-you-cannot-access-website/network-path.webp 1.5x, /troubleshoot-if-you-cannot-access-website/network-path.webp 2x" height="852" sizes="683px" src="../assets/images/img_f86c88da1aaa.webp" width="1337"/>
+</a><figcaption class="image-caption">Figure 6: Network path</figcaption>
+</figure>
+<ul>
+<li>Verify if the client can reach the server</li>
+</ul>
+<p>Identify the IP address of the server through DNS resolution. You can use the ping tool to check if the Internet Control Message Protocol (<a href="https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol" rel="noopener noreferrer" target="_blank">ICMP</a>) packets sent from the client reach the server. You run the following command on the Terminal:</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Check network connectivity to the server<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">ping server-IP-address</div>
+</div>
+</div>
+<ul>
+<li>Identify the defect component in the network path</li>
+</ul>
+<p>You can use the <a href="https://en.wikipedia.org/wiki/Traceroute" rel="noopener noreferrer" target="_blank">traceroute</a> tool to identify the hops in the network path from the client to the server. The traceroute output should help you to narrow down the failing component. For example, the failing component might be the CDN or the <a href="https://en.wikipedia.org/wiki/Reverse_proxy" rel="noopener noreferrer" target="_blank">Reverse Proxy</a> server.</p>
+<ul>
+<li>Reroute the network traffic</li>
+</ul>
+<p>If one of the intermediate components in the network path is failing, you reroute the network traffic. You use a Virtual Private Network (<a href="https://en.wikipedia.org/wiki/Virtual_private_network" rel="noopener noreferrer" target="_blank">VPN</a>) to reroute the traffic and verify if you can access the website.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="server-side-failure"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#server-side-failure"></a>Server-side failure</h2>
+<p>A failure in the DNS connectivity may occur due to multiple reasons. Some of the popular DNS connectivity failures are analyzed by performing the following operations:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Server-side failure&lt;/h2&gt;" data-thumbnail="/troubleshoot-if-you-cannot-access-website/server-side-failure.webp" href="https://systemdesign.one/troubleshoot-if-you-cannot-access-website/server-side-failure.webp" rel="noopener noreferrer" target="_blank" title="Server-side failure">
+<img alt="Server-side failure" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/troubleshoot-if-you-cannot-access-website/server-side-failure.webp, /troubleshoot-if-you-cannot-access-website/server-side-failure.webp 1.5x, /troubleshoot-if-you-cannot-access-website/server-side-failure.webp 2x" height="562" sizes="683px" src="../assets/images/img_ba8260eddd15.webp" width="1137"/>
+</a><figcaption class="image-caption">Figure 7: Server-side failure</figcaption>
+</figure>
+<ul>
+<li>Verify the HTTP response status code</li>
+</ul>
+<p>The HTTP response <a href="https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Response_message" rel="noopener noreferrer" target="_blank">status code</a> range (500–599) confirms a server-side failure.</p>
+<ul>
+<li>The server is nonfunctional</li>
+</ul>
+<p>In large-scale systems, there are multiple servers or intermediate components to meet the incoming load demand. If the server you are trying to reach is down, you can use a VPN to reach another server of the same website (assuming there is a geographical separation of servers).</p>
+<ul>
+<li>The client cannot reach the server</li>
+</ul>
+<p>You use either the ping tool or the traceroute tool to verify if the client can reach the server.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#summary"></a>Summary</h2>
+<p>Systematic troubleshooting lets you narrow down the root cause behind failed access to a public website.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-and-solutions"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#questions-and-solutions"></a>Questions and Solutions</h2>
+<p>If you would like to challenge your knowledge on the topic, visit the article: <a href="https://systemdesign.one/knowledge-test-how-to-troubleshoot-if-you-cant-access-a-website/" rel="noopener noreferrer" target="_blank">Knowledge Test</a></p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#references"></a>References</h2>
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" rel="noopener noreferrer" target="_blank">MDN web docs HTTP response status code</a>, Mozilla.org</li>
+<li><a href="https://www.cloudflare.com/en-gb/learning/dns/what-is-dns/" rel="noopener noreferrer" target="_blank">What is DNS</a>, Cloudflare.com</li>
+<li><a href="https://www.techtarget.com/searchnetworking/definition/router" rel="noopener noreferrer" target="_blank">Router explained</a>, Techtarget.com</li>
+<li><a href="https://www.tecmint.com/linux-networking-commands/" rel="noopener noreferrer" target="_blank">Networking Tools</a>, Tecmint.com</li>
+</ul></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2022-11-21</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="How to Troubleshoot if You Can’t Access a Particular Website?" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="How to Troubleshoot if You Can’t Access a Particular Website?" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="Check the following failures: 1. Client-side 2. Local network 3. DNS 4. Intermediate network components 5. Server-side" data-image="troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp" data-sharer="pinterest" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="Check the following failures: 1. Client-side 2. Local network 3. DNS 4. Intermediate network components 5. Server-side" data-sharer="tumblr" data-title="How to Troubleshoot if You Can’t Access a Particular Website?" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="How to Troubleshoot if You Can’t Access a Particular Website?" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="Check the following failures: 1. Client-side 2. Local network 3. DNS 4. Intermediate network components 5. Server-side" data-image="troubleshoot-if-you-cannot-access-website/website-cannot-be-accessed.webp" data-sharer="vk" data-title="How to Troubleshoot if You Can’t Access a Particular Website?" data-url="https://systemdesign.one/how-to-troubleshoot-if-you-cannot-access-a-website/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev" href="https://systemdesign.one/knowledge-test-how-to-troubleshoot-if-you-cant-access-a-website/" rel="noopener noreferrer" target="_blank" title="Knowledge Test: How to Troubleshoot if You Can’t Access a Particular Website?"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Knowledge Test: How to Troubleshoot if You Can’t Access a Particular Website?</a>
+<a class="next offline-link" href="../case-studies/url-shortening-system-design.html" rel="next" title="URL Shortening System Design">URL Shortening System Design<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./how-to-troubleshoot-if-you-cannot-access-a-website.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

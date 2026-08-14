@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Hinted Handoff - System Design</title><meta content="distributed system pattern" name="Description"/><meta content="Hinted Handoff" property="og:title"/>
+<meta content="distributed system pattern" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/hinted-handoff/" property="og:url"/><meta content="https://systemdesign.one/hinted-handoff/hinted-handoff.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-08-12T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-08-12T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/hinted-handoff/hinted-handoff.webp" name="twitter:image"/>
+<meta content="Hinted Handoff" name="twitter:title"/>
+<meta content="distributed system pattern" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/hinted-handoff/" rel="canonical"/><link href="https://systemdesign.one/about/" rel="prev"/><link href="https://systemdesign.one/terms-of-service/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/hinted-handoff</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./hinted-handoff.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#what-is-high-availability-architecture">What Is High Availability Architecture?</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#real-world-analogy-of-hintedhandoff">Real-World Analogy of Hinted Handoff</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#hinted-handoff-explained">Hinted Handoff Explained</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#sloppy-quorum-and-hintedhandoff">Sloppy Quorum and Hinted Handoff</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#hinted-handoff-datamodel">Hinted Handoff Data Model</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#hinted-handoff-usecases">Hinted Handoff Use Cases</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#hinted-handoff-in-cassandra">Hinted Handoff in Cassandra</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#hinted-handoff-advantages">Hinted Handoff Advantages</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#hinted-handoff-disadvantages">Hinted Handoff Disadvantages</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./hinted-handoff.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Hinted Handoff</h1><h2 class="single-subtitle">High Availability Architecture</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-08-12">2023-08-12</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 2053 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 10 minutes </div>
+</div><div class="featured-image"><img alt="/hinted-handoff/hinted-handoff.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/hinted-handoff/hinted-handoff.webp, /hinted-handoff/hinted-handoff.webp 1.5x, /hinted-handoff/hinted-handoff.webp 2x" height="246" sizes="699px" src="../assets/images/img_08557f456649.webp" title="distributed system pattern" width="912"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<blockquote>
+<p>I would never voluntarily build the hinted handoff model of consistency repair again.</p>
+<p>- Ryan Betts, <a href="https://www.youtube.com/watch?v=hMYTMNku9dc&amp;feature=youtu.be&amp;t=1380" rel="noopener noreferrer" target="_blank">InfluxData</a></p>
+</blockquote>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./hinted-handoff.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>Node: a server that provides functionality to other services</li>
+<li>Coordinator Node: a node that determines the target node to handle the request in the cluster</li>
+<li><a class="offline-link" href="../white-papers/amazon-dynamo-architecture.html" rel="noopener noreffer">Amazon Dynamo</a>: a highly available distributed key-value data store</li>
+<li>Apache Cassandra: a distributed, wide-column data store</li>
+<li>Apache Kafka: a distributed event store and stream-processing platform</li>
+</ul>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./hinted-handoff.html#requirements"></a>Requirements</h2>
+<p>Design a distributed system pattern with the following characteristics:</p>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./hinted-handoff.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>tolerate temporary node failures</li>
+<li>simple to implement</li>
+</ul>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./hinted-handoff.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>high write availability</li>
+<li>eventually consistent</li>
+<li>scalable</li>
+</ul>
+<h2 class="headerLink" id="what-is-high-availability-architecture"><a class="header-mark offline-link" href="./hinted-handoff.html#what-is-high-availability-architecture"></a>What Is High Availability Architecture?</h2>
+<p>Distributed systems are gaining popularity due to inherent increased fault tolerance and the ability to eliminate single points of failure. A distributed system replicates the data to provide high availability at the expense of reduced consistency <sup id="fnref:1"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The highly available distributed data stores such as Amazon Dynamo, and Apache Cassandra implement the eventual <a class="offline-link" href="./consistency-patterns.html" rel="noopener noreffer">consistency model</a> <sup id="fnref:2"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>The systems with high-availability architecture must be able to maintain optimal performance even during peak loads. High availability is typically measured as the percentage of time a service remains available to the clients <sup id="fnref:4"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<h2 class="headerLink" id="real-world-analogy-of-hintedhandoff"><a class="header-mark offline-link" href="./hinted-handoff.html#real-world-analogy-of-hintedhandoff"></a>Real-World Analogy of Hinted Handoff</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Real-world analogy of hinted handoff&lt;/h2&gt;" data-thumbnail="/hinted-handoff/hinted-handoff-analogy.webp" href="https://systemdesign.one/hinted-handoff/hinted-handoff-analogy.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Real-world analogy of hinted handoff">
+<img alt="Figure 1: Real-world analogy of hinted handoff" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/hinted-handoff/hinted-handoff-analogy.webp, /hinted-handoff/hinted-handoff-analogy.webp 1.5x, /hinted-handoff/hinted-handoff-analogy.webp 2x" height="813" sizes="683px" src="../assets/images/img_426c095b324e.webp" width="1205"/>
+</a><figcaption class="image-caption">Figure 1: Real-world analogy of hinted handoff</figcaption>
+</figure>
+<p>The real-world analogy of hinted handoff can be described as follows <sup id="fnref:5"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ol>
+<li>you (<strong>receiver</strong>) inform your coworker (<strong>coordinator</strong>) that you are heading out on a coffee break</li>
+<li>coworker collects the message on your behalf from the sender</li>
+<li>you return to your desk after the coffee break</li>
+<li>coworker relays the message to your desk</li>
+<li>you read the message</li>
+</ol>
+<p>Without the hinted handoff approach, either the sender must wait until you return to your desk or you will miss the message.</p>
+<h2 class="headerLink" id="hinted-handoff-explained"><a class="header-mark offline-link" href="./hinted-handoff.html#hinted-handoff-explained"></a>Hinted Handoff Explained</h2>
+<p>The availability of a node is determined by a multitude of factors such as hardware faults, memory exhaustion, network partitions, and garbage collection (<strong>GC</strong>) pauses <sup id="fnref:6"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The node responsible to store a particular dataset is known as the <strong>target node</strong>. The node that temporarily stores the particular dataset on behalf of the target node is known as the <strong>backup node</strong>. The backup node is also known as the <strong>coordinator node</strong>.</p>
+<p>The backup node stores hints when the target node becomes unavailable. The <strong>hints</strong> are essentially data mutations along with metadata of the target node <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<p>Eventual consistency is attained through the relay of the hints by the backup node when the target node is healthy again <sup id="fnref:8"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:8" role="doc-noteref">8</a></sup>. The technique of transmitting the data mutation post-failure resolution is known as <strong>hinted handoff</strong> <sup id="fnref:5"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:5" role="doc-noteref">5</a></sup>. In other words, hinted handoff is a distributed system pattern to perform repairs in the write path <sup id="fnref:6"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The hinted handoff pattern offers eventual consistency and improved availability on temporary node failures. The high availability of nodes is also a requirement to maintain the replication factor (<strong>RF</strong>) across the system. The hinted handoff pattern allows the system to manage the same amount of write operations despite operating at a reduced capacity <sup id="fnref:6"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Hinted handoff high-level workflow&lt;/h2&gt;" data-thumbnail="/hinted-handoff/hinted-handoff-workflow.gif" href="https://systemdesign.one/hinted-handoff/hinted-handoff-workflow.gif" rel="noopener noreferrer" target="_blank" title="Figure 2: Hinted handoff high-level workflow">
+<img alt="Figure 2: Hinted handoff high-level workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/hinted-handoff/hinted-handoff-workflow.gif, /hinted-handoff/hinted-handoff-workflow.gif 1.5x, /hinted-handoff/hinted-handoff-workflow.gif 2x" height="490" sizes="683px" src="../assets/images/img_7e20509556a6.gif" width="913"/>
+</a><figcaption class="image-caption">Figure 2: Hinted handoff high-level workflow</figcaption>
+</figure>
+<p>The high-level workflow of hinted handoff pattern can be outlined as follows <sup id="fnref:8"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:9" role="doc-noteref">9</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ol>
+<li>networking protocols such as <a class="offline-link" href="./gossip-protocol.html" rel="noopener noreffer">gossip protocol</a> are used to detect node failures in the system</li>
+<li>the failed nodes are marked unavailable</li>
+<li>requests to the unavailable target node are redirected to the backup node</li>
+<li>backup node persists the data mutations and metadata of the target node in hints</li>
+<li>gossip protocol is used to determine the health of the target node that was unavailable</li>
+<li>the target node is back healthy again</li>
+<li>the backup node delivers the hints to the target node</li>
+<li>the target node replays the data mutations</li>
+<li>the backup node removes the hints</li>
+</ol>
+<p>The storage location of hints depends on the system implementation. For instance, Apache Cassandra stores the hints in the backup node for a certain time frame <sup id="fnref:3"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:3" role="doc-noteref">3</a></sup>. The backup node flushes the hints to disk-based storage every few seconds. Alternatively, hints can be stored in the local directory of each node to improve the replay performance <sup id="fnref:6"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The backup node will reject hints if the target node remains unavailable for more than an extended period. The backup node should remove the hints when the target node gets decommissioned. The hints for dropped tables must  also be removed <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<p>The backup node must track the number of hints that are written concurrently. The amount of hints stored in the backup nodes increases when a significant amount of target nodes becomes unavailable. There is a risk that an increased amount of hints degrade the performance of the backup node resulting in write rejections or an error response being thrown <sup id="fnref:6"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The following factors impact the lifecycle of the hints <sup id="fnref:9"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ul>
+<li>hint window: time frame allowed to collect hints</li>
+<li>garbage collection grace time: expiration time of hints</li>
+<li>time-to-live (<strong>TTL</strong>): validity of data mutations</li>
+</ul>
+<p>The requirements and system-specific implementations should take into consideration whether a failure should be shown to the client when the target node is temporarily unavailable and hinted handoff is executed. On top of that, the health patterns of hinted handoff are also debatable - it is difficult to determine an optimal frequency of hinted handoff execution to declare a system healthy <sup id="fnref:1"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>It is also common to draw parallels between hinted handoff and write-ahead logging (<strong>WAL</strong>) replication. The WAL is relatively simpler but in essence shares similar drawbacks to the hinted handoff pattern <sup id="fnref:11"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>An alternative approach to implementing high availability architecture is to use a shared-nothing approach by deploying a log-based journaling service such as Apache Kafka. With this method, the data is ingested into the durable journal before being written into the database <sup id="fnref:11"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./hinted-handoff.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="sloppy-quorum-and-hintedhandoff"><a class="header-mark offline-link" href="./hinted-handoff.html#sloppy-quorum-and-hintedhandoff"></a>Sloppy Quorum and Hinted Handoff</h2>
+<p>The traditional <a href="https://en.wikipedia.org/wiki/Quorum_%28distributed_computing%29" rel="noopener noreferrer" target="_blank">quorum-based</a> approach results in reduced system availability when network partitions occur or if multiple target nodes become unavailable. Put another way, the traditional quorum-based approach is not fault-tolerant <sup id="fnref:5"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The <strong>sloppy quorum</strong> is a variant of the quorum-based approach that leverages  hinted handoff pattern to reach quorum when multiple target nodes become unavailable <sup id="fnref:5"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>Amazon Dynamo employs the sloppy quorum and hinted handoff pattern as a workaround to redirect write operations to the first N healthy nodes in the <a class="offline-link" href="./consistent-hashing-explained.html" rel="noopener noreffer">consistent hash</a> ring. <a href="https://en.wikipedia.org/wiki/Merkle_tree" rel="noopener noreferrer" target="_blank">Merkle tree</a> is an anti-entropy protocol that is widely used by databases such as Amazon Dynamo to detect data inconsistencies and synchronize data changes on permanent node failures <sup id="fnref:12"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>The primary drawback of sloppy quorum is that read operations return stale data if the nodes haven’t communicated with each other <sup id="fnref:5"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:5" role="doc-noteref">5</a></sup>. In addition, the durability of the system is compromised if the backup node crashes before dispatching the hints to the target node <sup id="fnref:12"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<h2 class="headerLink" id="hinted-handoff-datamodel"><a class="header-mark offline-link" href="./hinted-handoff.html#hinted-handoff-datamodel"></a>Hinted Handoff Data Model</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Hinted handoff data schema&lt;/h2&gt;" data-thumbnail="/hinted-handoff/hinted-handoff-data-model.webp" href="https://systemdesign.one/hinted-handoff/hinted-handoff-data-model.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Hinted handoff data schema">
+<img alt="Figure 3: Hinted handoff data schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/hinted-handoff/hinted-handoff-data-model.webp, /hinted-handoff/hinted-handoff-data-model.webp 1.5x, /hinted-handoff/hinted-handoff-data-model.webp 2x" height="320" sizes="683px" src="../assets/images/img_b17797ad74c4.webp" width="638"/>
+</a><figcaption class="image-caption">Figure 3: Hinted handoff data schema</figcaption>
+</figure>
+<p>The backup node stores the hints in the hints table on durable disk-based storage <sup id="fnref:1"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>. The hints table contains the following fields <sup id="fnref:6"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>ID: identifier of the data mutation</li>
+<li>target_node_id: identifier of the unavailable target node</li>
+<li>version_id: version of the database system</li>
+<li>timestamp: determines the hint TTL</li>
+<li>data: data mutation stored as a blob</li>
+</ul>
+<h2 class="headerLink" id="hinted-handoff-usecases"><a class="header-mark offline-link" href="./hinted-handoff.html#hinted-handoff-usecases"></a>Hinted Handoff Use Cases</h2>
+<p>The popular use cases of the hinted handoff are as follows <sup id="fnref:11"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:3" role="doc-noteref">3</a></sup>:</p>
+<ul>
+<li>Distributed databases - Apache Cassandra and Amazon Dynamo</li>
+<li>Content delivery networks (<strong>CDN</strong>) redirect the traffic to the healthy nodes</li>
+</ul>
+<p>Amazon Dynamo and Apache Cassandra are distributed databases that implement hinted handoff to achieve consistency and high availability within a symmetric cluster of nodes.</p>
+<h2 class="headerLink" id="hinted-handoff-in-cassandra"><a class="header-mark offline-link" href="./hinted-handoff.html#hinted-handoff-in-cassandra"></a>Hinted Handoff in Cassandra</h2>
+<p>The hinted handoff consistency pattern is built into Apache Cassandra <sup id="fnref:9"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:9" role="doc-noteref">9</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:3" role="doc-noteref">3</a></sup>. Although Cassandra enables hinted handoff pattern by default, it is optional to execute hinted handoff in the workflow of a write operation.</p>
+<p>The hinted handoff writes are not taken into consideration for quorum-based consistency. Apache Cassandra throws an exception if a sufficient number of nodes are not available to attain a quorum. On the other hand, Amazon Dynamo defaults to sloppy quorum if a sufficient number of nodes are not available <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>Earlier releases of Cassandra used to store hints in the hints table. However, the latest release of Cassandra utilizes flat files on disk to store hints <sup id="fnref:9"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:9" role="doc-noteref">9</a></sup>. Cassandra persists the hints for a particular database replica under a single partition key. Therefore, Cassandra can replay hints via a sequential read operation with very little impact on performance <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>Even though hinted handoff allows Cassandra to execute the same amount of write operations when the cluster is operating at a reduced capacity, failures should be permitted to enforce reliability and performance <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<h2 class="headerLink" id="hinted-handoff-advantages"><a class="header-mark offline-link" href="./hinted-handoff.html#hinted-handoff-advantages"></a>Hinted Handoff Advantages</h2>
+<p>The benefits of hinted handoff pattern can be summed up as follows <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>reduced read repairs and improved read performance</li>
+<li>extremely high write availability</li>
+<li>improved consistency after temporary outages such as network faults</li>
+<li>improved fault tolerance</li>
+<li>increased durability on temporary failures of target nodes via redirection of writes to backup nodes</li>
+<li>reduced latency by routing writes to healthy backup nodes</li>
+<li>improved scalability through redirection of traffic to healthy backup nodes</li>
+</ul>
+<h2 class="headerLink" id="hinted-handoff-disadvantages"><a class="header-mark offline-link" href="./hinted-handoff.html#hinted-handoff-disadvantages"></a>Hinted Handoff Disadvantages</h2>
+<p>The drawbacks of hinted handoff pattern can be summarized as the following <sup id="fnref:7"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:12"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ul>
+<li>reduced durability when hardware faults occur to backup nodes</li>
+<li>increased system complexity</li>
+<li>increased storage requirements due to the need for additional metadata</li>
+<li>stale reads until hints are replayed</li>
+<li>increased bandwidth usage due to data redirection</li>
+<li>increased input-output (<strong>I/O</strong>) load on the backup nodes if numerous target nodes become unavailable</li>
+<li>noisy signal without being an actionable metric due to temporary failures</li>
+<li>increased operational complexity on non-uniform workloads</li>
+<li>potential thundering herd problem when the backup node tries to quickly replay hints on a newly returned target node</li>
+</ul>
+<p>The hinted handoff is a suboptimal architecture for load-shedding because the backup nodes must tolerate additional load and journal the writes on behalf of the unavailable target nodes. This approach will eventually result in degraded system performance. A workaround to reduce the load on backup nodes is to deploy dedicated storage partitions for storing hints <sup id="fnref:11"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<p>There are also cases when hinted handoff can be a precursor to a serious cluster failure that might affect data durability. However, it is difficult to identify whether an action should be taken at an early stage by the human operator <sup id="fnref:11"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:11" role="doc-noteref">11</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./hinted-handoff.html#summary"></a>Summary</h2>
+<p>The hinted handoff is a sophisticated approach to attain improved reliability and resiliency in the eventual <a class="offline-link" href="./consistency-patterns.html" rel="noopener noreffer">consistency model</a>. The hinted handoff pattern is implemented by distributed databases such as Amazon Dynamo and Apache Cassandra <sup id="fnref:2"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./hinted-handoff.html#fn:3" role="doc-noteref">3</a></sup>. As always, every software architecture pattern comes with a trade-off.</p>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./hinted-handoff.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./hinted-handoff.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./hinted-handoff.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Katy Farmer, <a href="https://www.influxdata.com/blog/eventual-consistency-hhq/" rel="noopener noreferrer" target="_blank">Eventual Consistency: The Hinted Handoff Queue</a> (2018), influxdata.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Giuseppe DeCandia, et al., <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" rel="noopener noreferrer" target="_blank">Dynamo: Amazon’s Highly Available Key-value Store</a> (2007), allthingsdistributed.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Avinash Lakshman, Prashant Malik, <a href="https://www.cs.cornell.edu/projects/ladis2009/papers/lakshman-ladis2009.pdf" rel="noopener noreferrer" target="_blank">Cassandra - A Decentralized Structured Storage System</a> (2009), cs.cornell.edu <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>John Noonan, <a href="https://redis.com/blog/high-availability-architecture/" rel="noopener noreferrer" target="_blank">High Availability Architecture Demystified</a> (2022), redis.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>varunu28, <a href="https://distributed-computing-musings.com/2022/05/sloppy-quorum-and-hinted-handoff-quorum-in-the-times-of-failure/" rel="noopener noreferrer" target="_blank">Sloppy Quorum and Hinted handoff: Quorum in the times of failure</a> (2022), distributed-computing-musings.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p><a href="https://docs.datastax.com/eol/en/dse/6.0/dse-arch/datastax_enterprise/dbArch/archRepairNodesHintedHandoff.html" rel="noopener noreferrer" target="_blank">Hinted handoff: repair during write path</a>, docs.datastax.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Jonathan Ellis, <a href="https://www.datastax.com/blog/modern-hinted-handoff" rel="noopener noreferrer" target="_blank">Modern hinted handoff</a> (2012), datastax.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Tamerlan Gudabayev, <a href="https://www.freecodecamp.org/news/design-patterns-for-distributed-systems/#hinted-handoff-pattern" rel="noopener noreferrer" target="_blank">The Design Patterns for Distributed Systems Handbook</a> (2023), freecodecamp.org <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p>Radovan Zvoncek, <a href="https://thelastpickle.com/blog/2018/03/21/hinted-handoff-gc-grace-demystified.html" rel="noopener noreferrer" target="_blank">Hinted Handoff and GC Grace Demystified</a> (2018), thelastpickle.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Ryan Betts, <a href="https://www.youtube.com/watch?v=hMYTMNku9dc" rel="noopener noreferrer" target="_blank">Lessons and Observations Scaling a Time Series Database</a> (2018), InfluxData <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Colin Breck, <a href="https://blog.colinbreck.com/shared-nothing-architectures-for-server-replication-and-synchronization/" rel="noopener noreferrer" target="_blank">Shared-Nothing Architectures for Server Replication and Synchronization</a> (2019), blog.colinbreck.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p>varunu28, <a href="https://distributed-computing-musings.com/2022/05/paper-notes-dynamo-amazons-highly-available-key-value-store/" rel="noopener noreferrer" target="_blank">Paper Notes: Dynamo - Amazon’s Highly Available Key-value Store</a> (2022), distributed-computing-musings.com <a class="footnote-backref offline-link" href="./hinted-handoff.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-08-12</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Hinted Handoff" data-url="https://systemdesign.one/hinted-handoff/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/hinted-handoff/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/hinted-handoff/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Hinted Handoff" data-url="https://systemdesign.one/hinted-handoff/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="distributed system pattern" data-image="hinted-handoff/hinted-handoff.webp" data-sharer="pinterest" data-url="https://systemdesign.one/hinted-handoff/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="distributed system pattern" data-sharer="tumblr" data-title="Hinted Handoff" data-url="https://systemdesign.one/hinted-handoff/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Hinted Handoff" data-url="https://systemdesign.one/hinted-handoff/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/hinted-handoff/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="distributed system pattern" data-image="hinted-handoff/hinted-handoff.webp" data-sharer="vk" data-title="Hinted Handoff" data-url="https://systemdesign.one/hinted-handoff/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>About</a>
+<a class="next" href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank" title="Terms of Service">Terms of Service<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./hinted-handoff.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./hinted-handoff.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

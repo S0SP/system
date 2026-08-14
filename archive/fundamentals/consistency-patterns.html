@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Consistency Patterns - System Design</title><meta content="popular consistency models in distributed systems" name="Description"/><meta content="Consistency Patterns" property="og:title"/>
+<meta content="popular consistency models in distributed systems" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/consistency-patterns/" property="og:url"/><meta content="https://systemdesign.one/consistency-patterns/consistency-patterns.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-07-23T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-07-27T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/consistency-patterns/consistency-patterns.webp" name="twitter:image"/>
+<meta content="Consistency Patterns" name="twitter:title"/>
+<meta content="popular consistency models in distributed systems" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/consistency-patterns/" rel="canonical"/><link href="https://systemdesign.one/cookie-policy/" rel="prev"/><link href="https://systemdesign.one/tools-resources/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/consistency-patterns</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./consistency-patterns.html#consistency-in-distributed-systems">Consistency in Distributed Systems</a>
+<ul>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#strong-consistency">Strong Consistency</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#eventual-consistency">Eventual Consistency</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#weak-consistency">Weak Consistency</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#tradeoffs-of-consistency-patterns">Tradeoffs of Consistency Patterns</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#further-consistency-models-in-distributed-systems">Further Consistency Models in Distributed Systems</a>
+<ul>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#linearizability">Linearizability</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#causal-consistency">Causal Consistency</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./consistency-patterns.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Consistency Patterns</h1><h2 class="single-subtitle">Consistency Models in Distributed Systems</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-07-23">2023-07-23</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 1800 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 9 minutes </div>
+</div><div class="featured-image"><img alt="/consistency-patterns/consistency-patterns.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistency-patterns/consistency-patterns.webp, /consistency-patterns/consistency-patterns.webp 1.5x, /consistency-patterns/consistency-patterns.webp 2x" height="192" sizes="667px" src="../assets/images/img_f51149dca8d4.webp" title="popular consistency models in distributed systems" width="667"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<hr/>
+<blockquote>
+<p>Of three properties of distributed data systems  -  consistency, availability, and partition tolerance  -  choose two.</p>
+<p>- Eric Brewer, <strong>CAP theorem</strong></p>
+</blockquote>
+<h2 class="headerLink" id="consistency-in-distributed-systems"><a class="header-mark offline-link" href="./consistency-patterns.html#consistency-in-distributed-systems"></a>Consistency in Distributed Systems</h2>
+<p>A distributed system provides benefits such as scalability and fault tolerance. However, maintaining consistency across the distributed system is non-trivial. Consistency is vital to achieving reliability, deterministic system state, and improved user experience <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>A distributed system replicates the data across multiple servers to attain improved fault tolerance, scalability, and reliability <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>. The consistency patterns (<strong>consistency models</strong>) are a set of techniques for data storage and data management in a distributed system <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>. The consistency pattern determines the data propagation across the distributed system. Hence, the consistency pattern will impact the scalability, and reliability of the distributed system <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>There are numerous consistency patterns in distributed systems. The choice of the consistency pattern depends on the system requirements and use cases because each consistency pattern has its benefits and drawbacks <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>. Consistency patterns must be at the crux of multi-data center system architecture as it’s non-trivial to maintain consistency across multiple data centers. The consistency patterns can be broadly categorized as follows <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>strong consistency</li>
+<li>eventual consistency</li>
+<li>weak consistency</li>
+</ul>
+<p>The eventual consistency model is an optimal choice for distributed systems that favor high availability and performance over consistency. Strong consistency is an optimal consistency model when the same data view must be visible across the distributed system without delay. In summary, each consistency model fits a different use case and system requirements <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="strong-consistency"><a class="header-mark offline-link" href="./consistency-patterns.html#strong-consistency"></a>Strong Consistency</h3>
+<p>In the strong consistency pattern, read operations performed on any server must always retrieve the data that was included in the latest write operation. The strong consistency pattern typically replicates data synchronously across multiple servers <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>. Put another way, when a write operation is executed on a server, subsequent read operations on every other server must return the latest written data <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The benefits of strong consistency are the following <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>simplified application logic</li>
+<li>increased data durability</li>
+<li>guaranteed consistent data view across the system</li>
+</ul>
+<p>The limitations of strong consistency are as follows <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>reduced availability of the service</li>
+<li>degraded latency</li>
+<li>resource-intensive</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Strong consistency&lt;/h2&gt;" data-thumbnail="/consistency-patterns/strong-consistency.webp" href="https://systemdesign.one/consistency-patterns/strong-consistency.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Strong consistency">
+<img alt="Figure 1: Strong consistency" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistency-patterns/strong-consistency.webp, /consistency-patterns/strong-consistency.webp 1.5x, /consistency-patterns/strong-consistency.webp 2x" height="499" sizes="683px" src="../assets/images/img_71adfe3ec672.webp" width="711"/>
+</a><figcaption class="image-caption">Figure 1: Strong consistency</figcaption>
+</figure>
+<p>The workflow to reach strong consistency in data replication is the following <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ol>
+<li>the server (<strong>client</strong>) executes a write operation against the primary database instance</li>
+<li>the primary instance propagates the written data to the replica instance</li>
+<li>the replica instance sends an acknowledgment signal to the primary instance</li>
+<li>the primary instance sends an acknowledgment signal to the client</li>
+</ol>
+<p>The popular use cases of the strong consistency model are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>File systems</li>
+<li>Relational databases</li>
+<li>Financial services such as banking</li>
+<li>Semi-distributed consensus protocols such as two-phase commit (<strong>2PC</strong>)</li>
+<li>Fully distributed consensus protocols such as <a href="https://martinfowler.com/articles/patterns-of-distributed-systems/paxos.html" rel="noopener noreferrer" target="_blank">Paxos</a></li>
+</ul>
+<p>For instance, any changes to the user’s bank account balance must be immediately replicated for improved durability and reliability. Google’s <a href="https://research.google/pubs/pub27898/" rel="noopener noreferrer" target="_blank">Bigtable</a> and Google’s <a href="https://research.google/pubs/pub39966/" rel="noopener noreferrer" target="_blank">Spanner</a> databases are real-world applications of strong consistency.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="eventual-consistency"><a class="header-mark offline-link" href="./consistency-patterns.html#eventual-consistency"></a>Eventual Consistency</h3>
+<p>In the eventual consistency pattern, when a write operation is executed against a server, the immediate subsequent read operations against other servers do not necessarily return the latest written data <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>. The system will eventually converge to the same state and the latest data will be returned by other servers on succeeding read operations. The eventual consistency pattern typically replicates the data asynchronously across multiple servers <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>. In layman’s terms, any data changes are only eventually propagated across the system and stale data views are expected until data convergence occurs.</p>
+<p>Eventual consistency can be implemented through multi-leader or leaderless replication topology. The system converges to the same state usually in a few seconds but the time frame depends on the implementation and system requirements. The benefits of eventual consistency pattern are as follows <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li>simple</li>
+<li>highly available</li>
+<li>scalable</li>
+<li>low latency</li>
+</ul>
+<p>The drawbacks of eventual consistency are the following <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>weaker consistency model</li>
+<li>potential data loss</li>
+<li>potential data conflicts</li>
+<li>data inconsistency</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Eventual consistency&lt;/h2&gt;" data-thumbnail="/consistency-patterns/eventual-consistency.webp" href="https://systemdesign.one/consistency-patterns/eventual-consistency.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Eventual consistency">
+<img alt="Figure 2: Eventual consistency" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistency-patterns/eventual-consistency.webp, /consistency-patterns/eventual-consistency.webp 1.5x, /consistency-patterns/eventual-consistency.webp 2x" height="499" sizes="683px" src="../assets/images/img_064e0ee8dcea.webp" width="711"/>
+</a><figcaption class="image-caption">Figure 2: Eventual consistency</figcaption>
+</figure>
+<p>The workflow to attain eventual consistency in data replication is the following <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ol>
+<li>the client executes a write operation against the primary database instance</li>
+<li>the primary instance sends an acknowledgment signal to the client</li>
+<li>the primary instance eventually propagates the written data to the replica instance</li>
+</ol>
+<p>The eventual consistency pattern is a tradeoff between data staleness and scalability. The typical use cases of eventual consistency are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>search engine indexing</li>
+<li><a class="offline-link" href="../case-studies/url-shortening-system-design.html" rel="noopener noreffer">URL shortener</a></li>
+<li>domain name server (<strong>DNS</strong>)</li>
+<li>simple mail transfer protocol (<strong>SMTP</strong>)</li>
+<li>object storage such as <a class="offline-link" href="../case-studies/amazon-s3-durability.html" rel="noopener noreffer">Amazon S3</a></li>
+<li>comments or posts on social media platforms such as Facebook</li>
+<li>distributed communication protocol such as <a class="offline-link" href="./gossip-protocol.html" rel="noopener noreffer">gossip protocol</a></li>
+<li>leader-follower and multi-leader replication</li>
+<li><a class="offline-link" href="../case-studies/distributed-counter-system-design.html" rel="noopener noreffer">distributed counter</a> and <a class="offline-link" href="../case-studies/live-comment-system-design.html" rel="noopener noreffer">live comment service</a></li>
+</ul>
+<p>For example, any changes to the domain name records are replicated eventually by DNS. Distributed databases such as <a class="offline-link" href="../white-papers/amazon-dynamo-architecture.html" rel="noopener noreffer">Amazon Dynamo</a> and Apache Cassandra are real-world applications of the eventual consistency pattern. Eventual consistency is not a design flaw but a feature to satisfy certain use cases. The business owner should determine whether application data is a candidate for the eventual consistency pattern <sup id="fnref:7"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="weak-consistency"><a class="header-mark offline-link" href="./consistency-patterns.html#weak-consistency"></a>Weak Consistency</h3>
+<p>In the weak consistency pattern, when a write operation is executed against a server, the subsequent read operations against other servers may or may not return the latest written data. In other words, a best-effort approach to data propagation is performed - the data may not be immediately propagated <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>. The distributed system must meet various conditions such as the passing of time before the latest written data can be returned <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The advantages of weak consistency are the following <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>high availability</li>
+<li>low latency</li>
+</ul>
+<p>The disadvantages of weak consistency are as follows <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>potential data loss</li>
+<li>data inconsistency</li>
+<li>data conflicts</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Weak consistency&lt;/h2&gt;" data-thumbnail="/consistency-patterns/weak-consistency.webp" href="https://systemdesign.one/consistency-patterns/weak-consistency.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Weak consistency">
+<img alt="Figure 3: Weak consistency" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/consistency-patterns/weak-consistency.webp, /consistency-patterns/weak-consistency.webp 1.5x, /consistency-patterns/weak-consistency.webp 2x" height="590" sizes="683px" src="../assets/images/img_b40d662efc3a.webp" width="836"/>
+</a><figcaption class="image-caption">Figure 3: Weak consistency</figcaption>
+</figure>
+<p>The <strong>write-behind</strong> (write-back) <a class="offline-link" href="./caching-patterns.html" rel="noopener noreffer">cache pattern</a> is an example of weak consistency. The data will be lost if the cache crashes before propagating the data to the database. The workflow of the write-behind cache pattern is the following:</p>
+<ol>
+<li>the client executes a write operation against the cache server</li>
+<li>the cache writes the received data to the message queue</li>
+<li>the cache sends an acknowledgment signal to the client</li>
+<li>the event processor asynchronously writes the data to the database</li>
+</ol>
+<p>The common use cases of weak consistency are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>Real-time multiplayer video games</li>
+<li>Voice over Internet Protocol (<strong>VoIP</strong>)</li>
+<li>Live streams</li>
+<li>Cache server</li>
+<li>Data backups</li>
+</ul>
+<p>For instance, the lost video frames due to poor network connectivity are not retransmitted in a live stream.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="tradeoffs-of-consistency-patterns"><a class="header-mark offline-link" href="./consistency-patterns.html#tradeoffs-of-consistency-patterns"></a>Tradeoffs of Consistency Patterns</h3>
+<p>The tradeoffs associated with each consistency pattern can be outlined as the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th></th>
+<th>Backups</th>
+<th>Leader-Follower</th>
+<th>Multi-Leader</th>
+<th>2PC</th>
+<th>Paxos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Consistency</strong></td>
+<td>Weak</td>
+<td>Eventual</td>
+<td>Eventual</td>
+<td>Strong</td>
+<td>Strong</td>
+</tr>
+<tr>
+<td><strong>Transactions</strong></td>
+<td>No</td>
+<td>Full</td>
+<td>Local</td>
+<td>Full</td>
+<td>Full</td>
+</tr>
+<tr>
+<td><strong>Latency</strong></td>
+<td>Low</td>
+<td>Low</td>
+<td>Low</td>
+<td>High</td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Throughput</strong></td>
+<td>High</td>
+<td>High</td>
+<td>High</td>
+<td>Low</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Data Loss</strong></td>
+<td>Lots</td>
+<td>Some</td>
+<td>Some</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr>
+<td><strong>Failover</strong></td>
+<td>Down</td>
+<td>Read only</td>
+<td>Read/Write</td>
+<td>Read/Write</td>
+<td>Read/Write</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./consistency-patterns.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-consistency-models-in-distributed-systems"><a class="header-mark offline-link" href="./consistency-patterns.html#further-consistency-models-in-distributed-systems"></a>Further Consistency Models in Distributed Systems</h2>
+<p>Distributed quorum can be used to implement various consistency patterns. The configuration of quorum parameters decides the consistency pattern that will be achieved <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<h3 class="headerLink" id="linearizability"><a class="header-mark offline-link" href="./consistency-patterns.html#linearizability"></a>Linearizability</h3>
+<p>In the linearizability pattern, the data written to a server must be immediately visible (between the start and end of the write operation) to subsequent read operations against other servers. Linearizability is a variant of strong consistency and is also known as atomic consistency. The following techniques can be used to implement linearizability <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>single leader to handle both read and write operations</li>
+<li>distributed consensus algorithm such as Paxos</li>
+<li>distributed quorum</li>
+</ul>
+<p>The advantages of linearizability are as follows <sup id="fnref:8"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>makes a distributed system behave as if the system were non-distributed</li>
+<li>simple for application to use</li>
+</ul>
+<p>The disadvantages of linearizability are the following <sup id="fnref:8"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>degraded performance</li>
+<li>limited scalability</li>
+<li>reduced availability</li>
+</ul>
+<p>One of the popular use cases of the linearizability pattern is the implementation of the user ID field’s uniqueness constraint in a distributed system <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="causal-consistency"><a class="header-mark offline-link" href="./consistency-patterns.html#causal-consistency"></a>Causal Consistency</h3>
+<p>In the causal consistency pattern, the related events (<strong>cause-effect</strong>) are observed in the exact order by other servers, while unrelated events might be observed without a specific ordering by other servers. Causal consistency is a variant of eventual consistency and emerges as a middle ground between eventual consistency and strong consistency <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>. The write operations that are causally unrelated or occur in parallel in real-time are known as <strong>concurrent</strong> events. The causal consistency pattern does not guarantee ordering for concurrent events <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The cause-effect relationships in the causal consistency pattern can be implemented via <a href="https://en.wikipedia.org/wiki/Vector_clock" rel="noopener noreferrer" target="_blank">vector clocks</a>. The benefits of causal consistency are as follows <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>low latency</li>
+<li>reduced cost of synchronization</li>
+<li>high availability</li>
+<li>relatively stronger consistency</li>
+</ul>
+<p>The widespread use cases of the causal consistency pattern are the following <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li><a href="https://cassandra.apache.org/_/index.html" rel="noopener noreferrer" target="_blank">Apache Cassandra</a> provides lightweight transactions with causal consistency</li>
+<li>Data propagation in <a href="https://dl.acm.org/doi/pdf/10.1145/504450.504497" rel="noopener noreferrer" target="_blank">Bayou</a> distributed database</li>
+<li>A comment thread on social media platforms such as Reddit</li>
+</ul>
+<p>For example, replies to the same comment thread on Reddit must be causally ordered. However, unrelated comment threads can be shown in any order <sup id="fnref:2"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:5" role="doc-noteref">5</a></sup>. The causal consistency pattern is also used in real-time <a class="offline-link" href="../case-studies/slack-architecture.html" rel="noopener noreffer">chat services</a> such as <a href="https://newsletter.systemdesign.one/p/messaging-architecture" rel="noopener noreferrer" target="_blank">Slack</a>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./consistency-patterns.html#summary"></a>Summary</h2>
+<p>Numerous consistency patterns can be employed in different parts of the same distributed system <sup id="fnref:1"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:1" role="doc-noteref">1</a></sup>. There is no silver bullet but only tradeoffs when it comes to choosing a suitable consistency pattern <sup id="fnref:6"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:6" role="doc-noteref">6</a></sup>. The optimal choice of consistency pattern depends on the specific use case and requirements <sup id="fnref:4"><a class="footnote-ref offline-link" href="./consistency-patterns.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./consistency-patterns.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./consistency-patterns.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./consistency-patterns.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Dr. Werner Vogels, <a href="https://www.allthingsdistributed.com/2007/12/eventually_consistent.html" rel="noopener noreferrer" target="_blank">Eventually Consistent</a> (2007), allthingsdistributed.com <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Arslan Ahmad, <a href="https://www.designgurus.io/blog/Consistency-Patterns-Distributed-Systems" rel="noopener noreferrer" target="_blank">Consistency Patterns in Distributed Systems: A Complete Guide</a> (2023), designgurus.io <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer#consistency-patterns" rel="noopener noreferrer" target="_blank">System Design Primer</a>, GitHub.com <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p><a href="https://cs.fyi/guide/consistency-patterns-week-strong-eventual" rel="noopener noreferrer" target="_blank">Consistency Patterns in Distributed Systems</a> (2023), cs.fyi <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>HoHuan Chang, <a href="https://www.linkedin.com/pulse/consistency-models-distributed-system-hohuan-chang/" rel="noopener noreferrer" target="_blank">Consistency Models in Distributed System</a> (2020), linkedin.com <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Ryan Barrett, <a href="https://www.youtube.com/watch?v=srOgpXECblk" rel="noopener noreferrer" target="_blank">Transactions Across Datacenters</a> (2009), Google for Developers <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Bill Wilder, <a href="https://www.amazon.com/Cloud-Architecture-Patterns-Using-Microsoft/dp/1449319777" rel="noopener noreferrer" target="_blank">Cloud Architecture Patterns: Using Microsoft Azure</a> (2012), amazon.com <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Martin Kleppmann, <a href="https://dataintensive.net/" rel="noopener noreferrer" target="_blank">Designing Data-Intensive Applications</a> (2017), dataintensive.net <a class="footnote-backref offline-link" href="./consistency-patterns.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-07-27</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Consistency Patterns" data-url="https://systemdesign.one/consistency-patterns/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/consistency-patterns/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/consistency-patterns/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Consistency Patterns" data-url="https://systemdesign.one/consistency-patterns/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="popular consistency models in distributed systems" data-image="consistency-patterns/consistency-patterns.webp" data-sharer="pinterest" data-url="https://systemdesign.one/consistency-patterns/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="popular consistency models in distributed systems" data-sharer="tumblr" data-title="Consistency Patterns" data-url="https://systemdesign.one/consistency-patterns/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Consistency Patterns" data-url="https://systemdesign.one/consistency-patterns/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/consistency-patterns/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="popular consistency models in distributed systems" data-image="consistency-patterns/consistency-patterns.webp" data-sharer="vk" data-title="Consistency Patterns" data-url="https://systemdesign.one/consistency-patterns/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev" href="https://systemdesign.one/cookie-policy/" rel="noopener noreferrer" target="_blank" title="Cookie Policy"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Cookie Policy</a>
+<a class="next" href="https://systemdesign.one/tools-resources/" rel="noopener noreferrer" target="_blank" title="Tools and Resources">Tools and Resources<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./consistency-patterns.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./consistency-patterns.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

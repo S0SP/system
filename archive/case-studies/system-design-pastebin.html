@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>System Design Pastebin - System Design</title><meta content="1. create a unique paste ID 2. encode the paste ID 3. persist the paste ID in SQL store and paste in the object storage" name="Description"/><meta content="System Design Pastebin" property="og:title"/>
+<meta content="1. create a unique paste ID 2. encode the paste ID 3. persist the paste ID in SQL store and paste in the object storage" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/system-design-pastebin/" property="og:url"/><meta content="https://systemdesign.one/system-design-pastebin/system-design-pastebin.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2022-12-09T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-03-03T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/system-design-pastebin/system-design-pastebin.webp" name="twitter:image"/>
+<meta content="System Design Pastebin" name="twitter:title"/>
+<meta content="1. create a unique paste ID 2. encode the paste ID 3. persist the paste ID in SQL store and paste in the object storage" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/system-design-pastebin/" rel="canonical"/><link href="https://systemdesign.one/knowledge-test-url-shortening-system-design/" rel="prev"/><link href="https://systemdesign.one/knowledge-test-system-design-pastebin/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/system-design-pastebin</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./system-design-pastebin.html#how-does-pastebin-work">How does Pastebin work?</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#what-is-pastebin">What is Pastebin?</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#questions-to-ask-the-interviewer">Questions to ask the Interviewer</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#candidate">Candidate</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#interviewer">Interviewer</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#non-functional-requirements">Non-Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#out-of-scope">Out of Scope</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#pastebin-api">Pastebin API</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#how-to-create-a-paste">How to create a paste?</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#how-to-view-a-paste">How to view a paste?</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#how-to-delete-a-paste">How to delete a paste?</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#data-storage">Data Storage</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#database-schema-design">Database schema design</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#pastes-table">Pastes table</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#sample-data-of-pastes-table">Sample data of Pastes table</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#users-table">Users table</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#sample-data-of-users-table">Sample data of Users table</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#permissions-table">Permissions table</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#sample-data-of-permissions-table">Sample data of Permissions table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#sql">SQL</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-fetch-the-title-of-all-pastes-created-by-the-user-rick">Write a SQL query to fetch the title of all pastes created by the user Rick</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-fetch-the-latest-10-pastes-in-reverse-chronological-order">Write a SQL query to fetch the latest 10 pastes in reverse chronological order</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-create-a-new-paste">Write a SQL query to create a new paste</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#type-of-data-store">Type of data store</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#capacity-planning">Capacity Planning</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#traffic">Traffic</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#storage">Storage</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#bandwidth">Bandwidth</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#memory">Memory</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#capacity-planning-summary">Capacity Planning Summary</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#high-level-design">High-Level Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#encoding">Encoding</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#write-path">Write path</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#random-id-generator-solution">Random ID Generator solution</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#hashing-function-solution">Hashing Function solution</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#token-range-solution">Token Range solution</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#custom-paste-id-solution">Custom paste ID solution</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#read-path">Read path</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#design-deep-dive">Design Deep Dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#availability">Availability</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#rate-limiting">Rate Limiting</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#fault-tolerance">Fault tolerance</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#partitioning">Partitioning</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#concurrency">Concurrency</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#analytics">Analytics</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#database-cleanup">Database cleanup</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#lazy-removal">Lazy removal</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#dedicated-cleanup-service">Dedicated cleanup service</a>
+<ul>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-delete-the-paste-records-older-than-20101111">Write a SQL query to delete the paste records older than 2010–11–11</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#timer-cleanup-service">Timer cleanup service</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#monitoring">Monitoring</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#security">Security</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#questions-and-solutions">Questions and Solutions</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./system-design-pastebin.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">System Design Pastebin</h1><h2 class="single-subtitle">Online Text Storage Service</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/deep-dive/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Deep Dive</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2022-12-09">2022-12-09</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 8121 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 39 minutes </div>
+</div><div class="featured-image"><img alt="/system-design-pastebin/system-design-pastebin.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/system-design-pastebin.webp, /system-design-pastebin/system-design-pastebin.webp 1.5x, /system-design-pastebin/system-design-pastebin.webp 2x" height="571" sizes="699px" src="../assets/images/img_da5d4a9ef9d9.webp" title="1. create a unique paste ID 2. encode the paste ID 3. persist the paste ID in SQL store and paste in the object storage" width="1033"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<p>You can read the TL;DR on <a class="offline-link" href="../fundamentals/system-design-interview-cheatsheet.html#pastebin" rel="noopener noreffer">Cheatsheet</a>. The system design of Pastebin is similar to the design of a <a class="offline-link" href="./url-shortening-system-design.html" rel="noopener noreffer">URL shortener</a>. I highly recommend reading the related article to improve your system design skills.</p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-pastebin-work"><a class="header-mark offline-link" href="./system-design-pastebin.html#how-does-pastebin-work"></a>How does Pastebin work?</h2>
+<p>At a high level, Pastebin executes the following operations:</p>
+<ul>
+<li>the server generates a unique paste identifier (<strong>ID</strong>) for each new paste</li>
+<li>the server encodes the paste ID for readability</li>
+<li>the server persists the paste ID in the metadata store and the paste in the object storage</li>
+<li>when the client enters the paste ID, the server returns the paste</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./system-design-pastebin.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be useful for you:</p>
+<ul>
+<li>Encoding: the process of converting data from one form to another to preserve the usability of data</li>
+<li>Encryption: secure encoding of data using a key to protect the confidentiality of data</li>
+<li>Checksum: used to verify the integrity of a file or a data transfer</li>
+<li>Compression: the process of encoding, or converting the structure of data in such a way that it consumes less space on disk</li>
+<li>Bloom filter: a memory-efficient probabilistic data structure to check whether an element is present in a set</li>
+<li>Trie: a tree data structure used for locating specific keys from within a set</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-pastebin"><a class="header-mark offline-link" href="./system-design-pastebin.html#what-is-pastebin"></a>What is Pastebin?</h2>
+<p>A <a href="https://en.wikipedia.org/wiki/Pastebin" rel="noopener noreferrer" target="_blank">Pastebin</a> is an online text storage service where clients can store text files. The typical text files stored on Pastebin are source code snippets and configuration files. A unique paste ID is generated for each paste. The paste ID is used by clients to view the content of the paste. Some popular public-facing Pastebin services are <a href="https://pastebin.com/" rel="noopener noreferrer" target="_blank">pastebin.com</a> and <a href="https://gist.github.com/" rel="noopener noreferrer" target="_blank">GitHub gist</a>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: What is Pastebin?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/what-is-pastebin.webp" href="https://systemdesign.one/system-design-pastebin/what-is-pastebin.webp" rel="noopener noreferrer" target="_blank" title="What is Pastebin?">
+<img alt="What is Pastebin?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/what-is-pastebin.webp, /system-design-pastebin/what-is-pastebin.webp 1.5x, /system-design-pastebin/what-is-pastebin.webp 2x" height="512" sizes="683px" src="../assets/images/img_548c3af513aa.webp" width="800"/>
+</a><figcaption class="image-caption">Figure 1: What is Pastebin?</figcaption>
+</figure>
+<p>The primary reasons to use Pastebin are the following:</p>
+<ul>
+<li>share code snippets or configuration files</li>
+<li>solicit help with debugging</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-to-ask-the-interviewer"><a class="header-mark offline-link" href="./system-design-pastebin.html#questions-to-ask-the-interviewer"></a>Questions to ask the Interviewer</h2>
+<h3 class="headerLink" id="candidate"><a class="header-mark offline-link" href="./system-design-pastebin.html#candidate"></a>Candidate</h3>
+<ol>
+<li>What are the use cases of the system?</li>
+<li>What is the amount of Daily Active Users (<strong>DAU</strong>) for writes?</li>
+<li>How many years should we persist a paste by default?</li>
+<li>What is the anticipated read: write ratio of the system?</li>
+<li>What is the typical usage pattern of a paste by the client?</li>
+<li>Who will use the Pastebin service?</li>
+<li>What is the reasonable length of a paste ID?</li>
+</ol>
+<hr/>
+<h3 class="headerLink" id="interviewer"><a class="header-mark offline-link" href="./system-design-pastebin.html#interviewer"></a>Interviewer</h3>
+<ol>
+<li>Store the paste and generate a unique paste ID</li>
+<li>1 million DAU</li>
+<li>5 years</li>
+<li>10: 1</li>
+<li>Most of the pastes will be accessed only twice after the creation</li>
+<li>General public</li>
+<li>At most 10 characters to keep the paste ID readable</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./system-design-pastebin.html#requirements"></a>Requirements</h2>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./system-design-pastebin.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>Online text storage service similar to pastebin.com or GitHub gist</li>
+<li>A <strong>client</strong> (user) enters text data into the system known as a paste</li>
+<li>A paste must not be greater than 1 MB in size</li>
+<li>The system must return a unique paste ID for each Paste</li>
+<li>The client visiting the paste ID must be able to view the paste</li>
+<li>The system must support only text-based data for a paste</li>
+<li>The paste ID should be readable</li>
+<li>The paste ID should be collision-free</li>
+<li>The paste ID should be non-predictable</li>
+<li>The client should be able to choose a custom paste ID</li>
+<li>The paste ID should generate an analytics report (not real-time) such as the total number of access to a paste</li>
+<li>The client should be able to define the expiration time of the paste</li>
+<li>The client should be able to delete a paste</li>
+<li>The client must be able to set the visibility of the paste (public, private)</li>
+<li>The client must be able to set an optional password for the paste</li>
+<li>A paste must be filtered by Pastebin to prevent questionable content</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./system-design-pastebin.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>High Availability</li>
+<li>Low Latency</li>
+<li>High Scalability</li>
+<li>Durability</li>
+<li>Fault Tolerant</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="out-of-scope"><a class="header-mark offline-link" href="./system-design-pastebin.html#out-of-scope"></a>Out of Scope</h3>
+<ul>
+<li>The user registers an account</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="pastebin-api"><a class="header-mark offline-link" href="./system-design-pastebin.html#pastebin-api"></a>Pastebin API</h2>
+<p>The components in the system expose the Application Programming Interface (<strong>API</strong>) endpoints through Representational State Transfer (<a href="https://en.wikipedia.org/wiki/Representational_state_transfer" rel="noopener noreferrer" target="_blank">REST</a>) or Remote Procedure Call (<a href="https://en.wikipedia.org/wiki/Remote_procedure_call" rel="noopener noreferrer" target="_blank">RPC</a>). The best practice to expose public APIs is through REST because of the loose coupling and the easiness to debug<sup id="fnref:1"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:1" role="doc-noteref">1</a></sup>. Once the services harden and performance should be tuned further, switch to RPC for internal communications between services. The tradeoffs of RPC are tight coupling and difficulty to debug<sup id="fnref:2"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<h3 class="headerLink" id="how-to-create-a-paste"><a class="header-mark offline-link" href="./system-design-pastebin.html#how-to-create-a-paste"></a>How to create a paste?</h3>
+<p>The client executes a Hypertext Transfer Protocol (<a href="https://en.wikipedia.org/wiki/HTTP" rel="noopener noreferrer" target="_blank">HTTP</a>) POST request to create a new paste on the server. The POST requests are not idempotent. In layman’s terms, each HTTP request must create a new paste and not update an existing paste.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='/pastes
+method: POST
+authorization: Bearer &lt;JWT&gt;
+content-length: 1500
+content-type: application/JSON
+content-encoding: gzip
+cookie: id=xyz; status=abc
+
+{
+    title: "my_paste",
+    visibility: "public",
+    content: &lt;Object&gt;,
+    expires: "datetime", (optional)
+    custom: "paste-id"  (optional)
+
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/pastes</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">POST</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">1500</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">JSON</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">cookie</span><span class="o">:</span> <span class="nx">id</span><span class="o">=</span><span class="nx">xyz</span><span class="p">;</span> <span class="nx">status</span><span class="o">=</span><span class="nx">abc</span>
+
+<span class="p">{</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="s2">"my_paste"</span><span class="p">,</span>
+    <span class="nx">visibility</span><span class="o">:</span> <span class="s2">"public"</span><span class="p">,</span>
+    <span class="nx">content</span><span class="o">:</span> <span class="o">&lt;</span><span class="nb">Object</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="nx">expires</span><span class="o">:</span> <span class="s2">"datetime"</span><span class="p">,</span> <span class="p">(</span><span class="nx">optional</span><span class="p">)</span>
+    <span class="nx">custom</span><span class="o">:</span> <span class="s2">"paste-id"</span>  <span class="p">(</span><span class="nx">optional</span><span class="p">)</span>
+
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-1">Pastebin; HTTP request to create a paste</div>
+<p>The description of Pastebin creation HTTP request headers is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Pastebin; HTTP request headers to create a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/http-headers-create-paste.webp" href="https://systemdesign.one/system-design-pastebin/http-headers-create-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; HTTP request headers to create a paste">
+<img alt="Pastebin; HTTP request headers to create a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/http-headers-create-paste.webp, /system-design-pastebin/http-headers-create-paste.webp 1.5x, /system-design-pastebin/http-headers-create-paste.webp 2x" height="444" sizes="683px" src="../assets/images/img_debc5959cd9c.webp" width="1966"/>
+</a><figcaption class="image-caption">Figure 2: Pastebin; HTTP request headers to create a paste</figcaption>
+</figure>
+<p>The description of Pastebin creation HTTP request body parameters is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Pastebin; HTTP request payload to create a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/http-request-payload-create-paste.webp" href="https://systemdesign.one/system-design-pastebin/http-request-payload-create-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; HTTP request payload to create a paste">
+<img alt="Pastebin; HTTP request payload to create a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/http-request-payload-create-paste.webp, /system-design-pastebin/http-request-payload-create-paste.webp 1.5x, /system-design-pastebin/http-request-payload-create-paste.webp 2x" height="380" sizes="683px" src="../assets/images/img_ecaef1346421.webp" width="1966"/>
+</a><figcaption class="image-caption">Figure 3: Pastebin; HTTP request payload to create a paste</figcaption>
+</figure>
+<p>The server responds with a status code of <em>302 Found</em> for success. The <em>location</em> header in the HTTP response contains the paste ID Uniform Resource Locator (<strong>URL</strong>) to access the created paste<sup id="fnref:3"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 302
+location: paste-id-url
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">302</span>
+<span class="nx">location</span><span class="o">:</span> <span class="nx">paste</span><span class="o">-</span><span class="nx">id</span><span class="o">-</span><span class="nx">url</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-2">Pastebin; HTTP response to create a paste</div>
+<p>The client automatically executes another HTTP GET request to the received paste ID URL to access the created paste.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Pastebin; HTTP workflow to create a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/http-workflow-create-paste.webp" href="https://systemdesign.one/system-design-pastebin/http-workflow-create-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; HTTP workflow to create a paste">
+<img alt="Pastebin; HTTP workflow to create a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/http-workflow-create-paste.webp, /system-design-pastebin/http-workflow-create-paste.webp 1.5x, /system-design-pastebin/http-workflow-create-paste.webp 2x" height="729" sizes="683px" src="../assets/images/img_6aca66fb9ae7.webp" width="1535"/>
+</a><figcaption class="image-caption">Figure 4: Pastebin; HTTP workflow to create a paste</figcaption>
+</figure>
+<p>As an alternative, the server responds with status code <em>201</em> Created. The payload of the response contains the paste ID to access the created paste. The client must execute another HTTP request with the received paste ID.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 201 created
+{
+    id: "abcd1234",
+    title: "my_paste"
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">201</span> <span class="nx">created</span>
+<span class="p">{</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="s2">"abcd1234"</span><span class="p">,</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="s2">"my_paste"</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-3">Pastebin; HTTP response to create a paste</div>
+<p>If the server supports <em>multipart/form-data</em>, the client can execute a <em>multipart/form-data</em> request to transfer large files in chunks. However, the <em>multipart/form-data</em> is significantly more complicated.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='/pastes
+method: POST
+content-length: 1500
+content-type: multipart/form-data; boundary="--boundary-value"
+--boundary-value
+content-disposition: form-data; name="content"
+...
+--boundary-value--
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/pastes</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">POST</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">1500</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">multipart</span><span class="o">/</span><span class="nx">form</span><span class="o">-</span><span class="nx">data</span><span class="p">;</span> <span class="nx">boundary</span><span class="o">=</span><span class="s2">"--boundary-value"</span>
+<span class="o">--</span><span class="nx">boundary</span><span class="o">-</span><span class="nx">value</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">disposition</span><span class="o">:</span> <span class="nx">form</span><span class="o">-</span><span class="nx">data</span><span class="p">;</span> <span class="nx">name</span><span class="o">=</span><span class="s2">"content"</span>
+<span class="p">...</span>
+<span class="o">--</span><span class="nx">boundary</span><span class="o">-</span><span class="nx">value</span><span class="o">--</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-4">Pastebin; HTTP multipart/form-data request to create a paste</div>
+<p>The description of Pastebin creation HTTP <em>multipart/form-data</em> request headers is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Pastebin; HTTP multipart/form-data request headers to create a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/http-multipart-request-headers-create-paste.webp" href="https://systemdesign.one/system-design-pastebin/http-multipart-request-headers-create-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; HTTP multipart/form-data request headers to create a paste">
+<img alt="Pastebin; HTTP multipart/form-data request headers to create a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/http-multipart-request-headers-create-paste.webp, /system-design-pastebin/http-multipart-request-headers-create-paste.webp 1.5x, /system-design-pastebin/http-multipart-request-headers-create-paste.webp 2x" height="252" sizes="683px" src="../assets/images/img_bf60b4efb3e3.webp" width="1966"/>
+</a><figcaption class="image-caption">Figure 5: Pastebin; HTTP multipart/form-data request headers to create a paste</figcaption>
+</figure>
+<p>The client receives the status code <em>403 forbidden</em> when the client has valid credentials but not sufficient privileges to create a paste.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 403 forbidden
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">403</span> <span class="nx">forbidden</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-5">Pastebin; HTTP response failure to create a paste</div>
+<p>In summary, use the <em>302</em> or <em>201</em> status code in the HTTP response and the POST method in the HTTP request to meet the system requirements.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-view-a-paste"><a class="header-mark offline-link" href="./system-design-pastebin.html#how-to-view-a-paste"></a>How to view a paste?</h3>
+<p>The client executes an HTTP GET request to view a paste. There is no request body for an HTTP GET request.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/pastes/:paste-id
+method: GET
+authorization: Bearer &lt;JWT&gt;
+cookie: x=abc; y=def
+user-agent: Chrome
+referer: google.com
+accept: application/json, text/html
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/pastes/</span><span class="o">:</span><span class="nx">paste</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">cookie</span><span class="o">:</span> <span class="nx">x</span><span class="o">=</span><span class="nx">abc</span><span class="p">;</span> <span class="nx">y</span><span class="o">=</span><span class="nx">def</span>
+<span class="nx">user</span><span class="o">-</span><span class="nx">agent</span><span class="o">:</span> <span class="nx">Chrome</span>
+<span class="nx">referer</span><span class="o">:</span> <span class="nx">google</span><span class="p">.</span><span class="nx">com</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span><span class="p">,</span> <span class="nx">text</span><span class="o">/</span><span class="nx">html</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-6">Pastebin; HTTP request to view a paste</div>
+<p>The description of Pastebin HTTP request headers to view a paste is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Pastebin; HTTP request headers to view a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/http-request-headers-view-paste.webp" href="https://systemdesign.one/system-design-pastebin/http-request-headers-view-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; HTTP request headers to view a paste">
+<img alt="Pastebin; HTTP request headers to view a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/http-request-headers-view-paste.webp, /system-design-pastebin/http-request-headers-view-paste.webp 1.5x, /system-design-pastebin/http-request-headers-view-paste.webp 2x" height="430" sizes="683px" src="../assets/images/img_96aca27b02eb.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 6: Pastebin; HTTP request headers to view a paste</figcaption>
+</figure>
+<p>The server responds with status code <em>200 OK</em> for success. The typical usage pattern of a paste is to access it at most twice after creation. The <em>cache-control</em> HTTP response header is set to private to cache the response on the client. The client <a class="offline-link" href="../fundamentals/caching-patterns.html" rel="noopener noreffer">cache</a> is used to serve future HTTP requests to access the paste and prevent unnecessary network communication.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+cache-control: private, no-cache, must-revalidate, expires=datetime
+content-encoding: gzip
+content-type: application/json
+
+{
+    title: "my_paste",
+    id: "abcd1234",
+    visibility: "public",
+    created_at: "2030-10-10T12:11:42Z",
+    expires_at: "2032-09-20T12:11:58Z",
+    user: "Rick",
+    content: {...}
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="kr">private</span><span class="p">,</span> <span class="nx">no</span><span class="o">-</span><span class="nx">cache</span><span class="p">,</span> <span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span><span class="p">,</span> <span class="nx">expires</span><span class="o">=</span><span class="nx">datetime</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+
+<span class="p">{</span>
+    <span class="nx">title</span><span class="o">:</span> <span class="s2">"my_paste"</span><span class="p">,</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="s2">"abcd1234"</span><span class="p">,</span>
+    <span class="nx">visibility</span><span class="o">:</span> <span class="s2">"public"</span><span class="p">,</span>
+    <span class="nx">created_at</span><span class="o">:</span> <span class="s2">"2030-10-10T12:11:42Z"</span><span class="p">,</span>
+    <span class="nx">expires_at</span><span class="o">:</span> <span class="s2">"2032-09-20T12:11:58Z"</span><span class="p">,</span>
+    <span class="nx">user</span><span class="o">:</span> <span class="s2">"Rick"</span><span class="p">,</span>
+    <span class="nx">content</span><span class="o">:</span> <span class="p">{...}</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-7">Pastebin; HTTP response for viewing a paste</div>
+<p>The <em>content-encoding</em> header defines the compression scheme used in the response payload. The <em>content-type</em> header indicates the data format of the response payload (JSON, XML, HTML). The description of Pastebin HTTP response payload parameters for viewing a paste is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Pastebin; HTTP response payload for viewing a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/http-response-payload-view-paste.webp" href="https://systemdesign.one/system-design-pastebin/http-response-payload-view-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; HTTP response payload for viewing a paste">
+<img alt="Pastebin; HTTP response payload for viewing a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/http-response-payload-view-paste.webp, /system-design-pastebin/http-response-payload-view-paste.webp 1.5x, /system-design-pastebin/http-response-payload-view-paste.webp 2x" height="498" sizes="683px" src="../assets/images/img_87a28acc0eac.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 7: Pastebin; HTTP response payload for viewing a paste</figcaption>
+</figure>
+<p>If Pastebin allows the owner to edit an existing paste, the client can execute a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests" rel="noopener noreferrer" target="_blank">conditional HTTP request</a> to check if the paste has been modified since the last access to the paste<sup id="fnref:4"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:4" role="doc-noteref">4</a></sup>. If the paste is not modified by the owner, the client reuses the cached version of the paste. The <em>If-Modified-Since</em> HTTP request header is used to execute a conditional request.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/pastes/:paste-id
+method: GET
+If-Modified-Since: Wed, 21 Oct 2031 07:28:00 GMT
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/pastes/</span><span class="o">:</span><span class="nx">paste</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">If</span><span class="o">-</span><span class="nx">Modified</span><span class="o">-</span><span class="nx">Since</span><span class="o">:</span> <span class="nx">Wed</span><span class="p">,</span> <span class="mi">21</span> <span class="nx">Oct</span> <span class="mi">2031</span> <span class="mi">07</span><span class="o">:</span><span class="mi">28</span><span class="o">:</span><span class="mi">00</span> <span class="nx">GMT</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-8">Pastebin; Conditional HTTP request for viewing a paste</div>
+<p>The server responds with status code <em>304 Not modified</em> to indicate that the paste was not modified since the timestamp specified in the <em>If-Modified-Since</em> request header.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 304 Not modified
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">304</span> <span class="nx">Not</span> <span class="nx">modified</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-9">Pastebin; Conditional HTTP response for viewing a paste</div>
+<p>The client receives a status code <em>403 forbidden</em> if the client has valid credentials but not sufficient privileges to act on the resource.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 403 Forbidden
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">403</span> <span class="nx">Forbidden</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-10">Pastebin; HTTP response failure for viewing a paste</div>
+<p>The server responds with the status code <em>404 Not Found</em> when the client executes a request to access a paste that does not exist in the database.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 404 Not Found
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">404</span> <span class="nx">Not</span> <span class="nx">Found</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-11">Pastebin; HTTP response failure for viewing a paste</div>
+<p>In summary, use the status code <em>200</em> in the HTTP response for a GET request to meet the system requirements.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-delete-a-paste"><a class="header-mark offline-link" href="./system-design-pastebin.html#how-to-delete-a-paste"></a>How to delete a paste?</h3>
+<p>A registered client can delete an owned paste. The client executes an HTTP DELETE request to the server to delete a paste. The <em>authorization</em> HTTP request header is used to authorize the client. The <em>cookie</em> request header transfer the cookies, which can be used to authorize an anonymous client.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/pastes/:paste-id
+method: DELETE
+authorization: Bearer &lt;JWT&gt;
+cookie: id=xyz
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/pastes/</span><span class="o">:</span><span class="nx">paste</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">DELETE</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">cookie</span><span class="o">:</span> <span class="nx">id</span><span class="o">=</span><span class="nx">xyz</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-12">Pastebin; HTTP request to delete a paste</div>
+<p>The server responds with status code <em>204 No Content</em> on the successful deletion of a paste. There is no response body.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="204 No Content
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="mi">204</span> <span class="nx">No</span> <span class="nx">Content</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-13">Pastebin; HTTP response to delete a paste</div>
+<p>The server responds with the status code <em>404 Resource not found</em> when the client tries to delete a paste that does not exist.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="404 Resource not found
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="mi">404</span> <span class="nx">Resource</span> <span class="nx">not</span> <span class="nx">found</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><div id="id-14">Pastebin; HTTP response failure to delete a paste</div>
+<p>In summary, use the status code <em>204</em> in the HTTP response for a DELETE request to meet the system requirements.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./system-design-pastebin.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="data-storage"><a class="header-mark offline-link" href="./system-design-pastebin.html#data-storage"></a>Data Storage</h2>
+<p>Pastebin is a read-heavy system. In other words, the dominant usage pattern is the client viewing a paste.</p>
+<h3 class="headerLink" id="database-schema-design"><a class="header-mark offline-link" href="./system-design-pastebin.html#database-schema-design"></a>Database schema design</h3>
+<p>The major entities of the database (data store) are the Pastes table, the Users table, and the Permissions table. The relationship between the Users and the Pastes tables is <strong>1-to-many</strong>. A user might create multiple pastes but a paste is owned only by a single user. The Permissions table is an <a href="https://en.wikipedia.org/wiki/Associative_entity" rel="noopener noreferrer" target="_blank">associative entity</a> that defines the <a href="https://en.wikipedia.org/wiki/Access-control_list" rel="noopener noreferrer" target="_blank">access control list</a> of a paste. For instance, a single user might be able to access multiple pastes. On the other hand, a paste might be accessible to multiple users (a <strong>many-to-many</strong> relationship).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Pastebin database schema&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-database-schema.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-database-schema.webp" rel="noopener noreferrer" target="_blank" title="Pastebin database schema">
+<img alt="Pastebin database schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-database-schema.webp, /system-design-pastebin/pastebin-database-schema.webp 1.5x, /system-design-pastebin/pastebin-database-schema.webp 2x" height="831" sizes="683px" src="../assets/images/img_6e2951523436.webp" width="1846"/>
+</a><figcaption class="image-caption">Figure 8: Pastebin database schema</figcaption>
+</figure>
+<p>The paste with public visibility is accessible to every client. The paste with private visibility is accessible only to clients with access permission set in the Permissions table.</p>
+<h4 class="headerLink" id="pastes-table"><a class="header-mark offline-link" href="./system-design-pastebin.html#pastes-table"></a>Pastes table</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: Pastebin; Schema of Pastes table&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastes-table.webp" href="https://systemdesign.one/system-design-pastebin/pastes-table.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Schema of Pastes table">
+<img alt="Pastebin; Schema of Pastes table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastes-table.webp, /system-design-pastebin/pastes-table.webp 1.5x, /system-design-pastebin/pastes-table.webp 2x" height="554" sizes="683px" src="../assets/images/img_29979a0ba510.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 9: Pastebin; Schema of Pastes table</figcaption>
+</figure>
+<h5 class="headerLink" id="sample-data-of-pastes-table"><a class="header-mark offline-link" href="./system-design-pastebin.html#sample-data-of-pastes-table"></a>Sample data of Pastes table</h5>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Pastebin; Sample data of Pastes table&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastes-table-sample-data.webp" href="https://systemdesign.one/system-design-pastebin/pastes-table-sample-data.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Sample data of Pastes table">
+<img alt="Pastebin; Sample data of Pastes table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastes-table-sample-data.webp, /system-design-pastebin/pastes-table-sample-data.webp 1.5x, /system-design-pastebin/pastes-table-sample-data.webp 2x" height="190" sizes="683px" src="../assets/images/img_40ce4803dad6.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 10: Pastebin; Sample data of Pastes table</figcaption>
+</figure>
+<h4 class="headerLink" id="users-table"><a class="header-mark offline-link" href="./system-design-pastebin.html#users-table"></a>Users table</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Pastebin; Schema of Users table&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/users-table.webp" href="https://systemdesign.one/system-design-pastebin/users-table.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Schema of Users table">
+<img alt="Pastebin; Schema of Users table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/users-table.webp, /system-design-pastebin/users-table.webp 1.5x, /system-design-pastebin/users-table.webp 2x" height="376" sizes="683px" src="../assets/images/img_b4fcb2fefe1d.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 11: Pastebin; Schema of Users table</figcaption>
+</figure>
+<h5 class="headerLink" id="sample-data-of-users-table"><a class="header-mark offline-link" href="./system-design-pastebin.html#sample-data-of-users-table"></a>Sample data of Users table</h5>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: Pastebin; Sample data of Users table&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/users-table-sample-data.webp" href="https://systemdesign.one/system-design-pastebin/users-table-sample-data.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Sample data of Users table">
+<img alt="Pastebin; Sample data of Users table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/users-table-sample-data.webp, /system-design-pastebin/users-table-sample-data.webp 1.5x, /system-design-pastebin/users-table-sample-data.webp 2x" height="186" sizes="683px" src="../assets/images/img_2d766a1cc243.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 12: Pastebin; Sample data of Users table</figcaption>
+</figure>
+<h4 class="headerLink" id="permissions-table"><a class="header-mark offline-link" href="./system-design-pastebin.html#permissions-table"></a>Permissions table</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Pastebin; Schema of Permissions table&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/permissions-table.webp" href="https://systemdesign.one/system-design-pastebin/permissions-table.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Schema of Permissions table">
+<img alt="Pastebin; Schema of Permissions table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/permissions-table.webp, /system-design-pastebin/permissions-table.webp 1.5x, /system-design-pastebin/permissions-table.webp 2x" height="310" sizes="683px" src="../assets/images/img_384f0a84e099.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 13: Pastebin; Schema of Permissions table</figcaption>
+</figure>
+<h5 class="headerLink" id="sample-data-of-permissions-table"><a class="header-mark offline-link" href="./system-design-pastebin.html#sample-data-of-permissions-table"></a>Sample data of Permissions table</h5>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 14: Pastebin; Sample data of Permissions table&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/permissions-table-sample-data.webp" href="https://systemdesign.one/system-design-pastebin/permissions-table-sample-data.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Sample data of Permissions table">
+<img alt="Pastebin; Sample data of Permissions table" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/permissions-table-sample-data.webp, /system-design-pastebin/permissions-table-sample-data.webp 1.5x, /system-design-pastebin/permissions-table-sample-data.webp 2x" height="248" sizes="683px" src="../assets/images/img_cb1a4891002f.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 14: Pastebin; Sample data of Permissions table</figcaption>
+</figure>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="sql"><a class="header-mark offline-link" href="./system-design-pastebin.html#sql"></a>SQL</h3>
+<p>Structured Query Language (<strong>SQL</strong>) is a domain-specific language used for managing data held in a relational database management system. The most popular SQL queries asked in <a class="offline-link" href="../fundamentals/design-system-newsletter.html" rel="noopener noreffer">system design interviews</a> are SELECT, JOIN, INSERT, and GROUP BY statements.</p>
+<h4 class="headerLink" id="write-a-sql-query-to-fetch-the-title-of-all-pastes-created-by-the-user-rick"><a class="header-mark offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-fetch-the-title-of-all-pastes-created-by-the-user-rick"></a>Write a SQL query to fetch the title of all pastes created by the user Rick</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT P.id AS ID, P.title AS Title
+FROM Pastes AS P
+INNER JOIN Users AS U
+ON P.user_id = U.id
+WHERE U.id = 'Rick';" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="n">P</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">ID</span><span class="p">,</span><span class="w"> </span><span class="n">P</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">Title</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">Pastes</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">P</span><span class="w">
+</span><span class="w"></span><span class="k">INNER</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">Users</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">U</span><span class="w">
+</span><span class="w"></span><span class="k">ON</span><span class="w"> </span><span class="n">P</span><span class="p">.</span><span class="n">user_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">U</span><span class="p">.</span><span class="n">id</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">U</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Rick'</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<h4 class="headerLink" id="write-a-sql-query-to-fetch-the-latest-10-pastes-in-reverse-chronological-order"><a class="header-mark offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-fetch-the-latest-10-pastes-in-reverse-chronological-order"></a>Write a SQL query to fetch the latest 10 pastes in reverse chronological order</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT \*
+FROM Pastes
+ORDER BY created_at DESC
+LIMIT 10;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="err">\</span><span class="o">*</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">Pastes</span><span class="w">
+</span><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<h4 class="headerLink" id="write-a-sql-query-to-create-a-new-paste"><a class="header-mark offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-create-a-new-paste"></a>Write a SQL query to create a new paste</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="INSERT INTO Pastes
+(id, title, content_location, created_at, expires_at, visibility, last_visited, user_id)
+VALUES
+('xyz12345','new_paste','&lt;http://[bucket_name&gt;]/','2035-10-10','2040-10-10','public','2035-11-10','42');" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">Pastes</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content_location</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">,</span><span class="w"> </span><span class="n">expires_at</span><span class="p">,</span><span class="w"> </span><span class="n">visibility</span><span class="p">,</span><span class="w"> </span><span class="n">last_visited</span><span class="p">,</span><span class="w"> </span><span class="n">user_id</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="k">VALUES</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="s1">'xyz12345'</span><span class="p">,</span><span class="s1">'new_paste'</span><span class="p">,</span><span class="s1">'&lt;http://[bucket_name&gt;]/'</span><span class="p">,</span><span class="s1">'2035-10-10'</span><span class="p">,</span><span class="s1">'2040-10-10'</span><span class="p">,</span><span class="s1">'public'</span><span class="p">,</span><span class="s1">'2035-11-10'</span><span class="p">,</span><span class="s1">'42'</span><span class="p">);</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="type-of-data-store"><a class="header-mark offline-link" href="./system-design-pastebin.html#type-of-data-store"></a>Type of data store</h3>
+<p>The paste content is text data, which is unstructured. The paste content has larger storage requirements than the metadata of the paste. The content of a paste is stored in a managed <a href="https://en.wikipedia.org/wiki/Object_storage" rel="noopener noreferrer" target="_blank">object storage</a> such as AWS <a class="offline-link" href="./amazon-s3-durability.html" rel="noopener noreffer">S3</a>. The paste (text data file) is identified using a unique key (paste URL) in object storage. An alternative to AWS S3 is using <a href="https://www.mongodb.com/" rel="noopener noreferrer" target="_blank">MongoDB</a> or <a href="https://riak.com/products/riak-s2/index.html?p=6196.html" rel="noopener noreferrer" target="_blank">Riak S2</a>. The following are the reasons to use object storage for persisting paste content<sup id="fnref:5"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>handles large amounts of unstructured data</li>
+<li>affordable consumption model</li>
+<li>unlimited scalability</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 15: Pastebin; Object storage for storing paste content&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/object-store-paste-content.webp" href="https://systemdesign.one/system-design-pastebin/object-store-paste-content.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Object storage for storing paste content">
+<img alt="Pastebin; Object storage for storing paste content" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/object-store-paste-content.webp, /system-design-pastebin/object-store-paste-content.webp 1.5x, /system-design-pastebin/object-store-paste-content.webp 2x" height="608" sizes="683px" src="../assets/images/img_c6655bce2a88.webp" width="1213"/>
+</a><figcaption class="image-caption">Figure 15: Pastebin; Object storage for storing paste content</figcaption>
+</figure>
+<p>A SQL database such as Postgres or MySQL is used to store the metadata of the paste. The metadata stored in the SQL database includes the paste URL. The reasons to choose a SQL store for storing the metadata are the following:</p>
+<ul>
+<li>strict schema</li>
+<li>relational data</li>
+<li>need for complex joins</li>
+<li>lookups by index are pretty fast</li>
+</ul>
+<p>When the client requests to view a paste, the server queries the SQL database to fetch the metadata of the paste. The metadata of the paste includes the paste ID. The client views the paste in object storage using the paste ID received from the server.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="capacity-planning"><a class="header-mark offline-link" href="./system-design-pastebin.html#capacity-planning"></a>Capacity Planning</h2>
+<p>The total number of registered users is relatively limited compared to the total number of pastes created. The calculated numbers are approximations. A few helpful tips on <a class="offline-link" href="../fundamentals/back-of-the-envelope.html" rel="noopener noreffer">capacity planning</a> for a system design are the following:</p>
+<ul>
+<li>1 million requests/day = 12 requests/second</li>
+<li>round off the numbers for quicker calculations</li>
+<li>write down the units when you do conversions</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="traffic"><a class="header-mark offline-link" href="./system-design-pastebin.html#traffic"></a>Traffic</h3>
+<p>Pastebin is a read-heavy system. The Daily Active Users (<strong>DAU</strong>) for writes is 1 million. The Query Per Second (<strong>QPS</strong>) for reads is approximately 100.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 16: Pastebin traffic estimate&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-traffic.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-traffic.webp" rel="noopener noreferrer" target="_blank" title="Pastebin traffic estimate">
+<img alt="Pastebin traffic estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-traffic.webp, /system-design-pastebin/pastebin-traffic.webp 1.5x, /system-design-pastebin/pastebin-traffic.webp 2x" height="374" sizes="683px" src="../assets/images/img_66500dab2539.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 16: Pastebin traffic estimate</figcaption>
+</figure>
+<hr/>
+<h3 class="headerLink" id="storage"><a class="header-mark offline-link" href="./system-design-pastebin.html#storage"></a>Storage</h3>
+<p>A paste persists by default for 5 years in the data storage. The size of each character is assumed to be 1 byte.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 17: Pastebin; Storage size of the paste metadata record&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-storage-size.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-storage-size.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Storage size of the paste metadata record">
+<img alt="Pastebin; Storage size of the paste metadata record" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-storage-size.webp, /system-design-pastebin/pastebin-storage-size.webp 1.5x, /system-design-pastebin/pastebin-storage-size.webp 2x" height="554" sizes="683px" src="../assets/images/img_20d2792f1778.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 17: Pastebin; Storage size of the paste metadata record</figcaption>
+</figure>
+<p>In total, the paste metadata record is approximately 1.5 KB in size. However, the maximum size of the paste content is 1 MB.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 18: Pastebin total storage estimate&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-total-storage.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-total-storage.webp" rel="noopener noreferrer" target="_blank" title="Pastebin total storage estimate">
+<img alt="Pastebin total storage estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-total-storage.webp, /system-design-pastebin/pastebin-total-storage.webp 1.5x, /system-design-pastebin/pastebin-total-storage.webp 2x" height="186" sizes="683px" src="../assets/images/img_974e3644be60.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 18: Pastebin total storage estimate</figcaption>
+</figure>
+<p>The <a href="https://en.wikipedia.org/wiki/Replication_%28computing%29" rel="noopener noreferrer" target="_blank">replication</a> factor for storage is set to three for improved durability and disaster recovery.</p>
+<hr/>
+<h3 class="headerLink" id="bandwidth"><a class="header-mark offline-link" href="./system-design-pastebin.html#bandwidth"></a>Bandwidth</h3>
+<p><strong>Ingress</strong> is the network traffic that enters the server (client requests). <strong>Egress</strong> is the network traffic that exits the servers (server responses).</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 19: Pastebin bandwidth estimate&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-bandwidth.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-bandwidth.webp" rel="noopener noreferrer" target="_blank" title="Pastebin bandwidth estimate">
+<img alt="Pastebin bandwidth estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-bandwidth.webp, /system-design-pastebin/pastebin-bandwidth.webp 1.5x, /system-design-pastebin/pastebin-bandwidth.webp 2x" height="186" sizes="683px" src="../assets/images/img_93665901f6a1.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 19: Pastebin bandwidth estimate</figcaption>
+</figure>
+<hr/>
+<h3 class="headerLink" id="memory"><a class="header-mark offline-link" href="./system-design-pastebin.html#memory"></a>Memory</h3>
+<p>The Pastebin traffic (<strong>egress</strong>) is cached to improve the latency. Following the <a href="https://en.wikipedia.org/wiki/Pareto_principle" rel="noopener noreferrer" target="_blank">80/20 rule</a>, 80% of egress is served by 20% of pastes stored on cache servers. The remaining 20% of the egress is served by the data store to improve the latency. A Time-to-live (<a href="https://en.wikipedia.org/wiki/Time_to_live" rel="noopener noreferrer" target="_blank">TTL</a>) of 1 day for the cache is reasonable.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 20: Pastebin memory estimate&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-memory.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-memory.webp" rel="noopener noreferrer" target="_blank" title="Pastebin memory estimate">
+<img alt="Pastebin memory estimate" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-memory.webp, /system-design-pastebin/pastebin-memory.webp 1.5x, /system-design-pastebin/pastebin-memory.webp 2x" height="126" sizes="683px" src="../assets/images/img_2a70ba268cfc.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 20: Pastebin memory estimate</figcaption>
+</figure>
+<hr/>
+<h3 class="headerLink" id="capacity-planning-summary"><a class="header-mark offline-link" href="./system-design-pastebin.html#capacity-planning-summary"></a>Capacity Planning Summary</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 21: Pastebin capacity planning&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-capacity-planning.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-capacity-planning.webp" rel="noopener noreferrer" target="_blank" title="Pastebin capacity planning">
+<img alt="Pastebin capacity planning" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-capacity-planning.webp, /system-design-pastebin/pastebin-capacity-planning.webp 1.5x, /system-design-pastebin/pastebin-capacity-planning.webp 2x" height="434" sizes="683px" src="../assets/images/img_4fd0ca53af1a.webp" width="1950"/>
+</a><figcaption class="image-caption">Figure 21: Pastebin capacity planning</figcaption>
+</figure>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./system-design-pastebin.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="high-level-design"><a class="header-mark offline-link" href="./system-design-pastebin.html#high-level-design"></a>High-Level Design</h2>
+<h3 class="headerLink" id="encoding"><a class="header-mark offline-link" href="./system-design-pastebin.html#encoding"></a>Encoding</h3>
+<p>Encoding is the process of converting data from one form to another. The paste ID is encoded to improve readability. The encoding format used in Pastebin must yield a deterministic (no randomness) output. The potential data encoding formats that satisfy the use case of Pastebin are the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 22: Pastebin; Encoding formats&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-url-encoding.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-url-encoding.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Encoding formats">
+<img alt="Pastebin; Encoding formats" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-url-encoding.webp, /system-design-pastebin/pastebin-url-encoding.webp 1.5x, /system-design-pastebin/pastebin-url-encoding.webp 2x" height="189" sizes="683px" src="../assets/images/img_9ce8eff36134.webp" width="972"/>
+</a><figcaption class="image-caption">Figure 22: Pastebin; Encoding formats</figcaption>
+</figure>
+<p>The base58 encoding format is similar to <a href="https://en.wikipedia.org/wiki/Base62" rel="noopener noreferrer" target="_blank">base62</a> encoding except that base58 avoids non-distinguishable characters such as O (uppercase O), 0 (zero), and I (capital I), l (lowercase L). The characters in base62 encoding consume 6 bits (2⁶ = 64). A paste ID of 8 characters in length in base62 encoding consumes 48 bits.</p>
+<p>The following generic formula is used to count the total number of paste IDs that are produced using a specific encoding format and the number of characters in the output:</p>
+<div class="details admonition Info open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-pencil-alt fa-fw"></i>Paste ID Generation<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p><strong>Total count of paste IDs = branching factor ^ depth</strong></p>
+<p>where the branching factor is the base of the encoding format and depth is the length of characters.</p>
+</div>
+</div>
+</div>
+<p>The combination of encoding formats and the output length generates the following total count of paste IDs:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 23: Pastebin; Total count of paste IDs&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-total-id.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-total-id.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Total count of paste IDs">
+<img alt="Pastebin; Total count of paste IDs" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-total-id.webp, /system-design-pastebin/pastebin-total-id.webp 1.5x, /system-design-pastebin/pastebin-total-id.webp 2x" height="153" sizes="683px" src="../assets/images/img_67dff45c9130.webp" width="972"/>
+</a><figcaption class="image-caption">Figure 23: Pastebin; Total count of paste IDs</figcaption>
+</figure>
+<p>The total count of paste IDs is directly proportional to the length of the encoded output. However, the length of the paste ID must be kept as short as possible for better readability. The base62 encoded output of 8-character length generates 217 trillion paste IDs. A total count of 217 trillion paste IDs satisfies the Pastebin system requirements. The base32 encoded output of 8-character length also satisfies the system requirement. However, the reservation of additional paste IDs makes it easier for the future growth of the system. The general guidelines on the encoded output format to improve the readability of the paste ID are the following:</p>
+<ul>
+<li>the encoded paste ID contains only alphanumeric characters</li>
+<li>the length of the paste ID must not exceed 10 characters</li>
+</ul>
+<p>The <strong>time complexity</strong> of base conversion is O(k), where k is the number of characters (k = 8). The time complexity of base conversion is reduced to constant time O(1) because the number of characters is fixed<sup id="fnref:6"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>In summary, an 8-character base62 encoded output satisfies the system requirement.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="write-path"><a class="header-mark offline-link" href="./system-design-pastebin.html#write-path"></a>Write path</h3>
+<p>When the client enters a new paste in Pastebin, the server generates a unique paste ID. The paste ID is encoded for improved readability. The server persists the paste ID into the SQL database and the content of the paste in object storage. The simplified block diagram of a single-machine Pastebin is the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 24: Simplified Pastebin&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/simplified-pastebin.webp" href="https://systemdesign.one/system-design-pastebin/simplified-pastebin.webp" rel="noopener noreferrer" target="_blank" title="Simplified Pastebin">
+<img alt="Simplified Pastebin" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/simplified-pastebin.webp, /system-design-pastebin/simplified-pastebin.webp 1.5x, /system-design-pastebin/simplified-pastebin.webp 2x" height="617" sizes="683px" src="../assets/images/img_3318a3566b1c.webp" width="1006"/>
+</a><figcaption class="image-caption">Figure 24: Simplified Pastebin</figcaption>
+</figure>
+<p>The single-machine solution does not meet the scalability requirements of Pastebin. The key generation function is moved out of the server to a dedicated Key Generation Service (<strong>KGS</strong>) to <a href="https://en.wikipedia.org/wiki/Scalability" rel="noopener noreferrer" target="_blank">scale out</a> the system.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 25: Pastebin; paste ID and paste URL&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/paste-id-paste-url.webp" href="https://systemdesign.one/system-design-pastebin/paste-id-paste-url.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; paste ID and paste URL">
+<img alt="Pastebin; paste ID and paste URL" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/paste-id-paste-url.webp, /system-design-pastebin/paste-id-paste-url.webp 1.5x, /system-design-pastebin/paste-id-paste-url.webp 2x" height="380" sizes="683px" src="../assets/images/img_95049a82c1c0.webp" width="1418"/>
+</a><figcaption class="image-caption">Figure 25: Pastebin; paste ID and paste URL</figcaption>
+</figure>
+<p>The following operations get executed when the client enters a paste into Pastebin:</p>
+<ol>
+<li>Writes to Pastebin are rate limited</li>
+<li>KGS creates a unique encoded paste ID</li>
+<li>The object storage returns a <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/ShareObjectPreSignedURL.html" rel="noopener noreferrer" target="_blank">presigned URL</a></li>
+<li>The paste URL (<a href="http://presigned-url/paste-id" rel="noopener noreferrer" target="_blank">http://presigned-url/paste-id</a>) is created by appending the generated paste ID to the suffix of the presigned URL</li>
+<li>The paste content is transferred directly from the client to the object storage using the paste URL to optimize bandwidth expenses and performance</li>
+<li>The object storage persists the paste using the paste URL</li>
+<li>The metadata of the paste including the paste URL is persisted in the SQL database</li>
+<li>The server returns the paste ID to the client for future access</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 26: Pastebin; Data collection workflow&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-data-collection-workflow.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-data-collection-workflow.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Data collection workflow">
+<img alt="Pastebin; Data collection workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-data-collection-workflow.webp, /system-design-pastebin/pastebin-data-collection-workflow.webp 1.5x, /system-design-pastebin/pastebin-data-collection-workflow.webp 2x" height="721" sizes="683px" src="../assets/images/img_bd03a4a76d4e.webp" width="1328"/>
+</a><figcaption class="image-caption">Figure 26: Pastebin; Data collection workflow</figcaption>
+</figure>
+<p>The system must rate limit the ingress to prevent malicious clients from degrading the service. A reasonable rate limit for the write path is a maximum count of 10 pastes every 24 hours for a single client. The paste is processed by executing the following operations:</p>
+<ul>
+<li>validate the content for text-only data</li>
+<li>filter for questionable content (profanity) using a trie data structure or a <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a></li>
+<li>calculate the checksum of content using Cyclic Redundancy Check 32 (<a href="https://en.wikipedia.org/wiki/Cyclic_redundancy_check" rel="noopener noreferrer" target="_blank">CRC32</a>) to detect data corruption and increase fault tolerance</li>
+<li>compress the content using <a href="https://en.wikipedia.org/wiki/Huffman_coding" rel="noopener noreferrer" target="_blank">Huffman coding</a> to save storage costs and reduce the latency of data transfer</li>
+<li>encrypt the content using Advanced Encryption Standard (<a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard" rel="noopener noreferrer" target="_blank">AES</a>) for security</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 27: Pastebin; Processing a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/process-paste.webp" href="https://systemdesign.one/system-design-pastebin/process-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Processing a paste">
+<img alt="Pastebin; Processing a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/process-paste.webp, /system-design-pastebin/process-paste.webp 1.5x, /system-design-pastebin/process-paste.webp 2x" height="545" sizes="683px" src="../assets/images/img_1ccb0b329a29.webp" width="1439"/>
+</a><figcaption class="image-caption">Figure 27: Pastebin; Processing a paste</figcaption>
+</figure>
+<p>The paste can be processed asynchronously by introducing a message queue in the system to collect the message when a new paste is created. The paste is marked for deletion and the client is notified if the paste fails the validation checks.</p>
+<p>When the owner password protects a paste, the server persists the hash of the password in the SQL database. The client is prompted to enter a password to access the protected paste. The server checks if the hash of the entered password is the same as the stored hash value.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 28: Pastebin; How to reuse the paste content?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/reuse-paste-content.webp" href="https://systemdesign.one/system-design-pastebin/reuse-paste-content.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; How to reuse the paste content?">
+<img alt="Pastebin; How to reuse the paste content?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/reuse-paste-content.webp, /system-design-pastebin/reuse-paste-content.webp 1.5x, /system-design-pastebin/reuse-paste-content.webp 2x" height="604" sizes="683px" src="../assets/images/img_fc469b618f76.webp" width="1156"/>
+</a><figcaption class="image-caption">Figure 28: Pastebin; How to reuse the paste content?</figcaption>
+</figure>
+<p>When multiple clients enter the same paste content (text), Pastebin can either store multiple copies of the paste content or reuse the same paste content across multiple clients. Pastebin must make the following changes to reuse the paste content:</p>
+<ul>
+<li>hash the paste content using MD5 or SHA-256 to aid in quick validation of the existence of a paste</li>
+<li>the hash of paste must be stored in a <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> for faster lookups</li>
+<li>inverted index data store mapping between the hash value of the paste and paste ID</li>
+<li>data store mapping between the paste ID and the expiry time of the paste for each client</li>
+<li>lock (mutex) or semaphore to handle concurrency</li>
+</ul>
+<p>In conclusion, reusing the paste content across multiple clients increases the complexity of the system. The optimal solution is to create multiple copies of the paste to reduce financial costs and operational complexity.</p>
+<p>The potential solutions to create the paste ID are the following:</p>
+<ul>
+<li>Random ID Generator</li>
+<li>Hashing Function</li>
+<li>Token Range</li>
+<li>Custom paste ID</li>
+</ul>
+<hr/>
+<h4 class="headerLink" id="random-id-generator-solution"><a class="header-mark offline-link" href="./system-design-pastebin.html#random-id-generator-solution"></a>Random ID Generator solution</h4>
+<p>The Key Generation Service (<strong>KGS</strong>) queries the random identifier (<strong>ID</strong>) generation service to create a paste ID. The service generates random IDs using a random function or Universally Unique Identifiers (<a href="https://en.wikipedia.org/wiki/Universally_unique_identifier" rel="noopener noreferrer" target="_blank">UUID</a>). Multiple instances of the random ID generation service must be provisioned to meet the demand for scalability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 29: Pastebin; Random ID Generator&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/random-id-generator.webp" href="https://systemdesign.one/system-design-pastebin/random-id-generator.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Random ID Generator">
+<img alt="Pastebin; Random ID Generator" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/random-id-generator.webp, /system-design-pastebin/random-id-generator.webp 1.5x, /system-design-pastebin/random-id-generator.webp 2x" height="693" sizes="683px" src="../assets/images/img_1665f4243d7b.webp" width="1261"/>
+</a><figcaption class="image-caption">Figure 29: Pastebin; Random ID Generator</figcaption>
+</figure>
+<p>The random ID generation service must be stateless to replicate the service for scaling easily. The ingress is distributed to the random ID generation service using a <a href="https://en.wikipedia.org/wiki/Load_balancing_%28computing%29" rel="noopener noreferrer" target="_blank">load balancer</a> such as <a href="https://www.haproxy.org/" rel="noopener noreferrer" target="_blank">HAProxy</a>. The potential load-balancing algorithms to route the traffic are the following:</p>
+<ul>
+<li>round-robin</li>
+<li>least connection</li>
+<li>least bandwidth</li>
+</ul>
+<p>The KGS must verify if the generated paste ID already exists in the database because of the randomness in the output. The random ID generation solution has the following tradeoffs:</p>
+<ul>
+<li>the probability of collisions is high due to randomness</li>
+<li>coordination between servers is required to prevent a collision</li>
+<li>frequent verification of the existence of a paste ID in the database is a bottleneck due to disk input/output (<strong>I/O</strong>)</li>
+</ul>
+<p>An <strong>alternative</strong> to the random ID generation solution is using Twitter’s <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake" rel="noopener noreferrer" target="_blank">Snowflake</a><sup id="fnref:7"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:7" role="doc-noteref">7</a></sup>. The length of the snowflake output is 64 bits. The base62 encoding of snowflake output yields an 11-character output because each base62 encoded character consumes 6 bits. The snowflake ID is generated by a combination of the following entities (real-world implementation might vary):</p>
+<ul>
+<li>Timestamp</li>
+<li><a href="https://en.wikipedia.org/wiki/Data_center" rel="noopener noreferrer" target="_blank">Data center</a> (DC) ID</li>
+<li>Worker node ID</li>
+<li>Sequence number</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 30: Twitter Snowflake ID&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/twitter-snowflake.webp" href="https://systemdesign.one/system-design-pastebin/twitter-snowflake.webp" rel="noopener noreferrer" target="_blank" title="Twitter Snowflake ID">
+<img alt="Twitter Snowflake ID" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/twitter-snowflake.webp, /system-design-pastebin/twitter-snowflake.webp 1.5x, /system-design-pastebin/twitter-snowflake.webp 2x" height="516" sizes="683px" src="../assets/images/img_a469e77b64f2.webp" width="1398"/>
+</a><figcaption class="image-caption">Figure 30: Twitter Snowflake ID</figcaption>
+</figure>
+<p>The downsides of using snowflake ID for ID generation are the following:</p>
+<ul>
+<li>probability of collision is higher due to the overlapping bits</li>
+<li>generated paste ID becomes predictable due to known bits</li>
+<li>increases the complexity of the system due to time synchronization between servers</li>
+</ul>
+<p>In summary, do not use the random ID generator solution for Pastebin.</p>
+<hr/>
+<h4 class="headerLink" id="hashing-function-solution"><a class="header-mark offline-link" href="./system-design-pastebin.html#hashing-function-solution"></a>Hashing Function solution</h4>
+<p>The KGS queries the <a href="https://en.wikipedia.org/wiki/Hash_function" rel="noopener noreferrer" target="_blank">hashing function</a> service to create a paste ID. The hashing function service accepts a combination of the IP address of the client and the timestamp as the input and executes a hash function such as the message-digest algorithm (<a href="https://en.wikipedia.org/wiki/MD5" rel="noopener noreferrer" target="_blank">MD5</a>) to create a paste ID. The length of the MD5 hash function output is 128 bits. The hashing function service is replicated to meet the <a class="offline-link" href="../fundamentals/micro-frontends.html" rel="noopener noreffer">scalability</a> demand of the system.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 31: Pastebin; Hashing the IP address of the client and timestamp&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/hash-ip-timestamp.webp" href="https://systemdesign.one/system-design-pastebin/hash-ip-timestamp.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Hashing the IP address of the client and timestamp">
+<img alt="Pastebin; Hashing the IP address of the client and timestamp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/hash-ip-timestamp.webp, /system-design-pastebin/hash-ip-timestamp.webp 1.5x, /system-design-pastebin/hash-ip-timestamp.webp 2x" height="283" sizes="683px" src="../assets/images/img_ce6e284da65c.webp" width="1553"/>
+</a><figcaption class="image-caption">Figure 31: Pastebin; Hashing the IP address of the client and timestamp</figcaption>
+</figure>
+<p>The hashing function service must be stateless to replicate the service for scaling easily. The ingress is distributed to the hashing function service using a load balancer. The potential load-balancing algorithms to route the traffic are the following:</p>
+<ul>
+<li>weighted round-robin</li>
+<li>least response time</li>
+<li>IP address hash</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 32: Pastebin; Hashing function service&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/hash-function-service.webp" href="https://systemdesign.one/system-design-pastebin/hash-function-service.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Hashing function service">
+<img alt="Pastebin; Hashing function service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/hash-function-service.webp, /system-design-pastebin/hash-function-service.webp 1.5x, /system-design-pastebin/hash-function-service.webp 2x" height="665" sizes="683px" src="../assets/images/img_78c012b7e016.webp" width="1270"/>
+</a><figcaption class="image-caption">Figure 32: Pastebin; Hashing function service</figcaption>
+</figure>
+<p>When multiple clients behind the same <a href="https://en.wikipedia.org/wiki/IP_address#Public_addresses" rel="noopener noreferrer" target="_blank">public IP address</a> try to create a paste at the same time, the hashing function service results in a collision of the paste ID generated. As an alternative, a combination of the timestamp and content of the paste is used as input for the hash function. However, when multiple clients enter the same paste content at the same time, a collision occurs.</p>
+<p>The base62 encoding of MD5 output yields 22 characters because each base62 encoded character consumes 6 bits and MD5 output is 128 bits. The encoded output must be truncated by considering only the first 8 characters (48 bits) to keep the paste ID readable. However, the encoded output of multiple paste IDs might yield the same prefix (first 8 characters), resulting in a collision. Random bits are appended to the suffix of the encoded output to make it nonpredictable at the expense of paste ID readability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 33: Pastebin; Truncating the encoded MD5 output&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/truncate-md5-output.webp" href="https://systemdesign.one/system-design-pastebin/truncate-md5-output.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Truncating the encoded MD5 output">
+<img alt="Pastebin; Truncating the encoded MD5 output" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/truncate-md5-output.webp, /system-design-pastebin/truncate-md5-output.webp 1.5x, /system-design-pastebin/truncate-md5-output.webp 2x" height="136" sizes="683px" src="../assets/images/img_b17e6dce66be.webp" width="704"/>
+</a><figcaption class="image-caption">Figure 33: Pastebin; Truncating the encoded MD5 output</figcaption>
+</figure>
+<p>An alternative hashing function for paste ID generation is <a href="https://en.wikipedia.org/wiki/SHA-2" rel="noopener noreferrer" target="_blank">SHA256</a>. However, the probability of a collision is higher due to an output length of 256 bits. The tradeoffs of the hashing function solution are the following:</p>
+<ul>
+<li>predictable output due to the hash function</li>
+<li>higher probability of a collision</li>
+</ul>
+<p>In summary, do not use the hashing function solution for Pastebin.</p>
+<hr/>
+<h4 class="headerLink" id="token-range-solution"><a class="header-mark offline-link" href="./system-design-pastebin.html#token-range-solution"></a>Token Range solution</h4>
+<p>The KGS queries the token service to create a paste ID. An internal counter function of the token service generates the paste ID and the output is monotonically increasing.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 34: Pastebin; Token service to create a paste ID&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/token-service.webp" href="https://systemdesign.one/system-design-pastebin/token-service.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Token service to create a paste ID">
+<img alt="Pastebin; Token service to create a paste ID" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/token-service.webp, /system-design-pastebin/token-service.webp 1.5x, /system-design-pastebin/token-service.webp 2x" height="641" sizes="683px" src="../assets/images/img_e6bd1e3545de.webp" width="1066"/>
+</a><figcaption class="image-caption">Figure 34: Pastebin; Token service to create a paste ID</figcaption>
+</figure>
+<p>The token service is horizontally partitioned (<a class="offline-link" href="./mysql-sharding.html" rel="noopener noreffer">shard</a>) using <a href="https://en.wikipedia.org/wiki/Partition_%28database%29#:~:text=Range%20partitioning%3A%20selects%20a%20partition,%28ranges%29%20of%20some%20attribute." rel="noopener noreferrer" target="_blank">range partitioning</a> to meet the scalability requirements of the system. The ingress is distributed to the token service using a load balancer. The potential load-balancing algorithms to route the ingress are the following:</p>
+<ul>
+<li>weighted round-robin</li>
+<li>least connection</li>
+<li>least bandwidth</li>
+</ul>
+<p>The output of the token service instances must be non-overlapping to prevent a collision. A highly reliable distributed service such as <a href="https://zookeeper.apache.org/" rel="noopener noreferrer" target="_blank">Apache Zookeeper</a> or <a href="https://aws.amazon.com/dynamodb/" rel="noopener noreferrer" target="_blank">Amazon DynamoDB</a> coordinates the output range of token service instances. The service that coordinates the output range between token service instances is known as the <strong>token range service</strong>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 35: Pastebin; Token range service&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/token-range-service.webp" href="https://systemdesign.one/system-design-pastebin/token-range-service.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Token range service">
+<img alt="Pastebin; Token range service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/token-range-service.webp, /system-design-pastebin/token-range-service.webp 1.5x, /system-design-pastebin/token-range-service.webp 2x" height="977" sizes="683px" src="../assets/images/img_32be34578fa0.webp" width="1501"/>
+</a><figcaption class="image-caption">Figure 35: Pastebin; Token range service</figcaption>
+</figure>
+<p>When the key-value store (DynamoDB) is chosen as the token range service, the <a href="https://en.wikipedia.org/wiki/Quorum_%28distributed_computing%29#:~:text=A%20quorum%20is%20the%20minimum,operation%20in%20a%20distributed%20system." rel="noopener noreferrer" target="_blank">quorum</a> must be set to a higher value to increase the <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a> of the token range service. The stronger consistency prevents a range collision by preventing fetching the same output range by multiple token services.</p>
+<p>When an instance of the token service is provisioned, the fresh instance executes a request for an output range from the token range service. When the fetched output range is fully exhausted, the token service requests a fresh output range from the token range service.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 36: Pastebin; Token range service distributing output range&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/token-service-output-range.webp" href="https://systemdesign.one/system-design-pastebin/token-service-output-range.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Token range service distributing output range">
+<img alt="Pastebin; Token range service distributing output range" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/token-service-output-range.webp, /system-design-pastebin/token-service-output-range.webp 1.5x, /system-design-pastebin/token-service-output-range.webp 2x" height="625" sizes="683px" src="../assets/images/img_48a6692e6bae.webp" width="1022"/>
+</a><figcaption class="image-caption">Figure 36: Pastebin; Token range service distributing output range</figcaption>
+</figure>
+<p>The token range service might become a <a href="https://en.wikipedia.org/wiki/Bottleneck_%28software%29" rel="noopener noreferrer" target="_blank">bottleneck</a> if queried frequently. Either the output range or the number of token range service replicas must be incremented to improve the reliability of the system. The token range solution is collision-free and scalable. The time complexity of paste ID generation using token service is constant O(1). However, the paste ID is predictable due to the monotonically increasing output range. The following actions degrade the predictability of the paste ID:</p>
+<ul>
+<li>append random bits to the suffix of the output</li>
+<li>token range service distributes a randomized output range</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 37: Pastebin; Scaling the token service&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/token-service-scaling.webp" href="https://systemdesign.one/system-design-pastebin/token-service-scaling.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Scaling the token service">
+<img alt="Pastebin; Scaling the token service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/token-service-scaling.webp, /system-design-pastebin/token-service-scaling.webp 1.5x, /system-design-pastebin/token-service-scaling.webp 2x" height="329" sizes="683px" src="../assets/images/img_ca7440b0ce3d.webp" width="896"/>
+</a><figcaption class="image-caption">Figure 37: Pastebin; Scaling the token service</figcaption>
+</figure>
+<p>The token service stores some paste IDs (<strong>keys</strong>) in memory so that the token service quickly distributes the keys to an incoming request. The keys in the token service must be distributed by an atomic data structure to handle concurrent requests. The output range must be moved out to an external cache server to scale out the token service and improve its reliability. The output range stored in the memory of the token service is marked as used to prevent a collision. The downside of storing keys in memory is losing the specific output range of keys on a server failure.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 38: Pastebin; Token server&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/token-server.webp" href="https://systemdesign.one/system-design-pastebin/token-server.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Token server">
+<img alt="Pastebin; Token server" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/token-server.webp, /system-design-pastebin/token-server.webp 1.5x, /system-design-pastebin/token-server.webp 2x" height="453" sizes="683px" src="../assets/images/img_71b9a37ad5e0.webp" width="967"/>
+</a><figcaption class="image-caption">Figure 38: Pastebin; Token server</figcaption>
+</figure>
+<p>The output of the token service must be encoded within the token server using an internal encoding service to prevent external network communication. An additional function executes the encoding of token service output.</p>
+<p>In summary, use the token range solution for Pastebin.</p>
+<hr/>
+<h4 class="headerLink" id="custom-paste-id-solution"><a class="header-mark offline-link" href="./system-design-pastebin.html#custom-paste-id-solution"></a>Custom paste ID solution</h4>
+<p>The client defines a custom paste ID. The KGS must perform one of the following operations when the client enters a custom paste ID:</p>
+<ul>
+<li>query the SQL database to check the existence of the paste ID</li>
+<li>use the putIfAbsent SQL procedure to check the existence of the paste ID</li>
+</ul>
+<p>However, querying the database is an expensive operation because of the disk I/O.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 39: Pastebin; Client enters an existing custom paste ID&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/custom-paste-id.webp" href="https://systemdesign.one/system-design-pastebin/custom-paste-id.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Client enters an existing custom paste ID">
+<img alt="Pastebin; Client enters an existing custom paste ID" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/custom-paste-id.webp, /system-design-pastebin/custom-paste-id.webp 1.5x, /system-design-pastebin/custom-paste-id.webp 2x" height="772" sizes="683px" src="../assets/images/img_060a08c1c406.webp" width="1254"/>
+</a><figcaption class="image-caption">Figure 39: Pastebin; Client enters an existing custom paste ID</figcaption>
+</figure>
+<p>A <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> is used to prevent expensive database lookups. When the client enters an already existing custom paste ID, the server must return an error message with HTTP response status code <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409" rel="noopener noreferrer" target="_blank">409 Conflict</a>. The KGS queries the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> in constant time O(1) to check if the custom paste ID already exists in the database<sup id="fnref:8"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:8" role="doc-noteref">8</a></sup>. However, the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> query might yield false positives, resulting in an unnecessary database lookup, which is acceptable. In addition, the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> increases the operational complexity of the system.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 40: Pastebin; What is the custom paste ID workflow?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/custom-paste-id-workflow.webp" href="https://systemdesign.one/system-design-pastebin/custom-paste-id-workflow.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; What is the custom paste ID workflow?">
+<img alt="Pastebin; What is the custom paste ID workflow?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/custom-paste-id-workflow.webp, /system-design-pastebin/custom-paste-id-workflow.webp 1.5x, /system-design-pastebin/custom-paste-id-workflow.webp 2x" height="807" sizes="683px" src="../assets/images/img_3b1857b9e9cc.webp" width="1693"/>
+</a><figcaption class="image-caption">Figure 40: Pastebin; What is the custom paste ID workflow?</figcaption>
+</figure>
+<p>The following operations are executed by Pastebin when the client enters a custom paste ID that does not exist in the database:</p>
+<ol>
+<li>KGS queries the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> to check if the custom paste ID already exists in the database</li>
+<li>The token service creates a paste ID</li>
+<li>KGS populates the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> with the generated paste ID</li>
+<li>The server stores the paste content in object storage</li>
+<li>The metadata of the paste is stored in the SQL database</li>
+</ol>
+<p>In summary, use a <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> to improve the performance of the custom paste ID solution for Pastebin.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="read-path"><a class="header-mark offline-link" href="./system-design-pastebin.html#read-path"></a>Read path</h3>
+<p>When the client enters the paste ID to view the paste, the server queries the SQL database to fetch the metadata of the paste. The server uses the received metadata to fetch the paste by querying the object storage. If the paste metadata is not found in the SQL database, the servers return an error message with the status code <em>404 Not found</em> for the client.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 41: Simplified Pastebin&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-read-path.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-read-path.webp" rel="noopener noreferrer" target="_blank" title="Simplified Pastebin">
+<img alt="Simplified Pastebin" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-read-path.webp, /system-design-pastebin/pastebin-read-path.webp 1.5x, /system-design-pastebin/pastebin-read-path.webp 2x" height="608" sizes="683px" src="../assets/images/img_1a832529bd2d.webp" width="958"/>
+</a><figcaption class="image-caption">Figure 41: Simplified Pastebin</figcaption>
+</figure>
+<p>The single-machine solution does not meet the scalability requirements of a read-heavy Pastebin. The disk I/O due to frequent database access is a potential bottleneck.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 42: Pastebin; How is egress distributed?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-egress.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-egress.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; How is egress distributed?">
+<img alt="Pastebin; How is egress distributed?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-egress.webp, /system-design-pastebin/pastebin-egress.webp 1.5x, /system-design-pastebin/pastebin-egress.webp 2x" height="475" sizes="683px" src="../assets/images/img_b5dc86d152fd.webp" width="893"/>
+</a><figcaption class="image-caption">Figure 42: Pastebin; How is egress distributed?</figcaption>
+</figure>
+<p>The egress (client requests to view a paste) is cached following the 80/20 rule to improve latency. The cache stores the paste and the relevant paste metadata. The paste ID is used as the cache’s key to identify the paste content. The cache handles uneven traffic and traffic spikes in egress. The server must query the cache before hitting the data store. The <a href="https://github.com/donnemartin/system-design-primer#cache-aside" rel="noopener noreferrer" target="_blank">cache-aside pattern</a> is used to update the cache. When a cache miss occurs, the server queries the data stores and populates the cache. The tradeoff of using the cache-aside pattern is the delay in initial requests. As the data stored in the cache is memory bound, the Least Recently Used (<a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_%28LRU%29" rel="noopener noreferrer" target="_blank">LRU</a>) policy is used to evict the cache when the cache server is full.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 43: Pastebin; Caching at different layers&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-cache.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-cache.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Caching at different layers">
+<img alt="Pastebin; Caching at different layers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-cache.webp, /system-design-pastebin/pastebin-cache.webp 1.5x, /system-design-pastebin/pastebin-cache.webp 2x" height="1003" sizes="683px" src="../assets/images/img_b0b88effff92.webp" width="1480"/>
+</a><figcaption class="image-caption">Figure 43: Pastebin; Caching at different layers</figcaption>
+</figure>
+<p>The cache is introduced at the following layers of the system for scalability:</p>
+<ul>
+<li>client</li>
+<li><a class="offline-link" href="./cdn-explained.html" rel="noopener noreffer">content delivery network</a> (<a href="https://en.wikipedia.org/wiki/Content_delivery_network" rel="noopener noreferrer" target="_blank">CDN</a>)</li>
+<li>reverse proxy (web server)</li>
+<li>cache server</li>
+<li>internal cache on the data store</li>
+</ul>
+<p>A public cache such as CDN or a dedicated shared cache server reduces the load on the system. On the other hand, the private cache is only accessible to the client and does not significantly improve the system’s performance. In addition, setting the TTL for the private cache is crucial because private cache invalidation is difficult. Dedicated cache servers such as <a href="https://redis.io/" rel="noopener noreferrer" target="_blank">Redis</a> or <a href="https://memcached.org/" rel="noopener noreferrer" target="_blank">Memcached</a> are provisioned between the following system components to further improve latency:</p>
+<ul>
+<li>server and data stores</li>
+<li>load balancer and server</li>
+</ul>
+<p>The typical usage pattern of the client is to access the paste at most twice after creation. The cache update on a single access to the paste results in cache <a href="https://en.wikipedia.org/wiki/Thrashing_%28computer_science%29" rel="noopener noreferrer" target="_blank">thrashing</a>. A <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> on paste IDs is introduced on cache servers and CDN to prevent cache thrashing. The <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> is updated when the paste is accessed is twice by the client. The cache servers are updated only when the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> is already set (multiple requests to the same paste ID). The client cache prevents populating the public cache (CDN) for pastes accessed only by the owner.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 44: Pastebin; How to update the cache?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-cache-update.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-cache-update.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; How to update the cache">
+<img alt="Pastebin; How to update the cache" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-cache-update.webp, /system-design-pastebin/pastebin-cache-update.webp 1.5x, /system-design-pastebin/pastebin-cache-update.webp 2x" height="584" sizes="683px" src="../assets/images/img_a5a3de58d8cb.webp" width="1815"/>
+</a><figcaption class="image-caption">Figure 44: Pastebin; How to update the cache?</figcaption>
+</figure>
+<p>The cache and the data store must not be queried if the paste does not exist. A <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> on the paste ID is introduced to prevent unnecessary queries to the data store. If the paste ID is absent in the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a>, return an HTTP status code of 404. If the paste ID is set in the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a>, delegate the client request to the cache server or the data store.</p>
+<p>The database servers and cache servers are scaled out by performing the following operations:</p>
+<ul>
+<li>partition the servers (use the paste ID as the partition key)</li>
+<li>replicate the servers to handle heavy loads using <a href="https://redis.io/docs/management/replication/" rel="noopener noreferrer" target="_blank">leader-follower topology</a></li>
+<li>redirect the write operations to the leader</li>
+<li>redirect all the read operations to the follower replicas</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 45: Pastebin; How to scale stateful services?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/scale-stateful-service.webp" href="https://systemdesign.one/system-design-pastebin/scale-stateful-service.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; How to scale stateful services?">
+<img alt="Pastebin; How to scale stateful services?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/scale-stateful-service.webp, /system-design-pastebin/scale-stateful-service.webp 1.5x, /system-design-pastebin/scale-stateful-service.webp 2x" height="596" sizes="683px" src="../assets/images/img_f984ebc0f3d1.webp" width="964"/>
+</a><figcaption class="image-caption">Figure 45: Pastebin; How to scale stateful services?</figcaption>
+</figure>
+<p>The read replicas of the SQL database should be able to handle the cache misses, as long as the replicas are not swamped with replicating writes. When multiple identical requests arrive at the cache server at the same time, the cache server will <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching#request_collapse" rel="noopener noreferrer" target="_blank">collapse the requests</a> and will forward a single request to the origin server on behalf of the clients. The response is reused among all the clients to save bandwidth and system resources.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 46: Pastebin; Collapsed forwarding in the cache server&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/collapse-forwarding.webp" href="https://systemdesign.one/system-design-pastebin/collapse-forwarding.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Collapsed forwarding in the cache server">
+<img alt="Pastebin; Collapsed forwarding in the cache server" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/collapse-forwarding.webp, /system-design-pastebin/collapse-forwarding.webp 1.5x, /system-design-pastebin/collapse-forwarding.webp 2x" height="575" sizes="683px" src="../assets/images/img_81e3659fbaf1.webp" width="987"/>
+</a><figcaption class="image-caption">Figure 46: Pastebin; Collapsed forwarding in the cache server</figcaption>
+</figure>
+<p>The following intermediate components are introduced to meet the scalability demand for Pastebin:</p>
+<ul>
+<li>Domain Name System (<a href="https://en.wikipedia.org/wiki/Domain_Name_System" rel="noopener noreferrer" target="_blank">DNS</a>)</li>
+<li>Load balancer</li>
+<li>Reverse proxy</li>
+<li>CDN such as <a href="https://aws.amazon.com/cloudfront/" rel="noopener noreferrer" target="_blank">CloudFront</a></li>
+<li>Controller service to automatically <a class="offline-link" href="./scalable-software-architecture.html" rel="noopener noreffer">scale</a> the services</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 47: Pastebin; Workflow of the client viewing a paste&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-view-paste.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-view-paste.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Workflow of the client viewing a paste">
+<img alt="Pastebin; Workflow of the client viewing a paste" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-view-paste.webp, /system-design-pastebin/pastebin-view-paste.webp 1.5x, /system-design-pastebin/pastebin-view-paste.webp 2x" height="1024" sizes="683px" src="../assets/images/img_745f5eac6732.webp" width="1512"/>
+</a><figcaption class="image-caption">Figure 47: Pastebin; Workflow of the client viewing a paste</figcaption>
+</figure>
+<p>The following smart <a href="https://github.com/donnemartin/system-design-primer#domain-name-system" rel="noopener noreferrer" target="_blank">DNS services</a> improve the latency for accessing a paste:</p>
+<ul>
+<li>weighted round-robin</li>
+<li>latency based</li>
+<li>geolocation based</li>
+</ul>
+<p>The reverse proxy is used as an <a href="https://aws.amazon.com/api-gateway/" rel="noopener noreferrer" target="_blank">API Gateway</a>. The reverse proxy performs <a href="https://en.wikipedia.org/wiki/TLS_termination_proxy" rel="noopener noreferrer" target="_blank">SSL termination</a> and compression at the expense of increased system complexity. When an extremely popular paste is accessed by hundreds of clients at the same time, the reverse proxy <a href="https://wiki.squid-cache.org/Features/CollapsedForwarding" rel="noopener noreferrer" target="_blank">collapse forwards</a> the requests to reduce the system load. The load balancer must be introduced between the following system components to route traffic between the replicas or shards:</p>
+<ul>
+<li>client and server</li>
+<li>server and data stores</li>
+<li>server and cache server</li>
+</ul>
+<p>The <a class="offline-link" href="./cdn-explained.html" rel="noopener noreffer">CDN</a> serves the content from locations closer to the client at the expense of increased financial costs. The <a href="https://github.com/donnemartin/system-design-primer#content-delivery-network" rel="noopener noreferrer" target="_blank">Pull CDN</a> approach suits the Pastebin system requirements. The controller service is configured to automatically scale out or scale down the services based on the system load.</p>
+<p>The <a class="offline-link" href="../fundamentals/netflix-microservices.html" rel="noopener noreffer">microservices</a> architecture improves the fault tolerance of the system. The services such as <a href="https://etcd.io/" rel="noopener noreferrer" target="_blank">etcd</a> or Zookeeper help services to find each other (known as <a class="offline-link" href="../fundamentals/what-is-service-discovery.html" rel="noopener noreffer">service discovery</a>). In addition, the Zookeeper is configured to monitor the health of the services by sending regular heartbeat signals. The downside of <a class="offline-link" href="../fundamentals/netflix-microservices.html" rel="noopener noreffer">microservices</a> architecture is the increased operational complexity.</p>
+<hr/>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="design-deep-dive"><a class="header-mark offline-link" href="./system-design-pastebin.html#design-deep-dive"></a>Design Deep Dive</h2>
+<h3 class="headerLink" id="availability"><a class="header-mark offline-link" href="./system-design-pastebin.html#availability"></a>Availability</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 48: Pastebin; Load balancer in active-passive mode&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-load-balancer.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-load-balancer.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Load balancer in active-passive mode">
+<img alt="Pastebin; Load balancer in active-passive mode" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-load-balancer.webp, /system-design-pastebin/pastebin-load-balancer.webp 1.5x, /system-design-pastebin/pastebin-load-balancer.webp 2x" height="532" sizes="683px" src="../assets/images/img_5a3e6e397b66.webp" width="1814"/>
+</a><figcaption class="image-caption">Figure 48: Pastebin; Load balancer in active-passive mode</figcaption>
+</figure>
+<p>The availability of the system is improved by the following configuration:</p>
+<ul>
+<li>The load balancer runs either in active-active or active-passive mode</li>
+<li>KGS runs either in active-active or active-passive mode</li>
+<li>Back up the database server at least once a day to object storage such as AWS S3 to aid <a href="https://www.vmware.com/topics/glossary/content/disaster-recovery.html" rel="noopener noreferrer" target="_blank">disaster recovery</a></li>
+<li>Rate-limiting the traffic to prevent <a href="https://en.wikipedia.org/wiki/Denial-of-service_attack" rel="noopener noreferrer" target="_blank">DDoS attacks</a> and malicious users</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="rate-limiting"><a class="header-mark offline-link" href="./system-design-pastebin.html#rate-limiting"></a>Rate Limiting</h3>
+<p>Rate limiting the system prevents malicious clients from degrading the service. The following entities are used to identify the client for rate limiting:</p>
+<ul>
+<li>API developer key for a registered client</li>
+<li>HTTP <em>cookie</em> for an anonymous client</li>
+</ul>
+<p>The API developer key is transferred either as a JSON Web Token (<a href="https://jwt.io/" rel="noopener noreferrer" target="_blank">JWT</a>) parameter or as a custom HTTP header. The Internet Protocol (<strong>IP</strong>) address is also used to rate limit the client.</p>
+<p>The requests from premium clients and the free clients are rate limited or throttled differently based on the membership plan. The automated spam protection system displays a captcha request to the client. The following actions of the client trigger the captcha spam protection:</p>
+<ul>
+<li>client flooding the system with more than 10 new pastes in less than an hour</li>
+<li>creating pastes with hyperlinks in the content</li>
+<li>single client creating duplicate pastes</li>
+<li>creating pastes with questionable content</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./system-design-pastebin.html#scalability"></a>Scalability</h3>
+<p>Scaling a system is an iterative process. The following actions are repeatedly performed to scale a system<sup id="fnref:9"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ol>
+<li>benchmark or load test</li>
+<li>profile for bottlenecks or a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure" rel="noopener noreferrer" target="_blank">single point of failure</a> (<strong>SPOF</strong>)</li>
+<li>address bottlenecks</li>
+</ol>
+<p>The read and write paths of Pastebin are segregated to improve the latency and to prevent network bandwidth from becoming a bottleneck.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 49: Pastebin; Segregated read and write paths&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-segregated-paths.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-segregated-paths.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Segregated read and write paths">
+<img alt="Pastebin; Segregated read and write paths" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-segregated-paths.webp, /system-design-pastebin/pastebin-segregated-paths.webp 1.5x, /system-design-pastebin/pastebin-segregated-paths.webp 2x" height="879" sizes="683px" src="../assets/images/img_295bb8f0df11.webp" width="1183"/>
+</a><figcaption class="image-caption">Figure 49: Pastebin; Segregated read and write paths</figcaption>
+</figure>
+<p>The general guidelines to horizontally scale a service are the following<sup id="fnref:10"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:10" role="doc-noteref">10</a></sup>:</p>
+<ul>
+<li>keep the service stateless</li>
+<li>partition the service</li>
+<li>replicate the service</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="fault-tolerance"><a class="header-mark offline-link" href="./system-design-pastebin.html#fault-tolerance"></a>Fault tolerance</h3>
+<p>The <a class="offline-link" href="./prime-video-microservices.html" rel="noopener noreffer">microservices</a> architecture improves the fault tolerance of the system. The microservices are isolated from each other and the services will fail independently. Simply put, a service failure means reduced functionality without the whole system going down. For instance, a metric service’s failure will not prevent the client from viewing a paste. The <a href="https://en.wikipedia.org/wiki/Event-driven_architecture" rel="noopener noreferrer" target="_blank">event-driven architecture</a> also helps to isolate the services and improve the reliability of the system, and scale by naturally supporting multiple consumers<sup id="fnref:11"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<p>The introduction of a message queue such as <a href="https://kafka.apache.org/" rel="noopener noreferrer" target="_blank">Apache Kafka</a> further improves the fault tolerance of Pastebin. The message queue must be provisioned in the read and write paths of the system. However, the message queue must be <a href="https://en.wikipedia.org/wiki/Application_checkpointing" rel="noopener noreferrer" target="_blank">checkpointed</a> frequently for reliability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 50: Pastebin; Message queue for improved fault tolerance&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-message-queue.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-message-queue.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Message queue for improved fault tolerance">
+<img alt="Pastebin; Message queue for improved fault tolerance" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-message-queue.webp, /system-design-pastebin/pastebin-message-queue.webp 1.5x, /system-design-pastebin/pastebin-message-queue.webp 2x" height="970" sizes="683px" src="../assets/images/img_0f2e665cab6a.webp" width="1437"/>
+</a><figcaption class="image-caption">Figure 50: Pastebin; Message queue for improved fault tolerance</figcaption>
+</figure>
+<p>The reasons for using a message queue are the following<sup id="fnref:11"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:11" role="doc-noteref">11</a></sup>:</p>
+<ul>
+<li>isolate the components</li>
+<li>allows concurrent operations</li>
+<li>fails independently</li>
+<li>asynchronous processing</li>
+</ul>
+<p>The tradeoffs of using a message queue are the following:</p>
+<ul>
+<li>makes the system asynchronous</li>
+<li>increases the overall system complexity</li>
+</ul>
+<p>Further actions to optimize the fault tolerance of the system are the following:</p>
+<ul>
+<li>implement <a href="https://www.baeldung.com/spring-webflux-backpressure" rel="noopener noreferrer" target="_blank">backpressure</a> between services to prevent cascading failures</li>
+<li>services must exponentially backoff when a failure occurs for a faster recovery</li>
+<li>leader election implemented using <a href="https://en.wikipedia.org/wiki/Paxos_%28computer_science%29" rel="noopener noreferrer" target="_blank">Paxos</a> or <a href="https://en.wikipedia.org/wiki/Raft_%28algorithm%29" rel="noopener noreferrer" target="_blank">Raft</a> consensus algorithms</li>
+<li>snapshot or checkpoint stateful services such as the cache server</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="partitioning"><a class="header-mark offline-link" href="./system-design-pastebin.html#partitioning"></a>Partitioning</h3>
+<p>The SQL database and cache servers are partitioned using <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a>. The paste ID is used as the partition key to prevent hot shards. The following stateful services are partitioned for scalability:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 51: Pastebin; Partitioning services&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-partitioning.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-partitioning.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Partitioning services">
+<img alt="Pastebin; Partitioning services" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-partitioning.webp, /system-design-pastebin/pastebin-partitioning.webp 1.5x, /system-design-pastebin/pastebin-partitioning.webp 2x" height="380" sizes="683px" src="../assets/images/img_1d0dbbf8155e.webp" width="1954"/>
+</a><figcaption class="image-caption">Figure 51: Pastebin; Partitioning services</figcaption>
+</figure>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="concurrency"><a class="header-mark offline-link" href="./system-design-pastebin.html#concurrency"></a>Concurrency</h3>
+<p>The KGS must acquire a <a href="https://en.wikipedia.org/wiki/Mutual_exclusion" rel="noopener noreferrer" target="_blank">mutex</a> (<strong>lock</strong>) or a <a href="https://en.wikipedia.org/wiki/Semaphore_%28programming%29" rel="noopener noreferrer" target="_blank">semaphore</a> on the atomic data structure distributing the paste IDs to handle concurrency. The lock prevents the distribution of the same paste ID to distinct paste creation requests from the KGS, resulting in a collision. Multiple data structures distribute the paste ID in a single instance of the token service to improve latency. The lock must be released when the paste ID is used.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 52: Pastebin; Concurrency in the token service&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/concurrency-token-service.webp" href="https://systemdesign.one/system-design-pastebin/concurrency-token-service.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Concurrency in the token service">
+<img alt="Pastebin; Concurrency in the token service" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/concurrency-token-service.webp, /system-design-pastebin/concurrency-token-service.webp 1.5x, /system-design-pastebin/concurrency-token-service.webp 2x" height="798" sizes="683px" src="../assets/images/img_f0ca9bc67c30.webp" width="1638"/>
+</a><figcaption class="image-caption">Figure 52: Pastebin; Concurrency in the token service</figcaption>
+</figure>
+<p>When multiple clients enter the same custom paste ID at the same time, only a single client must receive the custom paste ID. The remaining clients must receive an error message. The optimal solution to solve the concurrency of a custom paste ID is using a distributed lock such as the <a href="https://static.googleusercontent.com/media/research.google.com/en//archive/chubby-osdi06.pdf" rel="noopener noreferrer" target="_blank">Chubby</a> or the <a href="https://redis.io/docs/manual/patterns/distributed-locks/" rel="noopener noreferrer" target="_blank">Redis lock</a>. The distributed lock must be acquired on the custom paste ID. The distributed lock internally uses Raft or Paxos consensus algorithm.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 53: Pastebin; How to handle concurrency in custom paste ID?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/concurrency-custom-paste-id.webp" href="https://systemdesign.one/system-design-pastebin/concurrency-custom-paste-id.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; How to handle concurrency in custom paste ID?">
+<img alt="Pastebin; How to handle concurrency in custom paste ID?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/concurrency-custom-paste-id.webp, /system-design-pastebin/concurrency-custom-paste-id.webp 1.5x, /system-design-pastebin/concurrency-custom-paste-id.webp 2x" height="784" sizes="683px" src="../assets/images/img_c1b3c76bf24b.webp" width="1379"/>
+</a><figcaption class="image-caption">Figure 53: Pastebin; How to handle concurrency in custom paste ID?</figcaption>
+</figure>
+<p>A reasonable TTL must be set on the distributed lock to prevent starvation. The tradeoff of using a distributed lock is the slight degradation of latency. The workflow for persisting a custom paste ID in a highly concurrent system is the following:</p>
+<ol>
+<li>KGS checks the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> for the existence of a custom paste ID</li>
+<li>Acquire a distributed lock on the custom paste ID</li>
+<li>Populate the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> with the custom paste ID</li>
+<li>Persist the custom paste ID in the data store</li>
+<li>Release the distributed lock</li>
+</ol>
+<p>Thread safety in the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> is achieved using a concurrent BitSet. The tradeoff is the increased latency to some write operations. A lock must be acquired on the <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a> to handle concurrency. A variant of the bloom filter named <a href="https://github.com/iamthebot/hyperbloom" rel="noopener noreferrer" target="_blank">naive striped bloom</a> filter supports highly concurrent reads at the expense of extra space.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="analytics"><a class="header-mark offline-link" href="./system-design-pastebin.html#analytics"></a>Analytics</h3>
+<p>The HTTP headers of paste access requests are used to collect data for the generation of analytics. In addition, the IP address of the client identifies the country or location. The <em>cookie</em> header identifies anonymous clients to prevent counting the same user multiple times. The most popular HTTP headers useful for analytics are the following:</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 54: Pastebin; HTTP headers for analytics&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-analytics.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-analytics.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; HTTP headers for analytics">
+<img alt="Pastebin; HTTP headers for analytics" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-analytics.webp, /system-design-pastebin/pastebin-analytics.webp 1.5x, /system-design-pastebin/pastebin-analytics.webp 2x" height="372" sizes="683px" src="../assets/images/img_d1d54305d863.webp" width="1954"/>
+</a><figcaption class="image-caption">Figure 54: Pastebin; HTTP headers for analytics</figcaption>
+</figure>
+<p>The workflow for the generation of analytics is the following<sup id="fnref:11"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:11" role="doc-noteref">11</a></sup>:</p>
+<ol>
+<li>The client requests to view a paste</li>
+<li>The server responds with the paste content</li>
+<li>The server puts a message on the message queue to record the view request of the client</li>
+<li>The archive service executes a batch operation to move messages from the message queue to HDFS</li>
+<li>Hadoop (MapReduce) is executed on the collected data on HDFS to generate offline analytics</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 55: Pastebin; Analytics workflow&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-analytics-workflow.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-analytics-workflow.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; Analytics workflow">
+<img alt="Pastebin; Analytics workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-analytics-workflow.webp, /system-design-pastebin/pastebin-analytics-workflow.webp 1.5x, /system-design-pastebin/pastebin-analytics-workflow.webp 2x" height="569" sizes="683px" src="../assets/images/img_54d6759055f4.webp" width="1239"/>
+</a><figcaption class="image-caption">Figure 55: Pastebin; Analytics workflow</figcaption>
+</figure>
+<p>A data warehousing solution such as Amazon Redshift or <a href="https://www.snowflake.com/en/" rel="noopener noreferrer" target="_blank">Snowflake</a> is used for the analytics database.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="database-cleanup"><a class="header-mark offline-link" href="./system-design-pastebin.html#database-cleanup"></a>Database cleanup</h3>
+<p>The expired records in the database are removed to save storage costs. The pastes not visited in more than 6 months may be deleted to save storage costs. Active removal of expired records in the database might overload the database and degrade the service. The metadata of the expired pastes might be backed up in object storage for auditing purposes. The approaches to the removal of the expired records from the database are the following:</p>
+<ul>
+<li>lazy removal</li>
+<li>dedicated cleanup service</li>
+<li>timer cleanup service</li>
+</ul>
+<hr/>
+<h4 class="headerLink" id="lazy-removal"><a class="header-mark offline-link" href="./system-design-pastebin.html#lazy-removal"></a>Lazy removal</h4>
+<p>When the client tries to access an expired paste, remove the paste from the data stores (database and object storage). The server responds to the client with a status code of 404 Not found. On the other hand, if the client never visits an expired paste, the paste sits there forever and consumes storage space.</p>
+<p>Alternatively, a limited number of expired pastes can be deleted on every interaction with the SQL database.</p>
+<hr/>
+<h4 class="headerLink" id="dedicated-cleanup-service"><a class="header-mark offline-link" href="./system-design-pastebin.html#dedicated-cleanup-service"></a>Dedicated cleanup service</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 56: Pastebin; How to clean up expired data?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/database-cleanup.webp" href="https://systemdesign.one/system-design-pastebin/database-cleanup.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; How to clean up expired data?">
+<img alt="Pastebin; How to clean up expired data?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/database-cleanup.webp, /system-design-pastebin/database-cleanup.webp 1.5x, /system-design-pastebin/database-cleanup.webp 2x" height="623" sizes="683px" src="../assets/images/img_04bb745716f4.webp" width="1095"/>
+</a><figcaption class="image-caption">Figure 56: Pastebin; How to clean up expired data?</figcaption>
+</figure>
+<p>A dedicated cleanup service must be executed against a replica SQL database to identify the expired pastes. The expired pastes can be removed from the primary database during non-peak hours.</p>
+<p>As an alternative, build a min-heap data structure index to track the expiry date of the records at the expense of increased storage and slower writes. The dedicated cleanup service removes a paste whenever the expiry time has elapsed.</p>
+<h5 class="headerLink" id="write-a-sql-query-to-delete-the-paste-records-older-than-20101111"><a class="header-mark offline-link" href="./system-design-pastebin.html#write-a-sql-query-to-delete-the-paste-records-older-than-20101111"></a>Write a SQL query to delete the paste records older than 2010–11–11</h5>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="DELETE FROM Pastes
+WHERE expires_at &lt; '2010-11-11';" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">DELETE</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">Pastes</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">expires_at</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="s1">'2010-11-11'</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<h4 class="headerLink" id="timer-cleanup-service"><a class="header-mark offline-link" href="./system-design-pastebin.html#timer-cleanup-service"></a>Timer cleanup service</h4>
+<p>A NoSQL data store such as DynamoDB with built-in TTL is used to store the metadata of the paste. When a paste expires, the <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.Lambda.html" rel="noopener noreferrer" target="_blank">DynamoDB stream</a> triggers a <a href="https://aws.amazon.com/lambda/#:~:text=AWS%20Lambda%20is%20a%20serverless,pay%20for%20what%20you%20use." rel="noopener noreferrer" target="_blank">serverless</a> (lambda) function to remove the expired paste from the object storage<sup id="fnref:12"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:12" role="doc-noteref">12</a></sup>. However, the serverless function does not guarantee a predictable service level agreement (<a href="https://en.wikipedia.org/wiki/Service-level_agreement" rel="noopener noreferrer" target="_blank">SLA</a>), which is acceptable for the deletion of expired data.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="monitoring"><a class="header-mark offline-link" href="./system-design-pastebin.html#monitoring"></a>Monitoring</h3>
+<p>Monitoring is essential to identify system failures before they lead to actual problems to increase the availability of the system. Monitoring is usually implemented by installing an agent on each of the servers (services). The agent collects and aggregates the metrics and publishes the result data to a central monitoring service. Dashboards are configured to visualize the data<sup id="fnref:10"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 57: Pastebin; How to monitor the system?&lt;/h2&gt;" data-thumbnail="/system-design-pastebin/pastebin-monitoring.webp" href="https://systemdesign.one/system-design-pastebin/pastebin-monitoring.webp" rel="noopener noreferrer" target="_blank" title="Pastebin; How to monitor the system?">
+<img alt="Pastebin; How to monitor the system?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/system-design-pastebin/pastebin-monitoring.webp, /system-design-pastebin/pastebin-monitoring.webp 1.5x, /system-design-pastebin/pastebin-monitoring.webp 2x" height="680" sizes="683px" src="../assets/images/img_9460420796ce.webp" width="1342"/>
+</a><figcaption class="image-caption">Figure 57: Pastebin; How to monitor the system?</figcaption>
+</figure>
+<p>Centralized logging is required to quickly isolate the cause of a failure instead of hopping between servers. The popular log aggregation and monitoring services are <a href="https://www.fluentd.org/" rel="noopener noreferrer" target="_blank">fluentd</a> and <a href="https://www.datadoghq.com/" rel="noopener noreferrer" target="_blank">datadog</a>. The <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar" rel="noopener noreferrer" target="_blank">sidecar</a> cloud design pattern is used to run the agent and collect metrics. The following metrics must be monitored in general to get the best results:</p>
+<ul>
+<li>operating system (<a href="https://en.wikipedia.org/wiki/Central_processing_unit" rel="noopener noreferrer" target="_blank">CPU</a> load, memory, disk I/O)</li>
+<li>generic server (cache hit ratio, queries per second)</li>
+<li>application (latency, failure rate)</li>
+<li>business (number of logins, financial costs)</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="security"><a class="header-mark offline-link" href="./system-design-pastebin.html#security"></a>Security</h3>
+<p>The following list covers some of the most popular security measures<sup id="fnref:13"><a class="footnote-ref offline-link" href="./system-design-pastebin.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ul>
+<li>use JWT token for <em>authorization</em></li>
+<li>use a virtual private cloud</li>
+<li>rate limit the requests</li>
+<li>encrypt the data</li>
+<li>sanitize user input to prevent Cross Site Scripting (<a href="https://en.wikipedia.org/wiki/Cross-site_scripting" rel="noopener noreferrer" target="_blank">XSS</a>)</li>
+<li>use parameterized queries to prevent <a href="https://en.wikipedia.org/wiki/SQL_injection" rel="noopener noreferrer" target="_blank">SQL injection</a></li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./system-design-pastebin.html#summary"></a>Summary</h2>
+<p>Pastebin service is a popular system design interview question. Although the use cases of Pastebin seem trivial, building an internet-scale system is a challenging task.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./system-design-pastebin.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-and-solutions"><a class="header-mark offline-link" href="./system-design-pastebin.html#questions-and-solutions"></a>Questions and Solutions</h2>
+<p>If you would like to challenge your knowledge on the topic, visit the article: <a href="https://systemdesign.one/knowledge-test-system-design-pastebin/" rel="noopener noreferrer" target="_blank">Knowledge Test</a></p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./system-design-pastebin.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./system-design-pastebin.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="https://docs.github.com/en/rest/gists?apiVersion=2022-11-28#list-gists" rel="noopener noreferrer" target="_blank">GitHub Docs API Documentation Gists</a>, docs.github.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer#remote-procedure-call-rpc" rel="noopener noreferrer" target="_blank">System Design Primer RPC and REST</a> (2017), github.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" rel="noopener noreferrer" target="_blank">MDN web docs HTTP response status codes</a>, mozilla.org <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests" rel="noopener noreferrer" target="_blank">MDN web docs HTTP conditional requests</a>, mozilla.org <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p><a href="https://www.ibm.com/cloud/blog/object-vs-file-vs-block-storage#:~:text=Pros,learning%20and%20big%20data%20analytics." rel="noopener noreferrer" target="_blank">IBM Cloud Education, Object vs. File vs. Block Storage: What’s the Difference?</a> (2021), ibm.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Sophie, <a href="http://n00tc0d3r.blogspot.com/" rel="noopener noreferrer" target="_blank">N00tc0d3r System Design for Big Data [tinyurl]</a> (2013), blogspot.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Ryan King, <a href="https://blog.twitter.com/engineering/en_us/a/2010/announcing-snowflake" rel="noopener noreferrer" target="_blank">Announcing Snowflake</a> (2010), blog.twitter.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Christian Antognini, <a href="https://antognini.ch/papers/BloomFilters20080620.pdf" rel="noopener noreferrer" target="_blank">Bloom filters</a> (2008), antognini.ch <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer/tree/master/solutions/system_design/pastebin" rel="noopener noreferrer" target="_blank">System Design Primer Pastebin.com (or Bit.ly)</a> (2017), github.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Artur Ejsmont, <a href="https://www.amazon.com/Scalability-Startup-Engineers-Artur-Ejsmont/dp/0071843655" rel="noopener noreferrer" target="_blank">Web Scalability for Startup Engineers</a> (2015), amazon.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2014/7/14/bitly-lessons-learned-building-a-distributed-system-that-han.html" rel="noopener noreferrer" target="_blank">Bitly: Lessons Learned Building A Distributed System That Handles 6 Billion Clicks A Month</a> (2014), highscalability.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p><a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.Lambda.html" rel="noopener noreferrer" target="_blank">DynamoDB Streams and AWS Lambda triggers</a>, docs.aws.amazon.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Donne Martin, <a href="https://github.com/donnemartin/system-design-primer#security" rel="noopener noreferrer" target="_blank">System Design Primer Security Guide</a> (2017), github.com <a class="footnote-backref offline-link" href="./system-design-pastebin.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-03-03</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="System Design Pastebin" data-url="https://systemdesign.one/system-design-pastebin/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/system-design-pastebin/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/system-design-pastebin/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="System Design Pastebin" data-url="https://systemdesign.one/system-design-pastebin/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="1. create a unique paste ID 2. encode the paste ID 3. persist the paste ID in SQL store and paste in the object storage" data-image="system-design-pastebin/system-design-pastebin.webp" data-sharer="pinterest" data-url="https://systemdesign.one/system-design-pastebin/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="1. create a unique paste ID 2. encode the paste ID 3. persist the paste ID in SQL store and paste in the object storage" data-sharer="tumblr" data-title="System Design Pastebin" data-url="https://systemdesign.one/system-design-pastebin/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="System Design Pastebin" data-url="https://systemdesign.one/system-design-pastebin/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/system-design-pastebin/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="1. create a unique paste ID 2. encode the paste ID 3. persist the paste ID in SQL store and paste in the object storage" data-image="system-design-pastebin/system-design-pastebin.webp" data-sharer="vk" data-title="System Design Pastebin" data-url="https://systemdesign.one/system-design-pastebin/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev" href="https://systemdesign.one/knowledge-test-url-shortening-system-design/" rel="noopener noreferrer" target="_blank" title="Knowledge Test: URL Shortening System Design"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Knowledge Test: URL Shortening System Design</a>
+<a class="next" href="https://systemdesign.one/knowledge-test-system-design-pastebin/" rel="noopener noreferrer" target="_blank" title="Knowledge Test: System Design Pastebin">Knowledge Test: System Design Pastebin<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./system-design-pastebin.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./system-design-pastebin.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/><link href="../assets/css/style_d6210fe0e6f4.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

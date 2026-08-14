@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>What Is Service Discovery? - System Design</title><meta content="service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider" name="Description"/><meta content="What Is Service Discovery?" property="og:title"/>
+<meta content="service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/what-is-service-discovery/" property="og:url"/><meta content="https://systemdesign.one/what-is-service-discovery/service-discovery.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-06-30T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-07-05T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/what-is-service-discovery/service-discovery.webp" name="twitter:image"/>
+<meta content="What Is Service Discovery?" name="twitter:title"/>
+<meta content="service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/what-is-service-discovery/" rel="canonical"/><link href="https://systemdesign.one/slack-architecture/" rel="prev"/><link href="https://systemdesign.one/gossip-protocol/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/what-is-service-discovery</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./what-is-service-discovery.html#introduction">Introduction</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#what-is-the-need-for-service-discovery">What Is the Need for Service Discovery?</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-api">Service Discovery API</a>
+<ul>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#how-does-a-service-instance-register-on-the-service-registry">How does a service instance register on the service registry?</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#how-does-a-service-instance-deregister-from-the-service-registry">How does a service instance deregister from the service registry?</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#how-does-a-service-consumer-fetch-the-list-of-instances-by-a-service-provider">How does a service consumer fetch the list of instances by a service provider?</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-database">Service Discovery Database</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-architecture">Service Discovery Architecture</a>
+<ul>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-writeworkflow">Service Discovery Write Workflow</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-readworkflow">Service Discovery Read Workflow</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#how-to-implement-service-discovery-in-microservices">How to Implement Service Discovery in Microservices?</a>
+<ul>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-with-hard-coded-servicelocation">Service Discovery With Hard Coded Service Location</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-with-configuration-file">Service Discovery With Configuration File</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-withdns">Service Discovery With DNS</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-with-loadbalancer">Service Discovery With Load Balancer</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-with-serviceregistry">Service Discovery With Service Registry</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-patterns">Service Discovery Patterns</a>
+<ul>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#client-side-service-discovery">Client-Side Service Discovery</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#server-side-service-discovery">Server-Side Service Discovery</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-architecture-deepdive">Service Discovery Architecture Deep Dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-discovery-in-microservices">Service Discovery In Microservices</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#apache-zookeeper">Apache Zookeeper</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#hashicorp-consul">Hashicorp Consul</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#netflix-eureka">Netflix Eureka</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#alternative-implementations-of-service-discovery">Alternative Implementations of Service Discovery</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#service-registration-in-service-discovery">Service Registration in Service Discovery</a>
+<ul>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#self-registration">Self Registration</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#third-party-registration">Third-Party Registration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./what-is-service-discovery.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">What Is Service Discovery?</h1><h2 class="single-subtitle">Service Discovery In Microservices</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-06-30">2023-06-30</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 3204 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 16 minutes </div>
+</div><div class="featured-image"><img alt="/what-is-service-discovery/service-discovery.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery.webp, /what-is-service-discovery/service-discovery.webp 1.5x, /what-is-service-discovery/service-discovery.webp 2x" height="238" sizes="699px" src="../assets/images/img_ed660a5bfc21.webp" title="service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider" width="863"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on my research on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="introduction"><a class="header-mark offline-link" href="./what-is-service-discovery.html#introduction"></a>Introduction</h2>
+<p>A monolith application executes a function call to facilitate communication between services. The services in a microservice architecture are typically deployed on separate machines to attain improved fault tolerance. Therefore, the communication between services must be routed over the network in a microservice architecture <sup id="fnref:1"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<p>The service location (combination of the IP address and  port number) and binding (transport mechanism such as TCP for calling the endpoint) should be identified to interact with an instance of the service provider <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>. The identification of the service location and management of resources in a microservice is challenging due to the dynamic nature of resources. On top of that, monitoring  the health of system components such as the database, and message queue is crucial for increased reliability <sup id="fnref:3"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./what-is-service-discovery.html#requirements"></a>Requirements</h2>
+<p>The system requirements can be summarized as follows <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./what-is-service-discovery.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>service information can be written, read, deleted, or updated</li>
+<li>services can be searched</li>
+<li>provide RESTful API</li>
+<li>support checks at the service level</li>
+</ul>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./what-is-service-discovery.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>high availability</li>
+<li>low memory and CPU footprint</li>
+<li>reliability</li>
+<li>low latency</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./what-is-service-discovery.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>service provider: a service exposing an Application Programming Interface (<strong>API</strong>) such as Representational State Transfer (<strong>REST</strong>)</li>
+<li>service consumer: a service that reads and writes data</li>
+<li>service registry: a database that stores locations of all available service instances</li>
+<li>service location: a combination of Internet Protocol (<strong>IP</strong>) address and port number</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-the-need-for-service-discovery"><a class="header-mark offline-link" href="./what-is-service-discovery.html#what-is-the-need-for-service-discovery"></a>What Is the Need for Service Discovery?</h2>
+<p>The location of a service instance is required to interact with the service provider. The count of service instances and service location change dynamically in a microservice architecture. Service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The service registry is the database component of service discovery that stores the service locations (IP addresses and port numbers) to provide runtime service endpoint resolution <sup id="fnref:7"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:7" role="doc-noteref">7</a></sup>. The service instances must register with the service registry on startup and deregister on shutdown.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="service-discovery-api"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-api"></a>Service Discovery API</h2>
+<p>The service discovery can expose a RESTful or Remote Procedure Call (<strong>RPC</strong>) based API <sup id="fnref:8"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<h3 class="headerLink" id="how-does-a-service-instance-register-on-the-service-registry"><a class="header-mark offline-link" href="./what-is-service-discovery.html#how-does-a-service-instance-register-on-the-service-registry"></a>How does a service instance register on the service registry?</h3>
+<p>The service instance (<strong>client</strong>) can execute a Hypertext Transfer Protocol (<strong>HTTP</strong>) PUT request to register the service instance to the service registry.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='/services/:service-id
+method: PUT
+authorization: Bearer &lt;JWT&gt;
+content-length: 100
+content-type: application/JSON
+content-encoding: gzip
+
+{
+    name: "Service A",
+    ip_address: "10.0.x.x",
+    port_number: "8042",
+    protocol: "TCP"
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/services/</span><span class="o">:</span><span class="nx">service</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">PUT</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">100</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">JSON</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+
+<span class="p">{</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="s2">"Service A"</span><span class="p">,</span>
+    <span class="nx">ip_address</span><span class="o">:</span> <span class="s2">"10.0.x.x"</span><span class="p">,</span>
+    <span class="nx">port_number</span><span class="o">:</span> <span class="s2">"8042"</span><span class="p">,</span>
+    <span class="nx">protocol</span><span class="o">:</span> <span class="s2">"TCP"</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code 200 OK on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 200 OK
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code 400 bad request to indicate a failed request due to an invalid request payload by the client.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 400 bad request
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">400</span> <span class="nx">bad</span> <span class="nx">request</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-a-service-instance-deregister-from-the-service-registry"><a class="header-mark offline-link" href="./what-is-service-discovery.html#how-does-a-service-instance-deregister-from-the-service-registry"></a>How does a service instance deregister from the service registry?</h3>
+<p>The client can execute an HTTP DELETE request to deregister a service instance.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/services/:service-id/:instance-id
+method: DELETE
+authorization: Bearer &lt;JWT&gt;
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/services/</span><span class="o">:</span><span class="nx">service</span><span class="o">-</span><span class="nx">id</span><span class="o">/:</span><span class="nx">instance</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">DELETE</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code 204 No Content on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 204 No Content
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">204</span> <span class="nx">No</span> <span class="nx">Content</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-a-service-consumer-fetch-the-list-of-instances-by-a-service-provider"><a class="header-mark offline-link" href="./what-is-service-discovery.html#how-does-a-service-consumer-fetch-the-list-of-instances-by-a-service-provider"></a>How does a service consumer fetch the list of instances by a service provider?</h3>
+<p>The client can execute an HTTP GET request to fetch the list of service instances.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/services/:service-id
+method: GET
+authorization: Bearer &lt;JWT&gt;
+accept: application/json, text/html
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/services/</span><span class="o">:</span><span class="nx">service</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span><span class="p">,</span> <span class="nx">text</span><span class="o">/</span><span class="nx">html</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>A successful response from the server can include status code 200 OK.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+cache-control: private, no-cache, must-revalidate, max-age=300
+content-encoding: gzip
+content-type: application/json
+
+{
+  service_name: "Service A",
+  instance_count: 5,
+  updated_at: "2031-10-10T12:11:42Z",
+  instances: [
+    {
+      ip_address: "10.0.1.x",
+      port_number: "8042"
+    },
+    {...}
+  ]
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="kr">private</span><span class="p">,</span> <span class="nx">no</span><span class="o">-</span><span class="nx">cache</span><span class="p">,</span> <span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span><span class="p">,</span> <span class="nx">max</span><span class="o">-</span><span class="nx">age</span><span class="o">=</span><span class="mi">300</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+
+<span class="p">{</span>
+  <span class="nx">service_name</span><span class="o">:</span> <span class="s2">"Service A"</span><span class="p">,</span>
+  <span class="nx">instance_count</span><span class="o">:</span> <span class="mi">5</span><span class="p">,</span>
+  <span class="nx">updated_at</span><span class="o">:</span> <span class="s2">"2031-10-10T12:11:42Z"</span><span class="p">,</span>
+  <span class="nx">instances</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nx">ip_address</span><span class="o">:</span> <span class="s2">"10.0.1.x"</span><span class="p">,</span>
+      <span class="nx">port_number</span><span class="o">:</span> <span class="s2">"8042"</span>
+    <span class="p">},</span>
+    <span class="p">{...}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="service-discovery-database"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-database"></a>Service Discovery Database</h2>
+<p>The service registry data model should be kept flexible to accommodate future service deployments. The attributes of a service instance can be extended via key-value pairs in the metadata table <sup id="fnref:9"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:9" role="doc-noteref">9</a></sup>. The major entities of the service discovery data schema are shown in Figure 1.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Service Discovery Database Schema&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-database-schema.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-database-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Service Discovery Database Schema">
+<img alt="Figure 1: Service Discovery Database Schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-database-schema.webp, /what-is-service-discovery/service-discovery-database-schema.webp 1.5x, /what-is-service-discovery/service-discovery-database-schema.webp 2x" height="409" sizes="683px" src="../assets/images/img_db54ffda5752.webp" width="667"/>
+</a><figcaption class="image-caption">Figure 1: Service Discovery Database Schema</figcaption>
+</figure>
+<p>The operational metadata of a service instance could also include information about the active UDP sockets, TCP sockets, process names, path to the process executables, and the command line arguments <sup id="fnref:10"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:10" role="doc-noteref">10</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./what-is-service-discovery.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="service-discovery-architecture"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-architecture"></a>Service Discovery Architecture</h2>
+<h3 class="headerLink" id="service-discovery-writeworkflow"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-writeworkflow"></a>Service Discovery Write Workflow</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Service Discovery; Write Workflow&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-write-workflow.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-write-workflow.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Service Discovery; Write Workflow">
+<img alt="Figure 2: Service Discovery; Write Workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-write-workflow.webp, /what-is-service-discovery/service-discovery-write-workflow.webp 1.5x, /what-is-service-discovery/service-discovery-write-workflow.webp 2x" height="409" sizes="683px" src="../assets/images/img_8ceb6663990d.webp" width="691"/>
+</a><figcaption class="image-caption">Figure 2: Service Discovery; Write Workflow</figcaption>
+</figure>
+<p>The service provider provides its IP address and port number to register on the service registry. The periodic heartbeat signal is used to indicate the liveness status of a service instance. The polite service instances usually deregister themselves on shutdown. The absence of a heartbeat signal for an extended period caused by an abrupt shutdown of the service marks the instance as dead automatically <sup id="fnref:9"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:9" role="doc-noteref">9</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="service-discovery-readworkflow"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-readworkflow"></a>Service Discovery Read Workflow</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Service Discovery; Read Workflow&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-read-workflow.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-read-workflow.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Service Discovery; Read Workflow">
+<img alt="Figure 3: Service Discovery; Read Workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-read-workflow.webp, /what-is-service-discovery/service-discovery-read-workflow.webp 1.5x, /what-is-service-discovery/service-discovery-read-workflow.webp 2x" height="409" sizes="683px" src="../assets/images/img_071b64b88bb0.webp" width="691"/>
+</a><figcaption class="image-caption">Figure 3: Service Discovery; Read Workflow</figcaption>
+</figure>
+<p>The publish-subscribe (<strong>pub-sub</strong>) pattern can be used to implement a reliable service discovery. The service consumers should subscribe to the interested service providers on the service registry. Any changes to the service providers are pushed to the subscribed service consumers by the service registry <sup id="fnref:9"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:9" role="doc-noteref">9</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-implement-service-discovery-in-microservices"><a class="header-mark offline-link" href="./what-is-service-discovery.html#how-to-implement-service-discovery-in-microservices"></a>How to Implement Service Discovery in Microservices?</h3>
+<p>The different techniques to implement service discovery in a microservice architecture are the following <sup id="fnref:5"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>hard code the service location in the service consumers</li>
+<li>external configuration file</li>
+<li>DNS-based service discovery</li>
+<li>service discovery using a load balancer</li>
+<li>service registry</li>
+</ul>
+<h4 class="headerLink" id="service-discovery-with-hard-coded-servicelocation"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-with-hard-coded-servicelocation"></a>Service Discovery With Hard Coded Service Location</h4>
+<p>A trivial approach to implementing service discovery is through manual management of the service provider locations within the application code of service consumers. However, the technique of manual management is error-prone and will not scale as the number of services increases <sup id="fnref:3"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<p>In addition, hard coding the service location limits the service consumer to perform only certain types of load balancing and also makes it non-trivial to relocate the service instances due to tight coupling between the service consumer and service provider locations <sup id="fnref:5"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>. In summary, do not hard code the service provider locations to enable service discovery in a microservice architecture.</p>
+<hr/>
+<h4 class="headerLink" id="service-discovery-with-configuration-file"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-with-configuration-file"></a>Service Discovery With Configuration File</h4>
+<p>An external configuration file that is local to the service consumer can be used to store the location of the service providers. The external configuration file on the service consumers allows changes to the service provider without performing any code changes to the service consumers. The external configuration file can be modified with a configuration management tool such as Puppet or Chef <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Service Discovery; External Configuration File&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-configuration-file.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-configuration-file.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Service Discovery; External Configuration File">
+<img alt="Figure 4: Service Discovery; External Configuration File" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-configuration-file.webp, /what-is-service-discovery/service-discovery-configuration-file.webp 1.5x, /what-is-service-discovery/service-discovery-configuration-file.webp 2x" height="490" sizes="683px" src="../assets/images/img_7ff737251c12.webp" width="767"/>
+</a><figcaption class="image-caption">Figure 4: Service Discovery; External Configuration File</figcaption>
+</figure>
+<p>The primary benefit of utilizing an external configuration file is the trivial implementation of service discovery <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>. The downsides of this approach are as follows <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>scalability problems when the count of service consumers or service providers increases</li>
+<li>non-trivial implementation of heartbeats to support health checks</li>
+</ul>
+<p>In summary, do not use an external configuration file to implement service discovery in a microservice architecture.</p>
+<hr/>
+<h4 class="headerLink" id="service-discovery-withdns"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-withdns"></a>Service Discovery With DNS</h4>
+<p>The Domain Name System (<strong>DNS</strong>) is a distributed database that supports  service discovery via the resolution of service names to IP addresses <sup id="fnref:5"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:5" role="doc-noteref">5</a></sup>. The primary difference between service discovery and DNS is that service discovery handles a dynamic number of service instances while DNS handles only a static number of service instances <sup id="fnref:1"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Service Discovery; DNS&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-dns.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-dns.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Service Discovery; DNS">
+<img alt="Figure 5: Service Discovery; DNS" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-dns.webp, /what-is-service-discovery/service-discovery-dns.webp 1.5x, /what-is-service-discovery/service-discovery-dns.webp 2x" height="378" sizes="683px" src="../assets/images/img_9a8086f5833e.webp" width="722"/>
+</a><figcaption class="image-caption">Figure 5: Service Discovery; DNS</figcaption>
+</figure>
+<p>DNS is a proven technology that works on a large <a class="offline-link" href="../case-studies/scalable-software-architecture.html" rel="noopener noreffer">scale</a> and provides the following benefits <sup id="fnref:12"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:5" role="doc-noteref">5</a></sup>:</p>
+<ul>
+<li>reliability through replication</li>
+<li>built-in cache support</li>
+<li>trivial configuration</li>
+</ul>
+<p>As everything comes with a price, DNS holds the following drawbacks <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>offers only a crude interface to execute any updates</li>
+<li>stale data due to multi-level <a class="offline-link" href="./caching-patterns.html" rel="noopener noreffer">cache</a></li>
+<li>limited horizontal scalability of the system due to the delay in updating the state of a service</li>
+</ul>
+<p>In summary, do not use DNS to build service discovery in a microservice architecture.</p>
+<hr/>
+<h4 class="headerLink" id="service-discovery-with-loadbalancer"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-with-loadbalancer"></a>Service Discovery With Load Balancer</h4>
+<p>A load balancer can be introduced in front of each service provider to facilitate service discovery. The tradeoffs with this approach are the following <sup id="fnref:1"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>slightly degraded latency due to an additional network hop</li>
+<li>the load balancer becomes a single point of failure</li>
+<li>increased system complexity due to numerous load balancers</li>
+<li>increased effort for management of the load balancers</li>
+</ul>
+<p>In summary, do not implement service discovery with load balancers in a scalable microservice architecture.</p>
+<hr/>
+<h4 class="headerLink" id="service-discovery-with-serviceregistry"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-with-serviceregistry"></a>Service Discovery With Service Registry</h4>
+<p>The service registry is a database that contains the locations of the instances by a service provider. The service registry is also known as a <strong>discovery server</strong>. The key idea behind the service registry is to use a distributed key-value store to store the service configuration and service locations. The simplest service registry can be implemented using a key-value store such as Redis <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The instances of a service provider must register to the service registry on startup. The service consumers query the service registry to identify the instances of a service provider <sup id="fnref:1"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:1" role="doc-noteref">1</a></sup>. The service registry persists also information about invocation policies for each service provider <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>. In conclusion, it is recommended to build service discovery with a service registry in a scalable microservice architecture.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="service-discovery-patterns"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-patterns"></a>Service Discovery Patterns</h3>
+<p>The different patterns for service discovery are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>client-side service discovery</li>
+<li>server-side service discovery</li>
+</ul>
+<h4 class="headerLink" id="client-side-service-discovery"><a class="header-mark offline-link" href="./what-is-service-discovery.html#client-side-service-discovery"></a>Client-Side Service Discovery</h4>
+<p>The service consumer determines the location of a service provider instance by directly querying the service registry. The service consumer performs load balancing through either a round-robin or a <a class="offline-link" href="./consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> algorithm <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>. The following is the workflow for client-side service discovery:</p>
+<ol>
+<li>the service provider registers to the service registry on the startup</li>
+<li>the service consumer performs a lookup operation on the service registry for the location of a service provider</li>
+<li>the service registry returns the location of a healthy instance</li>
+<li>the service consumer invokes the service instance</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Client-Side Service Discovery&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/client-side-service-discovery.webp" href="https://systemdesign.one/what-is-service-discovery/client-side-service-discovery.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Client-Side Service Discovery">
+<img alt="Figure 6: Client-Side Service Discovery" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/client-side-service-discovery.webp, /what-is-service-discovery/client-side-service-discovery.webp 1.5x, /what-is-service-discovery/client-side-service-discovery.webp 2x" height="371" sizes="683px" src="../assets/images/img_0bc695684ad2.webp" width="555"/>
+</a><figcaption class="image-caption">Figure 6: Client-Side Service Discovery</figcaption>
+</figure>
+<p>The benefits of client-side service discovery are as follows <sup id="fnref:8"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:8" role="doc-noteref">8</a></sup>:</p>
+<ul>
+<li>improved fault tolerance due to resilience against load balancer failures by caching service information on the client</li>
+<li>slightly improved latency due to a decrease in the count of network hops</li>
+</ul>
+<p>On the other hand, the limitations of client-side service discovery are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>increased client-side complexity</li>
+<li>increased coupling between service discovery logic and service consumers causes difficulty to reimplement service discovery logic with different types of clients and frameworks</li>
+</ul>
+<p>The <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/sidecar" rel="noopener noreferrer" target="_blank">sidecar pattern</a> can be used to mitigate the coupling between the service consumers and service discovery logic.</p>
+<hr/>
+<h4 class="headerLink" id="server-side-service-discovery"><a class="header-mark offline-link" href="./what-is-service-discovery.html#server-side-service-discovery"></a>Server-Side Service Discovery</h4>
+<p>The service discovery pattern typically used on a production system is server-side service discovery. The instances of a service provider are put behind the load balancer and the client requests are routed via the load balancer. The service configuration and service locations are stored in the service registry <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>. The following is the workflow for server-side service discovery:</p>
+<ol>
+<li>the service provider registers with the service registry on the startup</li>
+<li>the service consumer executes a service request to the load balancer</li>
+<li>the load balancer performs a lookup operation for the service location on the service registry</li>
+<li>the service registry returns the list of healthy instances to the load balancer</li>
+<li>the load balancer forwards the request to an instance of the service provider based on the load-balancing algorithm</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Server-Side Service Discovery&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/server-side-service-discovery.webp" href="https://systemdesign.one/what-is-service-discovery/server-side-service-discovery.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Server-Side Service Discovery">
+<img alt="Figure 7: Server-Side Service Discovery" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/server-side-service-discovery.webp, /what-is-service-discovery/server-side-service-discovery.webp 1.5x, /what-is-service-discovery/server-side-service-discovery.webp 2x" height="493" sizes="683px" src="../assets/images/img_6cf7feaf2e54.webp" width="704"/>
+</a><figcaption class="image-caption">Figure 7: Server-Side Service Discovery</figcaption>
+</figure>
+<p>The advantages of server-side service discovery are the following <sup id="fnref:13"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ul>
+<li>trivial implementation</li>
+<li>loose coupling between the service consumers and service providers</li>
+<li>latency limits can be defined for smart request routing to healthy service instances</li>
+</ul>
+<p>On the contrary, the limitations of server-side service discovery are increased system complexity and slightly degraded latency due to an additional network hop <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./what-is-service-discovery.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="service-discovery-architecture-deepdive"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-architecture-deepdive"></a>Service Discovery Architecture Deep Dive</h2>
+<h3 class="headerLink" id="service-discovery-in-microservices"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-discovery-in-microservices"></a>Service Discovery In Microservices</h3>
+<p>The registry database is the core of service discovery because the registry database stores information about all the available services in the system. The registry service encapsulates access to the registry database through a set of APIs. The registry service delivers the following benefits <sup id="fnref:2"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ul>
+<li>abstracts the database schema and database interactions from the service consumers</li>
+<li>minimizes the count of database connections to improve performance and throughput</li>
+<li>support publish-subscribe model to inform service consumers about any service changes in near real-time</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Service Discovery Architecture&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-architecture.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-architecture.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Service Discovery Architecture">
+<img alt="Figure 8: Service Discovery Architecture" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-architecture.webp, /what-is-service-discovery/service-discovery-architecture.webp 1.5x, /what-is-service-discovery/service-discovery-architecture.webp 2x" height="837" sizes="683px" src="../assets/images/img_638cda83be11.webp" width="1099"/>
+</a><figcaption class="image-caption">Figure 8: Service Discovery Architecture</figcaption>
+</figure>
+<p>Health checks can be configured against the service provider to improve reliability. The service registry must be replicated to avoid a single point of failure and to provide high availability. The popular implementations of the service registry are the following <sup id="fnref:6"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:13"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>CAP Theorem</th>
+<th>Consensus</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://zookeeper.apache.org/" rel="noopener noreferrer" target="_blank">Apache Zookeeper</a></td>
+<td>CP</td>
+<td>Zab</td>
+<td>Filesystem-like API</td>
+</tr>
+<tr>
+<td><a href="https://etcd.io/" rel="noopener noreferrer" target="_blank">CoreOS Etcd</a></td>
+<td>CP</td>
+<td>Raft</td>
+<td>Key-value store with HTTP API</td>
+</tr>
+<tr>
+<td><a href="https://www.consul.io/" rel="noopener noreferrer" target="_blank">Hashicorup Consul</a></td>
+<td>CP</td>
+<td>Raft</td>
+<td><a class="offline-link" href="./gossip-protocol.html" rel="noopener noreffer">Gossip protocol</a>, RESTful API, key-value store</td>
+</tr>
+<tr>
+<td><a href="https://github.com/Netflix/eureka" rel="noopener noreferrer" target="_blank">Netflix Eureka</a></td>
+<td>AP</td>
+<td>-</td>
+<td>RESTful API, cached client that polls</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="apache-zookeeper"><a class="header-mark offline-link" href="./what-is-service-discovery.html#apache-zookeeper"></a>Apache Zookeeper</h3>
+<p>Zookeeper supports Zab consensus protocol and provides a filesystem-like API.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: Service Discovery; Apache Zookeeper&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-apache-zookeeper.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-apache-zookeeper.webp" rel="noopener noreferrer" target="_blank" title="Figure 9: Service Discovery; Apache Zookeeper">
+<img alt="Figure 9: Service Discovery; Apache Zookeeper" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-apache-zookeeper.webp, /what-is-service-discovery/service-discovery-apache-zookeeper.webp 1.5x, /what-is-service-discovery/service-discovery-apache-zookeeper.webp 2x" height="786" sizes="683px" src="../assets/images/img_991a1f8d94cb.webp" width="1094"/>
+</a><figcaption class="image-caption">Figure 9: Service Discovery; Apache Zookeeper</figcaption>
+</figure>
+<p>The following operations are executed when the service provider registers with the Zookeeper <sup id="fnref:14"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:14" role="doc-noteref">14</a></sup>:</p>
+<ol>
+<li>Zab protocol is leveraged to attain a consensus on the current location and status of the service instance</li>
+<li>A parent node is created in Zookeeper to represent the service type</li>
+<li>Child nodes are created in Zookeeper to depict the service instances</li>
+</ol>
+<p>Zookeeper nodes are ephemeral and support only rudimentary health checks <sup id="fnref:14"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:14" role="doc-noteref">14</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="hashicorp-consul"><a class="header-mark offline-link" href="./what-is-service-discovery.html#hashicorp-consul"></a>Hashicorp Consul</h3>
+<p>The consul cluster consists of consul agents (<strong>clients</strong>) and consul servers. The consul agents are usually deployed alongside the service instances. The consul agent interacts with the consul server on behalf of the service instance. The consul agent is usually the API endpoint of the consul service. The service information is stored only by the consul server <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Service Discovery; Hashicorp Consul&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-consul.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-consul.webp" rel="noopener noreferrer" target="_blank" title="Figure 10: Service Discovery; Hashicorp Consul">
+<img alt="Figure 10: Service Discovery; Hashicorp Consul" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-consul.webp, /what-is-service-discovery/service-discovery-consul.webp 1.5x, /what-is-service-discovery/service-discovery-consul.webp 2x" height="771" sizes="683px" src="../assets/images/img_bf51a970c990.webp" width="994"/>
+</a><figcaption class="image-caption">Figure 10: Service Discovery; Hashicorp Consul</figcaption>
+</figure>
+<p>The service consumer can query the consul agent over HTTP. The consul agent executes a periodic health check on the service provider to check whether the service instance is still healthy. The instance can also proactively push the health data to the consul agent or mark itself as unhealthy when there is no response received from the consul agent due to a network partition <sup id="fnref:4"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<p>Consul supports Raft consensus protocol. The <a class="offline-link" href="./gossip-protocol.html" rel="noopener noreffer">gossip protocol</a> is used by Consul to check the service membership status at a high scale <sup id="fnref:14"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:14" role="doc-noteref">14</a></sup>. The consul agent can interact with any consul server over HTTP. Consul is also often used as a key-value store for service configurations. Consul supports a DNS interface beside an HTTP API interface to support service discovery with legacy services <sup id="fnref:15"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="netflix-eureka"><a class="header-mark offline-link" href="./what-is-service-discovery.html#netflix-eureka"></a>Netflix Eureka</h3>
+<p><a class="offline-link" href="../case-studies/how-does-netflix-work.html" rel="noopener noreffer">Netflix</a> Eureka consists of the Eureka server (service registry) and the Eureka client. The Eureka client simplifies the server interaction by handling load balancing and failover support. Eureka server offers a RESTful API and is typically deployed on Amazon Web Services (<strong>AWS</strong>) hyperscaler <sup id="fnref:16"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:16" role="doc-noteref">16</a></sup>, <sup id="fnref:17"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:17" role="doc-noteref">17</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Service Discovery; Netflix Eureka&lt;/h2&gt;" data-thumbnail="/what-is-service-discovery/service-discovery-netflix-eureka.webp" href="https://systemdesign.one/what-is-service-discovery/service-discovery-netflix-eureka.webp" rel="noopener noreferrer" target="_blank" title="Figure 11: Service Discovery; Netflix Eureka">
+<img alt="Figure 11: Service Discovery; Netflix Eureka" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/what-is-service-discovery/service-discovery-netflix-eureka.webp, /what-is-service-discovery/service-discovery-netflix-eureka.webp 1.5x, /what-is-service-discovery/service-discovery-netflix-eureka.webp 2x" height="744" sizes="683px" src="../assets/images/img_086a730cf0c7.webp" width="1043"/>
+</a><figcaption class="image-caption">Figure 11: Service Discovery; Netflix Eureka</figcaption>
+</figure>
+<p>Netflix Eureka is an optimal choice to implement client-side service discovery and client-side load balancing. The Eureka client caches the service registry to achieve high availability <sup id="fnref:8"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:8" role="doc-noteref">8</a></sup>. The architecture of Eureka favors availability over <a class="offline-link" href="./consistency-patterns.html" rel="noopener noreffer">consistency</a>. Therefore, the staleness of the service registry should be expected by the client. The client must be ready to perform an automated failover due to the potential staleness of the registry to achieve improved reliability <sup id="fnref:9"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:9" role="doc-noteref">9</a></sup>.</p>
+<p>The service registry is replicated across multiple data centers for high availability and low latency. The registered service instances will send periodic heartbeat signals every thirty seconds. The service instance is automatically deregistered from the service registry if heartbeat signals are not received for a few minutes <sup id="fnref:8"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:17"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:17" role="doc-noteref">17</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="alternative-implementations-of-service-discovery"><a class="header-mark offline-link" href="./what-is-service-discovery.html#alternative-implementations-of-service-discovery"></a>Alternative Implementations of Service Discovery</h3>
+<p>The CoreOS’s Etcd is similar to Apache Zookeeper and forms a cluster through the Raft consensus protocol. Etcd is a key-value store and supports RPC API <sup id="fnref:14"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:14" role="doc-noteref">14</a></sup>.</p>
+<p>Alternatively, Conflict-free Replicated Data Type (<strong>CRDT</strong>) can be used to build an eventually consistent service discovery. The CRDT set data type can be used to persist the membership list. The <a class="offline-link" href="./gossip-protocol.html" rel="noopener noreffer">gossip protocol</a> can be used to propagate the state of the application across the cluster <sup id="fnref:14"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:14" role="doc-noteref">14</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="service-registration-in-service-discovery"><a class="header-mark offline-link" href="./what-is-service-discovery.html#service-registration-in-service-discovery"></a>Service Registration in Service Discovery</h3>
+<p>The different techniques for service registration in service discovery are the following:</p>
+<ul>
+<li>self-registration</li>
+<li>third-party registration</li>
+</ul>
+<h4 class="headerLink" id="self-registration"><a class="header-mark offline-link" href="./what-is-service-discovery.html#self-registration"></a>Self Registration</h4>
+<p>A service instance must register and deregister on its own from the service registry. The self-registration service discovery approach keeps the system complexity low at the expense of increased coupling between the service instance and the service registry. Besides, the service registration logic must be reimplemented in different programming languages and frameworks in a <a class="offline-link" href="../case-studies/prime-video-microservices.html" rel="noopener noreffer">microservices</a> architecture.</p>
+<hr/>
+<h4 class="headerLink" id="third-party-registration"><a class="header-mark offline-link" href="./what-is-service-discovery.html#third-party-registration"></a>Third-Party Registration</h4>
+<p>A third-party library or service can be used to reduce the coupling between the service instances and the service registry. The third-party registration approach eliminates the need to reimplement registration logic in different programming languages and frameworks.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./what-is-service-discovery.html#summary"></a>Summary</h2>
+<p>Service Discovery is a crucial aspect to implement the <a class="offline-link" href="./netflix-microservices.html" rel="noopener noreffer">microservices</a> architecture. The service discovery enables loose coupling between the service provider and service consumers <sup id="fnref:5"><a class="footnote-ref offline-link" href="./what-is-service-discovery.html#fn:5" role="doc-noteref">5</a></sup>. Service discovery is implemented in internet-scale systems such as <a class="offline-link" href="../case-studies/system-design-pastebin.html" rel="noopener noreffer">Pastebin</a> and <a class="offline-link" href="../case-studies/url-shortening-system-design.html" rel="noopener noreffer">URL shortener</a>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./what-is-service-discovery.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./what-is-service-discovery.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./what-is-service-discovery.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Armon Dadgar, <a href="https://www.youtube.com/watch?v=mxeMdl0KvBI" rel="noopener noreferrer" target="_blank">Introduction to HashiCorp Consul with Armon Dadgar</a> (2018), HashiCorp <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>Boris Lublinsky, <a href="https://www.infoq.com/articles/net-service-registry/" rel="noopener noreferrer" target="_blank">Implementing a Service Registry for .NET Web Services</a> (2008), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Kent Weare, <a href="https://www.infoq.com/news/2018/12/AWS-Cloud-MAP/" rel="noopener noreferrer" target="_blank">Amazon Introduces AWS Cloud Map: Service Discovery for Cloud Resources</a> (2018), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>York Xyander, Bodo Junglas, <a href="https://www.infoq.com/presentations/microservices-zero-downtime/" rel="noopener noreferrer" target="_blank">Resilience, Service Discovery and Zero Downtime Deployment in Microservice Architectures</a> (2015), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Jan Algermissen, <a href="https://www.infoq.com/articles/rest-discovery-dns/" rel="noopener noreferrer" target="_blank">Using DNS for REST Web Service Discovery</a> (2010), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Ian Cooper, <a href="https://www.infoq.com/presentations/brighter/" rel="noopener noreferrer" target="_blank">Service Discovery and Clustering for .NET developers</a> (2016), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Ben Wilcock, <a href="https://www.infoq.com/articles/SimpleServiceRepository/" rel="noopener noreferrer" target="_blank">DIY SOA: How to build your own Simple Service Repository</a> (2011), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Karthikeyan Ranganathan, <a href="https://netflixtechblog.com/netflix-shares-cloud-load-balancing-and-failover-tool-eureka-c10647ef95e5" rel="noopener noreferrer" target="_blank">Netflix Shares Cloud Load Balancing And Failover Tool: Eureka!</a> (2012), Netflix TechBlog <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p><a href="https://github.com/Netflix/eureka/wiki/Eureka-2.0-Architecture-Overview" rel="noopener noreferrer" target="_blank">Eureka 2.0 Architecture Overview</a> (2015), GitHub.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Matt Campbell, <a href="https://www.infoq.com/news/2021/05/gremlin-automated-service/" rel="noopener noreferrer" target="_blank">Gremlin Adds Automated Service Discovery for Targeting Chaos Experiments</a> (2021), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Steef-Jan Wiggers, <a href="https://www.infoq.com/news/2020/04/google-service-directory-beta/" rel="noopener noreferrer" target="_blank">Google Introduces Service Directory to Manage All Your Services in One Place at Scale</a> (2020), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p>Daniel Bryant, <a href="https://www.infoq.com/news/2015/01/mesos-dns-service-discovery/" rel="noopener noreferrer" target="_blank">Mesosphere Release Mesos-DNS Service Discovery for Apache Mesos</a> (2015), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Mike Amundsen, <a href="https://www.infoq.com/articles/description-discovery-profiles-primer/" rel="noopener noreferrer" target="_blank">Description, Discovery, and Profiles: A Primer</a> (2015), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p>Mushtaq Ahmed, Unmesh Joshi, <a href="https://www.infoq.com/presentations/service-discovery-crdt/" rel="noopener noreferrer" target="_blank">Service Discovery Using CRDTs</a> (2018), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:15" role="doc-endnote">
+<p>Carlos Sanchez, <a href="https://www.infoq.com/news/2015/01/service-discovery-consul/" rel="noopener noreferrer" target="_blank">Service Discovery with Consul</a> (2015), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:15" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:16" role="doc-endnote">
+<p>Abel Avram, <a href="https://www.infoq.com/news/2012/09/Eureka/" rel="noopener noreferrer" target="_blank">Netflix Open Sources Their AWS Service Registry, Eureka</a> (2012), infoq.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:16" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:17" role="doc-endnote">
+<p>Abhijit Sarkar,  <a href="https://blogs.asarkar.com/technical/netflix-eureka/" rel="noopener noreferrer" target="_blank">Spring Cloud Netflix Eureka - The Hidden Manual</a> (2017), blogs.asarkar.com <a class="footnote-backref offline-link" href="./what-is-service-discovery.html#fnref:17" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-07-05</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="What Is Service Discovery?" data-url="https://systemdesign.one/what-is-service-discovery/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/what-is-service-discovery/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/what-is-service-discovery/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="What Is Service Discovery?" data-url="https://systemdesign.one/what-is-service-discovery/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider" data-image="what-is-service-discovery/service-discovery.webp" data-sharer="pinterest" data-url="https://systemdesign.one/what-is-service-discovery/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider" data-sharer="tumblr" data-title="What Is Service Discovery?" data-url="https://systemdesign.one/what-is-service-discovery/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="What Is Service Discovery?" data-url="https://systemdesign.one/what-is-service-discovery/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/what-is-service-discovery/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="service discovery is the process of retrieving the list of instances of a service provider for interaction between service consumers and the server provider" data-image="what-is-service-discovery/service-discovery.webp" data-sharer="vk" data-title="What Is Service Discovery?" data-url="https://systemdesign.one/what-is-service-discovery/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="../case-studies/slack-architecture.html" rel="prev" title="Slack Architecture"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Slack Architecture</a>
+<a class="next offline-link" href="./gossip-protocol.html" rel="next" title="Gossip Protocol">Gossip Protocol<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./what-is-service-discovery.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./what-is-service-discovery.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

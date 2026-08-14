@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Leaderboard System Design - System Design</title><meta content="Redis sorted set data type makes it trivial to generate a scalable real-time leaderboard" name="Description"/><meta content="Leaderboard System Design" property="og:title"/>
+<meta content="Redis sorted set data type makes it trivial to generate a scalable real-time leaderboard" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/leaderboard-system-design/" property="og:url"/><meta content="https://systemdesign.one/leaderboard-system-design/leaderboard.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-03-18T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-04-03T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/leaderboard-system-design/leaderboard.webp" name="twitter:image"/>
+<meta content="Leaderboard System Design" name="twitter:title"/>
+<meta content="Redis sorted set data type makes it trivial to generate a scalable real-time leaderboard" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/leaderboard-system-design/" rel="canonical"/><link href="https://systemdesign.one/quotient-filter-explained/" rel="prev"/><link href="https://systemdesign.one/live-comment-system-design/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/leaderboard-system-design</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./leaderboard-system-design.html#what-is-a-leaderboard">What is a Leaderboard?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-does-the-leaderboard-work">How does the Leaderboard work?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#questions-to-ask-the-interviewer">Questions to ask the Interviewer</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#candidate">Candidate</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#interviewer">Interviewer</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#leaderboard-api">Leaderboard API</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-update-the-score-of-aplayer">How to update the score of a player?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-view-a-specific-players-rank-andscore">How to view a specific player’s rank and score?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-view-the-top-10-players-on-the-leaderboard">How to view the top 10 players on the leaderboard?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-identify-the-surrounding-rankedplayers">How to identify the surrounding ranked players?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-view-the-health-of-aservice">How to view the health of a service?</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#leaderboard-datastorage">Leaderboard data storage</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#leaderboard-database-schemadesign">Leaderboard database schema design</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#games-table">Games table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#sample-data-of-games-table">Sample data of Games table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#players-table">Players table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#sample-data-of-players-table">Sample data of Players table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#leaderboards-table">Leaderboards table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#sample-data-of-leaderboards-table">Sample data of Leaderboards table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#friends-table">Friends table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#sample-data-of-friends-table">Sample data of Friends table</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#leaderboards-sorted-set-redis">Leaderboards Sorted Set (Redis)</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#sql">SQL</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-insert-a-new-player">Write a SQL query to insert a new player</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-update-the-score-of-a-player">Write a SQL query to update the score of a player</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-fetch-the-total-score-of-a-player-for-the-current-month">Write a SQL query to fetch the total score of a player for the current month</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-calculate-the-scores-and-rank-the-top-10-players">Write a SQL query to calculate the scores and rank the top 10 players</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-calculate-the-rank-of-a-specific-player">Write a SQL query to calculate the rank of a specific player</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#type-of-datastore">Type of data store</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#capacity-planning">Capacity Planning</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#traffic">Traffic</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#memory">Memory</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#storage">Storage</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#bandwidth">Bandwidth</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#capacity-planningsummary">Capacity Planning Summary</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#leaderboard-high-level-design">Leaderboard high-level design</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#nosql-database-for-leaderboard">NoSQL database for leaderboard</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-update-the-score-of-a-player-on-the-leaderboard">How to update the score of a player on the leaderboard?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-retrieve-the-leaderboard-data">How to retrieve the leaderboard data?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#further-system-design-learning-resources-2">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#design-deepdive">Design deep dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-view-the-top-10-players-on-the-leaderboard-1">How to view the top 10 players on the leaderboard?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-view-a-specific-players-rank-andscore-1">How to view a specific player’s rank and score?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-view-the-surrounding-ranked-players-to-a-particular-player">How to view the surrounding ranked players to a particular player?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-send-score-updates-through-push-notifications">How to send score updates through push notifications?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-configure-a-global-leaderboard">How to configure a global leaderboard?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-view-the-historical-leaderboards">How to view the historical leaderboards?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-configure-leaderboards-based-on-gameplay-on-a-daily-weekly-or-monthlybasis">How to configure leaderboards based on gameplay on a daily, weekly, or monthly basis?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-configure-the-leaderboard-for-the-friendcircles">How to configure the leaderboard for the friend circles?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-to-shard-the-leaderboard-cacheserver">How to shard the leaderboard cache server?</a>
+<ul>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#redis-cluster">Redis cluster</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#consistent-hashing">Consistent hashing</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#how-leaderboard-handle-massive-concurrency">How leaderboard handle massive concurrency?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#redis-sorted-set-explained">Redis sorted set explained</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#redis-sorted-set-implementation">Redis sorted set implementation</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#high-availability">High availability</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#low-latency">Low latency</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#reliability">Reliability</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#minimal-operational-overhead">Minimal operational overhead</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#security">Security</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./leaderboard-system-design.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Leaderboard System Design</h1><h2 class="single-subtitle">Real-Time Gaming Leaderboard</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/deep-dive/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Deep Dive</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-03-18">2023-03-18</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 7523 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 36 minutes </div>
+</div><div class="featured-image"><img alt="/leaderboard-system-design/leaderboard.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard.webp, /leaderboard-system-design/leaderboard.webp 1.5x, /leaderboard-system-design/leaderboard.webp 2x" height="4059" sizes="699px" src="../assets/images/img_9369e0d23854.webp" title="Redis sorted set data type makes it trivial to generate a scalable real-time leaderboard" width="6355"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of system design components. This article does not cover an in-depth guide on individual system design components.</em></p>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<h2 class="headerLink" id="what-is-a-leaderboard"><a class="header-mark offline-link" href="./leaderboard-system-design.html#what-is-a-leaderboard"></a>What is a Leaderboard?</h2>
+<p>The leaderboard is a dashboard for displaying the ranking of the players in a competitive event such as an online multiplayer game. In the internet-connected world, leaderboards for popular games can be shared by millions of players. The players are assigned a score for the completion of tasks and the player with the highest score appears at the top of the leaderboard. The following are the benefits of having a leaderboard<sup id="fnref:1"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>enhance social aspects of the game</li>
+<li>increase game activity</li>
+</ul>
+<p>An example of a gaming leaderboard is the <a href="https://apex.tracker.gg/apex/leaderboards/stats/origin/RankScore?page=1" rel="noopener noreferrer" target="_blank">apex legends tracker</a>.</p>
+<div class="twitter-tweet twitter-tweet-rendered" style="display: flex; max-width: 550px; width: 100%; margin-top: 10px; margin-bottom: 10px;"></div>
+
+<p>Leaderboards are also useful in gamification in fitness, education, loyalty programs, or community participation. The following are the broad categories of leaderboards<sup id="fnref:2"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>
+<p><strong>Absolute leaderboard</strong>: ranks all players by a global measure. The top-ranked players such as the top 10 players are typically displayed by the absolute leaderboards.</p>
+</li>
+<li>
+<p><strong>Relative leaderboard</strong>: ranks players in such a way that players are grouped according to certain criteria. The surrounding ranked players of a particular player is displayed by the relative leaderboards.</p>
+</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./leaderboard-system-design.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>Node: a server that provides functionality to other services</li>
+<li>Hash function: a mathematical function used to map data of arbitrary size to fixed-size values</li>
+<li>Data partitioning: a technique of distributing data across multiple nodes to improve the performance and <a class="offline-link" href="../fundamentals/micro-frontends.html" rel="noopener noreffer">scalability</a> of the system</li>
+<li>Data replication: a technique of storing multiple copies of the same data on different nodes to improve the availability and durability of the system</li>
+<li>Hotspot: A performance-degraded node in a distributed system due to a large share of data storage and a high volume of retrieval or storage requests</li>
+<li><a class="offline-link" href="./cdn-explained.html" rel="noopener noreffer">CDN</a>: a group of geographically distributed servers that speed up the delivery of web content by bringing the content closer to the users</li>
+<li>API: a software intermediary that allows two applications or services to talk to each other</li>
+<li>Encryption: secure encoding of data using a key to protect the confidentiality of data</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-the-leaderboard-work"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-does-the-leaderboard-work"></a>How does the Leaderboard work?</h2>
+<p>The Redis sorted set is the data type for the use cases and access patterns in the leaderboard requirements. The sorted set is an in-memory data type that makes it trivial to generate the leaderboard in real-time for millions of players. The current rank of the players can be fetched in logarithmic time. In simple words, the leaderboard is a set sorted by the score<sup id="fnref:3"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>. The score and leaderboard records are persisted on the relational database as well to support complex queries.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-to-ask-the-interviewer"><a class="header-mark offline-link" href="./leaderboard-system-design.html#questions-to-ask-the-interviewer"></a>Questions to ask the Interviewer</h2>
+<h3 class="headerLink" id="candidate"><a class="header-mark offline-link" href="./leaderboard-system-design.html#candidate"></a>Candidate</h3>
+<ol>
+<li>What are the primary use cases of the system?</li>
+<li>Are the clients distributed across the globe?</li>
+<li>What is the amount of Daily Active Users (DAU) for writes?</li>
+<li>What is the anticipated read: write ratio?</li>
+<li>Should the leaderboard be available in real-time?</li>
+</ol>
+<hr/>
+<h3 class="headerLink" id="interviewer"><a class="header-mark offline-link" href="./leaderboard-system-design.html#interviewer"></a>Interviewer</h3>
+<ol>
+<li>Update the score and display the leaderboard</li>
+<li>Yes</li>
+<li>50 million DAU</li>
+<li>5: 1</li>
+<li>Yes</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./leaderboard-system-design.html#requirements"></a>Requirements</h2>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./leaderboard-system-design.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>The <strong>client</strong> (player) can view the top 10 players on the leaderboard in real-time (absolute leaderboard)</li>
+<li>The client can view a specific player’s rank and score</li>
+<li>The client can view the surrounding ranked players to a particular player (relative leaderboard)</li>
+<li>The client can receive score updates through push notifications</li>
+<li>The leaderboard can be configured for global, regional, and friend circles</li>
+<li>The client can view the historical game scores and historical leaderboards</li>
+<li>The leaderboards can rank players based on gameplay on a daily, weekly, or monthly basis</li>
+<li>The clients can update the leaderboard in a fully distributed manner across the globe</li>
+<li>The leaderboard should support thousands of concurrent players</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./leaderboard-system-design.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>High availability</li>
+<li>Low latency</li>
+<li>Scalability</li>
+<li>Reliability</li>
+<li>Minimal operational overhead</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="leaderboard-api"><a class="header-mark offline-link" href="./leaderboard-system-design.html#leaderboard-api"></a>Leaderboard API</h2>
+<p>The components in the system expose the Application Programming Interface (<strong>API</strong>) endpoints through Representational State Transfer (<a href="https://en.wikipedia.org/wiki/Representational_state_transfer" rel="noopener noreferrer" target="_blank">REST</a>) or Remote Procedure Call (<a href="https://en.wikipedia.org/wiki/Remote_procedure_call" rel="noopener noreferrer" target="_blank">RPC</a>). The best practice to expose public APIs is through REST because of the loose coupling and the easiness to debug. Once the services harden and performance should be tuned further, switch to RPC for internal communications between services. The tradeoffs of RPC are tight coupling and difficulty in debugging <sup id="fnref:5"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>The description of HTTP <strong>Request headers</strong> is the following:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>authorization</td>
+<td>authorize your user account</td>
+</tr>
+<tr>
+<td>content-encoding</td>
+<td>compression type used by the data payload</td>
+</tr>
+<tr>
+<td>method</td>
+<td>HTTP Verb</td>
+</tr>
+<tr>
+<td>content-type</td>
+<td>type of data format (JSON or XML)</td>
+</tr>
+<tr>
+<td>user-agent</td>
+<td>use to identify the client for analytics</td>
+</tr>
+</tbody>
+</table></div>
+<p>The description of HTTP <strong>Response headers</strong> is the following:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>status code</td>
+<td>shows if the request was successful</td>
+</tr>
+<tr>
+<td>cache-control</td>
+<td>set cache</td>
+</tr>
+<tr>
+<td>content-encoding</td>
+<td>compression type used by the payload</td>
+</tr>
+<tr>
+<td>content-type</td>
+<td>type of data format</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-update-the-score-of-aplayer"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-update-the-score-of-aplayer"></a>How to update the score of a player?</h3>
+<p>The client executes a Hypertext Transfer Protocol (<a href="https://en.wikipedia.org/wiki/HTTP" rel="noopener noreferrer" target="_blank">HTTP</a>) POST request to update the score of a player. The POST requests are not idempotent.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/players/:player-id/scores
+method: POST
+authorization: Bearer &lt;JWT&gt;
+content-length: 100
+content-type: application/JSON
+content-encoding: gzip
+{
+    player_id: &lt;int&gt;,
+    score: &lt;int&gt;,
+    location: Geohash
+}
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/players/</span><span class="o">:</span><span class="nx">player</span><span class="o">-</span><span class="nx">id</span><span class="o">/</span><span class="nx">scores</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">POST</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">100</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">JSON</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="p">{</span>
+    <span class="nx">player_id</span><span class="o">:</span> <span class="o">&lt;</span><span class="kr">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="nx">score</span><span class="o">:</span> <span class="o">&lt;</span><span class="kr">int</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="nx">location</span><span class="o">:</span> <span class="nx">Geohash</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 200 OK
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>202 accepted</em> for asynchronous processing of score updates.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 202 accepted
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">202</span> <span class="nx">accepted</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>400 bad request</em> to indicate a failed request due to an invalid request payload by the client.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 400 bad request
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">400</span> <span class="nx">bad</span> <span class="nx">request</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The client sees a status code <em>403 forbidden</em> if the client has valid credentials but not sufficient privileges to act on the resource.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 403 forbidden
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">403</span> <span class="nx">forbidden</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-view-a-specific-players-rank-andscore"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-view-a-specific-players-rank-andscore"></a>How to view a specific player’s rank and score?</h3>
+<p>The client executes an HTTP GET request to view a specific player’s rank and score. There is no request body for an HTTP GET request.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/players/:player-id
+method: GET
+authorization: Bearer &lt;JWT&gt;
+user-agent: Chrome
+accept: application/json, text/html
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/players/</span><span class="o">:</span><span class="nx">player</span><span class="o">-</span><span class="nx">id</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">user</span><span class="o">-</span><span class="nx">agent</span><span class="o">:</span> <span class="nx">Chrome</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span><span class="p">,</span> <span class="nx">text</span><span class="o">/</span><span class="nx">html</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+cache-control: private, no-cache, must-revalidate, max-age=5
+content-encoding: gzip
+content-type: application/json
+
+{
+    player_id: "45231",
+    player_name: "Rick",
+    score: 1562,
+    rank: 1,
+    updated_at: "2030-10-10T12:11:42Z"
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="kr">private</span><span class="p">,</span> <span class="nx">no</span><span class="o">-</span><span class="nx">cache</span><span class="p">,</span> <span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span><span class="p">,</span> <span class="nx">max</span><span class="o">-</span><span class="nx">age</span><span class="o">=</span><span class="mi">5</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+
+<span class="p">{</span>
+    <span class="nx">player_id</span><span class="o">:</span> <span class="s2">"45231"</span><span class="p">,</span>
+    <span class="nx">player_name</span><span class="o">:</span> <span class="s2">"Rick"</span><span class="p">,</span>
+    <span class="nx">score</span><span class="o">:</span> <span class="mi">1562</span><span class="p">,</span>
+    <span class="nx">rank</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="nx">updated_at</span><span class="o">:</span> <span class="s2">"2030-10-10T12:11:42Z"</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-view-the-top-10-players-on-the-leaderboard"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-view-the-top-10-players-on-the-leaderboard"></a>How to view the top 10 players on the leaderboard?</h3>
+<p>The client executes an HTTP GET request to view the top 10 players on the leaderboard.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/leaderboard/top/:count
+method: GET
+authorization: Bearer &lt;JWT&gt;
+user-agent: Chrome
+accept: application/json, text/html
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/leaderboard/top/:count</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">user</span><span class="o">-</span><span class="nx">agent</span><span class="o">:</span> <span class="nx">Chrome</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span><span class="p">,</span> <span class="nx">text</span><span class="o">/</span><span class="nx">html</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+cache-control: public, no-cache, must-revalidate, max-age=5
+content-encoding: gzip
+content-type: application/json
+
+{
+  total: 10, (count)
+  updated_at: "2030-10-10T12:11:42Z",
+  data: [
+    {
+      player_id: "45231",
+      player_name: "Rick",
+      score: 1562,
+      rank: 1,
+    },
+    {...}
+  ]
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="kr">public</span><span class="p">,</span> <span class="nx">no</span><span class="o">-</span><span class="nx">cache</span><span class="p">,</span> <span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span><span class="p">,</span> <span class="nx">max</span><span class="o">-</span><span class="nx">age</span><span class="o">=</span><span class="mi">5</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+
+<span class="p">{</span>
+  <span class="nx">total</span><span class="o">:</span> <span class="mi">10</span><span class="p">,</span> <span class="p">(</span><span class="nx">count</span><span class="p">)</span>
+  <span class="nx">updated_at</span><span class="o">:</span> <span class="s2">"2030-10-10T12:11:42Z"</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nx">player_id</span><span class="o">:</span> <span class="s2">"45231"</span><span class="p">,</span>
+      <span class="nx">player_name</span><span class="o">:</span> <span class="s2">"Rick"</span><span class="p">,</span>
+      <span class="nx">score</span><span class="o">:</span> <span class="mi">1562</span><span class="p">,</span>
+      <span class="nx">rank</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{...}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-identify-the-surrounding-rankedplayers"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-identify-the-surrounding-rankedplayers"></a>How to identify the surrounding ranked players?</h3>
+<p>The client executes an HTTP GET request to view the surrounding ranked players of a player.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/leaderboard/:player-id/:count
+method: GET
+authorization: Bearer &lt;JWT&gt;
+user-agent: Chrome
+accept: application/json, text/html
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="sr">/leaderboard/</span><span class="o">:</span><span class="nx">player</span><span class="o">-</span><span class="nx">id</span><span class="o">/:</span><span class="nx">count</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">authorization</span><span class="o">:</span> <span class="nx">Bearer</span> <span class="o">&lt;</span><span class="nx">JWT</span><span class="o">&gt;</span>
+<span class="nx">user</span><span class="o">-</span><span class="nx">agent</span><span class="o">:</span> <span class="nx">Chrome</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span><span class="p">,</span> <span class="nx">text</span><span class="o">/</span><span class="nx">html</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+cache-control: private, no-cache, must-revalidate, max-age=5
+content-encoding: gzip
+content-type: application/json
+
+{
+  total: 6, (count)
+  updated_at: "2030-10-10T12:11:42Z",
+  data: [
+    {
+      player_id: "45231",
+      player_name: "Morty",
+      score: 1562,
+      rank: 2,
+    },
+    {...}
+  ]
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="kr">private</span><span class="p">,</span> <span class="nx">no</span><span class="o">-</span><span class="nx">cache</span><span class="p">,</span> <span class="nx">must</span><span class="o">-</span><span class="nx">revalidate</span><span class="p">,</span> <span class="nx">max</span><span class="o">-</span><span class="nx">age</span><span class="o">=</span><span class="mi">5</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+
+<span class="p">{</span>
+  <span class="nx">total</span><span class="o">:</span> <span class="mi">6</span><span class="p">,</span> <span class="p">(</span><span class="nx">count</span><span class="p">)</span>
+  <span class="nx">updated_at</span><span class="o">:</span> <span class="s2">"2030-10-10T12:11:42Z"</span><span class="p">,</span>
+  <span class="nx">data</span><span class="o">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nx">player_id</span><span class="o">:</span> <span class="s2">"45231"</span><span class="p">,</span>
+      <span class="nx">player_name</span><span class="o">:</span> <span class="s2">"Morty"</span><span class="p">,</span>
+      <span class="nx">score</span><span class="o">:</span> <span class="mi">1562</span><span class="p">,</span>
+      <span class="nx">rank</span><span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{...}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-view-the-health-of-aservice"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-view-the-health-of-aservice"></a>How to view the health of a service?</h3>
+<p>The client executes an HTTP HEAD request to view the health of a service.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/:service/health
+method: HEAD
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/:service/health</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">HEAD</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>200 OK</em> on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 200 OK
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code <em>500 Internal Error</em> to signal a server failure.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="status code: 500 Internal Error
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">500</span> <span class="nx">Internal</span> <span class="nb">Error</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./leaderboard-system-design.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="leaderboard-datastorage"><a class="header-mark offline-link" href="./leaderboard-system-design.html#leaderboard-datastorage"></a>Leaderboard data storage</h2>
+<p>The read: write ratio is 5: 1, so the leaderboard is a relatively write-heavy system. In other words, the dominant usage pattern is the client updating the score.</p>
+<h3 class="headerLink" id="leaderboard-database-schemadesign"><a class="header-mark offline-link" href="./leaderboard-system-design.html#leaderboard-database-schemadesign"></a>Leaderboard database schema design</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Leaderboard relational database schema&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-database-schema.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-database-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Leaderboard relational database schema">
+<img alt="Figure 1: Leaderboard relational database schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-database-schema.webp, /leaderboard-system-design/leaderboard-database-schema.webp 1.5x, /leaderboard-system-design/leaderboard-database-schema.webp 2x" height="1368" sizes="683px" src="../assets/images/img_785bb5d4e649.webp" width="2950"/>
+</a><figcaption class="image-caption">Figure 1: Leaderboard relational database schema</figcaption>
+</figure>
+<p>The major entities of the relational database are the Players table, the Games table, the Leaderboards table, and the Friends table. The relationship between the Games and the Players' tables is <strong>1-to-many</strong>. The Friends table is an <a href="https://en.wikipedia.org/wiki/Associative_entity" rel="noopener noreferrer" target="_blank">associative entity</a> that defines the follower-followee relationship between players. The relationship between the Games and the Leaderboards tables is <strong>1-to-many</strong> to support global, regional, and friend circles leaderboards. The relationship between the Players and Leaderboards tables is <strong>1-to-many</strong>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Leaderboard Redis schema&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-redis-schema.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-redis-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Leaderboard Redis schema">
+<img alt="Figure 2: Leaderboard Redis schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-redis-schema.webp, /leaderboard-system-design/leaderboard-redis-schema.webp 1.5x, /leaderboard-system-design/leaderboard-redis-schema.webp 2x" height="665" sizes="683px" src="../assets/images/img_5ec25ea27bdf.webp" width="1587"/>
+</a><figcaption class="image-caption">Figure 2: Leaderboard Redis schema</figcaption>
+</figure>
+<p>The major entities of the in-memory database (Redis) are Leaderboards and Players. The <strong>sorted sets</strong> data type in Redis is used to store the Leaderboards and the <strong>hash</strong> data type in Redis is used to store the metadata of the Players. The key of the sorted set is the leaderboard ID. The ID of the player is the key of the hash<sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<hr/>
+<h4 class="headerLink" id="games-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#games-table"></a>Games table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>game_id</td>
+<td>ID to identify the game</td>
+</tr>
+<tr>
+<td>name</td>
+<td>name of the game</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>creation timestamp</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="sample-data-of-games-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#sample-data-of-games-table"></a>Sample data of Games table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>game_id</th>
+<th>name</th>
+<th>created_at</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>apex legends</td>
+<td>2019-25-03</td>
+</tr>
+<tr>
+<td>2</td>
+<td>minecraft</td>
+<td>2011-16-02</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="players-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#players-table"></a>Players table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>player_id</td>
+<td>ID to identify the player</td>
+</tr>
+<tr>
+<td>name</td>
+<td>name of the player</td>
+</tr>
+<tr>
+<td>email</td>
+<td>email of the player</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp of player account creation</td>
+</tr>
+<tr>
+<td>last_login</td>
+<td>timestamp of last login by player</td>
+</tr>
+<tr>
+<td>profile_image</td>
+<td>object store URL where images are stored</td>
+</tr>
+<tr>
+<td>location</td>
+<td>region of the player</td>
+</tr>
+<tr>
+<td>game_id (Foreign key)</td>
+<td>game played by the player</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="sample-data-of-players-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#sample-data-of-players-table"></a>Sample data of Players table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>player_id</th>
+<th>name</th>
+<th>email</th>
+<th>created_at</th>
+<th>last_login</th>
+<th>profile_image</th>
+<th>location</th>
+<th>game_id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>41</td>
+<td>morty</td>
+<td><a href="mailto:morty@xyz.com" rel="noopener noreferrer" target="_blank">morty@xyz.com</a></td>
+<td>2019-04-01</td>
+<td>2019-04-01</td>
+<td>s3://url-image</td>
+<td>canada</td>
+<td>1</td>
+</tr>
+<tr>
+<td>42</td>
+<td>rick</td>
+<td><a href="mailto:rick@xyz.com" rel="noopener noreferrer" target="_blank">rick@xyz.com</a></td>
+<td>2019-04-01</td>
+<td>2019-04-01</td>
+<td>s3://url-image</td>
+<td>canada</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="leaderboards-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#leaderboards-table"></a>Leaderboards table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>leaderboard_id</td>
+<td>ID to identify the leaderboard</td>
+</tr>
+<tr>
+<td>score</td>
+<td>score of the player</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp of latest score update</td>
+</tr>
+<tr>
+<td>game_id (Foreign key)</td>
+<td>ID of the game</td>
+</tr>
+<tr>
+<td>player_id (Foreign key)</td>
+<td>ID of the player</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="sample-data-of-leaderboards-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#sample-data-of-leaderboards-table"></a>Sample data of Leaderboards table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>leaderboard_id</th>
+<th>score</th>
+<th>created_at</th>
+<th>game_id</th>
+<th>player_id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>125</td>
+<td>2019-04-01</td>
+<td>1</td>
+<td>42</td>
+</tr>
+<tr>
+<td>01</td>
+<td>97</td>
+<td>2019-04-01</td>
+<td>1</td>
+<td>41</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="friends-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#friends-table"></a>Friends table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>player_id (Foreign key)</td>
+<td>ID of the player</td>
+</tr>
+<tr>
+<td>player_id (Foreign key)</td>
+<td>ID of the player</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>timestamp</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="sample-data-of-friends-table"><a class="header-mark offline-link" href="./leaderboard-system-design.html#sample-data-of-friends-table"></a>Sample data of Friends table</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>player_id</th>
+<th>player_id</th>
+<th>created_at</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>41</td>
+<td>42</td>
+<td>2019-04-01</td>
+</tr>
+<tr>
+<td>42</td>
+<td>41</td>
+<td>2019-04-01</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h4 class="headerLink" id="leaderboards-sorted-set-redis"><a class="header-mark offline-link" href="./leaderboard-system-design.html#leaderboards-sorted-set-redis"></a>Leaderboards Sorted Set (Redis)</h4>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>leaderboard_id</th>
+<th>score</th>
+<th>created_at</th>
+<th>player_id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>125</td>
+<td>2019-04-01</td>
+<td>42</td>
+</tr>
+<tr>
+<td>01</td>
+<td>97</td>
+<td>2019-04-01</td>
+<td>41</td>
+</tr>
+<tr>
+<td>01</td>
+<td>91</td>
+<td>2020-04-07</td>
+<td>55</td>
+</tr>
+<tr>
+<td>01</td>
+<td>72</td>
+<td>2021-07-01</td>
+<td>67</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="sql"><a class="header-mark offline-link" href="./leaderboard-system-design.html#sql"></a>SQL</h3>
+<p>Structured Query Language (<strong>SQL</strong>) is a domain-specific language used for managing data stored in a relational database management system<sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>,<sup id="fnref:1"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<h4 class="headerLink" id="write-a-sql-query-to-insert-a-new-player"><a class="header-mark offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-insert-a-new-player"></a>Write a SQL query to insert a new player</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='INSERT INTO leaderboards (leaderboard_id, score, created_at, game_id, player_id)
+VALUES ("apex_legends", 1, "2050-08-22", "1", "42");' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">INSERT</span><span class="w"> </span><span class="k">INTO</span><span class="w"> </span><span class="n">leaderboards</span><span class="w"> </span><span class="p">(</span><span class="n">leaderboard_id</span><span class="p">,</span><span class="w"> </span><span class="n">score</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">,</span><span class="w"> </span><span class="n">game_id</span><span class="p">,</span><span class="w"> </span><span class="n">player_id</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="k">VALUES</span><span class="w"> </span><span class="p">(</span><span class="s2">"apex_legends"</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="s2">"2050-08-22"</span><span class="p">,</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span><span class="w"> </span><span class="s2">"42"</span><span class="p">);</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="write-a-sql-query-to-update-the-score-of-a-player"><a class="header-mark offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-update-the-score-of-a-player"></a>Write a SQL query to update the score of a player</h4>
+<p>An entry is added to the leaderboards table when a player earns a score for performing some task.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="UPDATE leaderboards
+SET score = score + 1
+WHERE player_id = '42';" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">UPDATE</span><span class="w"> </span><span class="n">leaderboards</span><span class="w">
+</span><span class="w"></span><span class="k">SET</span><span class="w"> </span><span class="n">score</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">score</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">player_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'42'</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="write-a-sql-query-to-fetch-the-total-score-of-a-player-for-the-current-month"><a class="header-mark offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-fetch-the-total-score-of-a-player-for-the-current-month"></a>Write a SQL query to fetch the total score of a player for the current month</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT sum(score)
+FROM leaderboards
+WHERE player_id = '42' and created_at &gt;= &quot;2025-03-10&quot;;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="k">sum</span><span class="p">(</span><span class="n">score</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">leaderboards</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">player_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'42'</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s2">"2025-03-10"</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="write-a-sql-query-to-calculate-the-scores-and-rank-the-top-10-players"><a class="header-mark offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-calculate-the-scores-and-rank-the-top-10-players"></a>Write a SQL query to calculate the scores and rank the top 10 players</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT player_id, SUM(score) AS total
+FROM leaderboards
+GROUP BY player_id
+ORDER BY total DESC
+LIMIT 10;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="n">player_id</span><span class="p">,</span><span class="w"> </span><span class="k">SUM</span><span class="p">(</span><span class="n">score</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">total</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">leaderboards</span><span class="w">
+</span><span class="w"></span><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">player_id</span><span class="w">
+</span><span class="w"></span><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="k">DESC</span><span class="w">
+</span><span class="w"></span><span class="k">LIMIT</span><span class="w"> </span><span class="mi">10</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="write-a-sql-query-to-calculate-the-rank-of-a-specific-player"><a class="header-mark offline-link" href="./leaderboard-system-design.html#write-a-sql-query-to-calculate-the-rank-of-a-specific-player"></a>Write a SQL query to calculate the rank of a specific player</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT _,
+(
+SELECT COUNT(_)
+FROM leaderboards AS l2
+WHERE l2.score &gt;= l1.score
+)
+AS RANK
+FROM leaderboards AS l1
+WHERE l1.player_id = '42';" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="n">_</span><span class="p">,</span><span class="w">
+</span><span class="w"></span><span class="p">(</span><span class="w">
+</span><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="n">_</span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">leaderboards</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">l2</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">l2</span><span class="p">.</span><span class="n">score</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">l1</span><span class="p">.</span><span class="n">score</span><span class="w">
+</span><span class="w"></span><span class="p">)</span><span class="w">
+</span><span class="w"></span><span class="k">AS</span><span class="w"> </span><span class="n">RANK</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">leaderboards</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">l1</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">l1</span><span class="p">.</span><span class="n">player_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'42'</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="type-of-datastore"><a class="header-mark offline-link" href="./leaderboard-system-design.html#type-of-datastore"></a>Type of data store</h3>
+<p>The database should make it trivial to store and display the leaderboard data. The relational database or NoSQL data store can meet the requirements. The relational database is an optimal choice when the dataset is small. The relational database can be a suboptimal solution for the real-time leaderboard because of the scalability limitations for a million players due to the following reasons<sup id="fnref:3"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:7" role="doc-noteref">7</a></sup>:</p>
+<ul>
+<li>computing the rank of a player requires the recomputation of the ranking of every player through a full table scan</li>
+<li>caching the read queries on the relational database for performance might result in stale leaderboard data</li>
+<li>query time can be slow when the count of players is in millions</li>
+<li>different tables should be joined based on the player ID to display the leaderboard on a normalized data schema</li>
+<li>a relational database that is not in memory will provide suboptimal performance for real-time updates on a large-scale list of records sorted by score due to disk seeks</li>
+</ul>
+<p>The computation of the rank of a player requires a nested query in the relational database making the time complexity quadratic. The relational database can take on an average of 10 seconds to execute the query to compute the rank of a player on a table with 10 million records even with database indexes. The creation of database indexes on player_id and created_at columns will improve the read operations but slow down the write operations<sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>. Besides, the result cannot be easily cached as the scores are constantly changing.</p>
+<p>As long as the number of concurrent players in the game remains low to moderate (below 100 thousand), the relational database can provide sufficient leaderboard functionality. However, as the concurrent game access increases, the relational data schema becomes non-trivial to <a class="offline-link" href="./scalable-software-architecture.html" rel="noopener noreffer">scale</a>. The batch mode generation and result caching of the leaderboard reduce recurring computation impact at the expense of user experience<sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>.</p>
+<p>An in-memory database such as Redis can be used to build a scalable and performant real-time leaderboard. The sorted set data type in Redis offers in-memory and responsive access to the requirements of the leaderboard in logarithmic time complexity, O(log(n)), where n is the number of elements in the sorted set <sup id="fnref:8"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:8" role="doc-noteref">8</a></sup>. The sorted set data type in Redis contains a set of <strong>items</strong> (players) with associated scores, which are used to rank the items in ascending order.</p>
+<p>The sorted set data type in Redis automatically sorts the item based on the score during the upsert operations. The queries are significantly faster due to the presorting of items. On the contrary, the relational database sorts the items during the query time resulting in latency and adding further computational burden to the database. In summary, the Redis sorted sets can offer significant performance gains and also be a cost-efficient solution. The following are the benefits of using Redis for building the leaderboard<sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>:</p>
+<ul>
+<li>frees up database resources to handle other types of requests</li>
+<li>supports a data structure optimized to handle leaderboard use cases</li>
+</ul>
+<p>The metadata of the player such as the name of the player is required to display the leaderboard. The player ID is available in the sorted sets and the metadata of the player can be fetched from the relational database. The hash data type in Redis can cache the metadata of players for quick access to the metadata. The hash data type can hold multiple name-value pairs that are associated with a key. The drawback of the hash data type is that the hash consumes memory. Alternatively, the read replicas of the relational database can be queried to fetch the metadata.</p>
+<p>A relational database such as PostgreSQL can be used for the persistent storage of the leaderboard data to support complex analytical queries. The profile images of the players can be stored in a managed <a href="https://en.wikipedia.org/wiki/Object_storage" rel="noopener noreferrer" target="_blank">object storage</a> such as <a href="https://aws.amazon.com/s3/" rel="noopener noreferrer" target="_blank">AWS S3</a>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="capacity-planning"><a class="header-mark offline-link" href="./leaderboard-system-design.html#capacity-planning"></a>Capacity Planning</h2>
+<p>The calculated numbers are approximations. The player-id can be a 30-character string consuming approximately 30 bytes. The score of a player can be a 16-bit integer consuming 2 bytes of storage.</p>
+<h3 class="headerLink" id="traffic"><a class="header-mark offline-link" href="./leaderboard-system-design.html#traffic"></a>Traffic</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DAU (write)</td>
+<td>50 million</td>
+</tr>
+<tr>
+<td>QPS (write)</td>
+<td>600</td>
+</tr>
+<tr>
+<td>read: write</td>
+<td>5: 1</td>
+</tr>
+<tr>
+<td>QPS (read)</td>
+<td>3000</td>
+</tr>
+<tr>
+<td>peak QPS (read)</td>
+<td>3600</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h3 class="headerLink" id="memory"><a class="header-mark offline-link" href="./leaderboard-system-design.html#memory"></a>Memory</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>total player count</td>
+<td></td>
+<td>70 million</td>
+</tr>
+<tr>
+<td>single record of a player</td>
+<td>(30 + 2) bytes</td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>total storage for all players</td>
+<td>70 million * 32 bytes</td>
+<td>2.2 GB</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h3 class="headerLink" id="storage"><a class="header-mark offline-link" href="./leaderboard-system-design.html#storage"></a>Storage</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>single record of a player</td>
+<td></td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>storage for a day</td>
+<td>50 million players/day * 32 bytes/player</td>
+<td>1600 MB</td>
+</tr>
+<tr>
+<td>storage for 5 years</td>
+<td>1600 MB * 5 * 365</td>
+<td>2.920 TB</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h3 class="headerLink" id="bandwidth"><a class="header-mark offline-link" href="./leaderboard-system-design.html#bandwidth"></a>Bandwidth</h3>
+<p><strong>Ingress</strong> is the network traffic that enters the server (client requests). <strong>Egress</strong> is the network traffic that exits the servers (server responses).</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Calculation</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ingress</td>
+<td>32 bytes/player * 50 million players/day * 10^(-5) day/sec</td>
+<td>16 KB/sec</td>
+</tr>
+<tr>
+<td>Egress</td>
+<td>64 bytes/player * 250 million players/day * 10^(-5) day/sec</td>
+<td>160 KB/sec</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<h3 class="headerLink" id="capacity-planningsummary"><a class="header-mark offline-link" href="./leaderboard-system-design.html#capacity-planningsummary"></a>Capacity Planning Summary</h3>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QPS (write)</td>
+<td>600</td>
+</tr>
+<tr>
+<td>QPS (read)</td>
+<td>3000</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>2.920 TB</td>
+</tr>
+<tr>
+<td>Ingress</td>
+<td>16 KB/sec</td>
+</tr>
+<tr>
+<td>Egress</td>
+<td>160 KB/sec</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>2.2 GB</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./leaderboard-system-design.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="leaderboard-high-level-design"><a class="header-mark offline-link" href="./leaderboard-system-design.html#leaderboard-high-level-design"></a>Leaderboard high-level design</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Small-scale leaderboard; Score update workflow&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/small-scale-leaderboard-write-path.webp" href="https://systemdesign.one/leaderboard-system-design/small-scale-leaderboard-write-path.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Small-scale leaderboard; Score update workflow">
+<img alt="Figure 3: Small-scale leaderboard; Score update workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/small-scale-leaderboard-write-path.webp, /leaderboard-system-design/small-scale-leaderboard-write-path.webp 1.5x, /leaderboard-system-design/small-scale-leaderboard-write-path.webp 2x" height="1675" sizes="683px" src="../assets/images/img_3a87176ab436.webp" width="2555"/>
+</a><figcaption class="image-caption">Figure 3: Small-scale leaderboard; Score update workflow</figcaption>
+</figure>
+<p>A small-scale leaderboard can leverage the <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside" rel="noopener noreferrer" target="_blank">cache-aside pattern</a> on the caching layer for the relational database. The following operations are performed when a player updates the score<sup id="fnref:9"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ol>
+<li>The client creates a WebSocket connection to the load balancer for real-time communication</li>
+<li>The load balancer delegates the client’s request to the closest data center</li>
+<li>The server updates the player’s score record on the relational database following the cache-aside pattern</li>
+<li>The server updates the same player’s score record on the cache server following the <a class="offline-link" href="../fundamentals/caching-patterns.html" rel="noopener noreffer">cache-aside pattern</a></li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Small-scale leaderboard; Display leaderboard workflow&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/small-scale-leaderboard-read-path.webp" href="https://systemdesign.one/leaderboard-system-design/small-scale-leaderboard-read-path.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Small-scale leaderboard; Display leaderboard workflow">
+<img alt="Figure 4: Small-scale leaderboard; Display leaderboard workflow" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/small-scale-leaderboard-read-path.webp, /leaderboard-system-design/small-scale-leaderboard-read-path.webp 1.5x, /leaderboard-system-design/small-scale-leaderboard-read-path.webp 2x" height="1658" sizes="683px" src="../assets/images/img_875caeb8d4e9.webp" width="2642"/>
+</a><figcaption class="image-caption">Figure 4: Small-scale leaderboard; Display leaderboard workflow</figcaption>
+</figure>
+<p>The following operations are performed when a player wants to view the leaderboard<sup id="fnref:9"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ol>
+<li>The client creates a WebSocket connection to the load balancer for real-time communication</li>
+<li>The load balancer delegates the client’s request to the closest data center</li>
+<li>The server queries the cache server to display the leaderboard</li>
+<li>The server queries the relational database on a cache miss and populates the cache server with fetched data</li>
+</ol>
+<p>The leaderboard data is served directly from the cache server on a cache hit. The caching layer allows handling high spiky traffic with a low hardware footprint. The personalized leaderboards can make use of dedicated cache servers. The services can communicate with each other through RPC or REST. The <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events" rel="noopener noreferrer" target="_blank">server-sent events</a> (<strong>SSE</strong>) or <a href="https://en.wikipedia.org/wiki/WebSocket" rel="noopener noreferrer" target="_blank">WebSockets</a> can be used for real-time updates on the leaderboard<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<p>The sorted set is a unique collection of <strong>items</strong> (players) sorted based on the associated score. The hash data type on the cache server can be used to store the player metadata. The Least Recently Used (<strong>LRU</strong>) policy can be used for cache eviction. The time-to-live (<strong>TTL</strong>) based caching doesn’t meet the requirements of the leaderboard because the score changes are not time based but based on the game activity. The leaderboard will not be real-time with a TTL-based caching layer. The leaderboard can be configured with a low TTL cache for high accuracy but the request will be blocked until fresh data is fetched from the database. The high TTL cache doesn’t block the request but will return stale data <sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<p>In addition, the database will be hit with frequent access (<a href="https://en.wikipedia.org/wiki/Thundering_herd_problem" rel="noopener noreferrer" target="_blank">thundering herd problem</a>) due to the TTL-based caching layer when multiple cache servers expire simultaneously. The thundering herd problem can be resolved by adding a jitter on cache expiration. However, the addition of a jitter will result in stale leaderboard data for some clients. The cache push model can be used in a real-time leaderboard without the database becoming a bottleneck. The database changes are pushed directly to the cache servers using a database <a href="https://www.postgresql.org/docs/current/sql-createtrigger.html" rel="noopener noreferrer" target="_blank">trigger</a> <sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The technical challenges for a scalable real-time leaderboard are the following<sup id="fnref:2"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:2" role="doc-noteref">2</a></sup>:</p>
+<ul>
+<li>providing high availability on a real-time leaderboard</li>
+<li>enable players to receive notifications on leaderboard changes</li>
+<li>allow updates on the leaderboard in a fully distributed manner and support a global view of the leaderboard</li>
+<li>support massive scale across millions of players</li>
+<li>support computations on a large number of data attributes</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="nosql-database-for-leaderboard"><a class="header-mark offline-link" href="./leaderboard-system-design.html#nosql-database-for-leaderboard"></a>NoSQL database for leaderboard</h3>
+<p>The NoSQL datastore such as Amazon DynamoDB can be used to build the leaderboard. The benefits of using DynamoDB are the following<sup id="fnref:11"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:11" role="doc-noteref">11</a></sup>:</p>
+<ul>
+<li>fully managed service</li>
+<li>serverless (no server to provision or manage)</li>
+<li>supports ACID transactions</li>
+<li>performance at scale through partitioning</li>
+<li>supports data change capture through the DynamoDB stream</li>
+</ul>
+<p>The <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html" rel="noopener noreferrer" target="_blank">Global Secondary Index</a> (<strong>GSI</strong>) in DynamoDB can be used for quick access to the leaderboard based on the score of the players. The GSI requires a sort key and a partition key. The sort key is the score of the players. The DynamoDB internally uses <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> to partition the database for scalability. The database can be partitioned using the player-id as the partition key for uniform data distribution.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: The scatter-gather pattern&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/scatter-gather-pattern.webp" href="https://systemdesign.one/leaderboard-system-design/scatter-gather-pattern.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: The scatter-gather pattern">
+<img alt="Figure 5: The scatter-gather pattern" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/scatter-gather-pattern.webp, /leaderboard-system-design/scatter-gather-pattern.webp 1.5x, /leaderboard-system-design/scatter-gather-pattern.webp 2x" height="1629" sizes="683px" src="../assets/images/img_4a9a3209eed1.webp" width="4412"/>
+</a><figcaption class="image-caption">Figure 5: The scatter-gather pattern</figcaption>
+</figure>
+<p>The records within each partition will be sorted by the score of the players. When the client requests to view the top 10 players on the leaderboard, separate queries (scatter) are executed to the database and the results are consolidated (gather) in the server to create the leaderboard. The database should be partitioned only if the traffic is too high for the GSI to handle because the partitioning increases the complexity<sup id="fnref:11"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:11" role="doc-noteref">11</a></sup>. The scores or ranking changes can be captured using DynamoDB <a href="https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Streams.html" rel="noopener noreferrer" target="_blank">streams</a> <sup id="fnref:1"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:1" role="doc-noteref">1</a></sup>. The limitations of using DynamoDB are the following:</p>
+<ul>
+<li>scatter-gather pattern increases complexity</li>
+<li>sorting the score can be relatively expensive</li>
+<li><a href="https://en.wikipedia.org/wiki/Amazon_DynamoDB" rel="noopener noreferrer" target="_blank">not write optimized</a> due to B-Trees managing data</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-to-update-the-score-of-a-player-on-the-leaderboard"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-update-the-score-of-a-player-on-the-leaderboard"></a>How to update the score of a player on the leaderboard?</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: How the leaderboard updates the score of a player?&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-score-update.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-score-update.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: How the leaderboard updates the score of a player?">
+<img alt="Figure 6: How the leaderboard updates the score of a player?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-score-update.webp, /leaderboard-system-design/leaderboard-score-update.webp 1.5x, /leaderboard-system-design/leaderboard-score-update.webp 2x" height="1565" sizes="683px" src="../assets/images/img_935239a2fff7.webp" width="2306"/>
+</a><figcaption class="image-caption">Figure 6: How the leaderboard updates the score of a player?</figcaption>
+</figure>
+<p>Web services can be substituted with serverless functions for minimal operational overhead. The cache server and relational database should be configured for active-active geo-replication to enable each data center to accept writes. A global load balancer can be provisioned to distribute the client requests. The stateless web server can be replicated across data centers for scalability<sup id="fnref:12"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:12" role="doc-noteref">12</a></sup>. The following operations are performed when a player updates the score:</p>
+<ol>
+<li>The client creates a WebSocket connection to the load balancer for real-time communication</li>
+<li>The load balancer delegates the client’s request to the closest data center</li>
+<li>The server updates the score on the sorted set data type in Redis</li>
+<li>The serverless function updates the records on the relational database using the <a href="https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/" rel="noopener noreferrer" target="_blank">write-behind cache pattern</a></li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Autoscaling = Permanent over-provisioning&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/serverless-autoscaling.webp" href="https://systemdesign.one/leaderboard-system-design/serverless-autoscaling.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Autoscaling = Permanent over-provisioning">
+<img alt="Figure 7: Autoscaling = Permanent over-provisioning" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/serverless-autoscaling.webp, /leaderboard-system-design/serverless-autoscaling.webp 1.5x, /leaderboard-system-design/serverless-autoscaling.webp 2x" height="1345" sizes="683px" src="../assets/images/img_5f1068ea1045.webp" width="2624"/>
+</a><figcaption class="image-caption">Figure 7: Autoscaling = Permanent over-provisioning</figcaption>
+</figure>
+<p>Autoscaling is often enabled by the over-provisioning of virtual machines and containers. As shown in Figure 7, an error budget is kept for autoscaling resulting in underutilization of CPU, network, and memory resources. The serverless functions are relatively more expensive than a virtual machine but fewer serverless function execution is required to meet the scalability requirement of the leaderboard. In layman’s terms, serverless functions enable 100 percent utilization of computing resources and keep the costs lower while running the leaderboard at a high scale<sup id="fnref:13"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:13" role="doc-noteref">13</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Score invalidation on CDN&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-score-update-cdn-invalidation.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-score-update-cdn-invalidation.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Score invalidation on CDN">
+<img alt="Figure 8: Score invalidation on CDN" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-score-update-cdn-invalidation.webp, /leaderboard-system-design/leaderboard-score-update-cdn-invalidation.webp 1.5x, /leaderboard-system-design/leaderboard-score-update-cdn-invalidation.webp 2x" height="1582" sizes="683px" src="../assets/images/img_fc85b98bd8c5.webp" width="2549"/>
+</a><figcaption class="image-caption">Figure 8: Score invalidation on CDN</figcaption>
+</figure>
+<p>The score changes can be pushed asynchronously by the client to the server to improve the user experience<sup id="fnref:14"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:14" role="doc-noteref">14</a></sup>. The score changes are asynchronously persisted on the database and pushed to the cache servers for scalability. The leaderboard data schema can be denormalized for fast retrieval of the leaderboard<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The serverless functions can be used to trigger the score update on the cache server and CDN through an event-driven architecture<sup id="fnref:13"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:13" role="doc-noteref">13</a></sup>.</p>
+<p>The asynchronous write-behind cache pattern can be used for scalability. As an alternative, the relational database can be partitioned to improve the write throughput and durability. The score update is written to the cache and subsequent read request is also redirected to the cache to fetch fresh data. The serverless functions can be used to implement the write-behind pattern and read-through pattern on the cache<sup id="fnref:12"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:12" role="doc-noteref">12</a></sup>. The following are the benefits of serverless functions:</p>
+<ul>
+<li>allows query invocation without having the burden to provision or manage the server</li>
+<li>enable autoscaling with minimal operational overhead</li>
+<li>charged by the execution time</li>
+</ul>
+<p>The following are the limitations of serverless functions:</p>
+<ul>
+<li>slow</li>
+<li>restrictive</li>
+<li>relatively expensive</li>
+</ul>
+<p>The popular data such as the leaderboard for the top 10 players are stored on a cross-region cache server for low latency. The leaderboard data is also persisted in the relational database for durability. The relational database supports complex analytics queries against the database follower replicas. The popular complex queries on the relational database can be cached for performance<sup id="fnref:12"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>How to add a new player?<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>redis&gt; <strong>ZADD key score member</strong></p>
+<p><strong>returns the number of elements added to the sorted set</strong></p>
+<p>redis&gt; ZADD leaderboard 1 “one”</p>
+<p>(integer) 1</p>
+</div>
+</div>
+</div>
+<hr/>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>How to remove a player?<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>redis&gt; <strong>ZREM key member</strong></p>
+<p><strong>returns the number of members removed from the sorted set</strong></p>
+<p>redis&gt; ZADD leaderboard 1 “one”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZREM leaderboard “one”</p>
+<p>(integer) 1</p>
+</div>
+</div>
+</div>
+<hr/>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>How to increment the score of a player?<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>redis&gt; <strong>ZINCRBY key increment member</strong></p>
+<p><strong>returns the new score of member</strong></p>
+<p>redis&gt; ZADD leaderboard 1 “one”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZINCRBY leaderboard 2 “one”</p>
+<p>“3”</p>
+</div>
+</div>
+</div>
+<p>The <em>key</em> parameter is used to identify the leaderboard.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-to-retrieve-the-leaderboard-data"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-retrieve-the-leaderboard-data"></a>How to retrieve the leaderboard data?</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: How to retrieve the leaderboard data?&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-data-retrieval.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-data-retrieval.webp" rel="noopener noreferrer" target="_blank" title="Figure 9: How to retrieve the leaderboard data?">
+<img alt="Figure 9: How to retrieve the leaderboard data?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-data-retrieval.webp, /leaderboard-system-design/leaderboard-data-retrieval.webp 1.5x, /leaderboard-system-design/leaderboard-data-retrieval.webp 2x" height="1577" sizes="683px" src="../assets/images/img_e3b1ef2d4afd.webp" width="2539"/>
+</a><figcaption class="image-caption">Figure 9: How to retrieve the leaderboard data?</figcaption>
+</figure>
+<p>The following operations are performed when a player wants to view the leaderboard:</p>
+<ol>
+<li>The client creates a WebSocket connection to the load balancer for real-time communication</li>
+<li>The load balancer delegates the client’s request to the closest data center</li>
+<li>The serverless function invokes the sorted set data type in Redis</li>
+<li>The serverless function queries the relational database on a cache miss using the <a href="https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/" rel="noopener noreferrer" target="_blank">read-through cache pattern</a></li>
+</ol>
+<p>The virtual machine and container are used instead of serverless functions for egress traffic management to enable granular control. An additional cache layer can be introduced in front of the database to prevent thundering herd problems<sup id="fnref:13"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:13" role="doc-noteref">13</a></sup>. The WebSocket connection is used to stream the changes on the leaderboard in real-time. The client can watch for specific leaderboards using a JavaScript rules engine on the client. A high-end web server can be provisioned to manage 100 thousand concurrent socket connections<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<p>The personalized leaderboard can store only the IDs to generate a personalization cache for saving memory. For instance, the personalization cache can store only the IDs of subscribed leaderboards instead of the leaderboard data<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>. In case of a tie, the player with an older timestamp wins the game. The timestamp of the score changes can be fetched from the Redis hash or the relational database<sup id="fnref:15"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-2"><a class="header-mark offline-link" href="./leaderboard-system-design.html#further-system-design-learning-resources-2"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="design-deepdive"><a class="header-mark offline-link" href="./leaderboard-system-design.html#design-deepdive"></a>Design deep dive</h2>
+<h3 class="headerLink" id="how-to-view-the-top-10-players-on-the-leaderboard-1"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-view-the-top-10-players-on-the-leaderboard-1"></a>How to view the top 10 players on the leaderboard?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: Absolute leaderboard&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/absolute-leaderboard.webp" href="https://systemdesign.one/leaderboard-system-design/absolute-leaderboard.webp" rel="noopener noreferrer" target="_blank" title="Figure 10: Absolute leaderboard">
+<img alt="Figure 10: Absolute leaderboard" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/absolute-leaderboard.webp, /leaderboard-system-design/absolute-leaderboard.webp 1.5x, /leaderboard-system-design/absolute-leaderboard.webp 2x" height="848" sizes="683px" src="../assets/images/img_0bc58a5435a4.webp" width="1543"/>
+</a><figcaption class="image-caption">Figure 10: Absolute leaderboard</figcaption>
+</figure>
+<p>The server can fetch the top 10 players on the leaderboard from the sorted set data type through the execution of the <em>zrevrange</em> command. The hash data type on Redis can be queried using the <a href="https://redis.io/commands/hmget/" rel="noopener noreferrer" target="_blank">HMGET</a> command to fetch the list of the top 10 players' metadata through a single invocation.</p>
+<hr/>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>How to fetch the top three players on the leaderboard?<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>redis&gt; <strong>ZREVRANGE key start stop</strong></p>
+<p><strong>returns the specified range of elements in the sorted set stored at key. The elements are considered to be ordered from the highest to the lowest score.</strong></p>
+<p>redis&gt; ZADD leaderboard 1 “one”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZADD leaderboard 2 “two”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZADD leaderboard 3 “three”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZADD leaderboard 4 “four”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZREVRANGE leaderboard 0 2</p>
+<ol>
+<li>
+<p>“four”</p>
+</li>
+<li>
+<p>“three”</p>
+</li>
+<li>
+<p>“two”</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<p>The <em>key</em> parameter is used to identify the leaderboard. Any sorted set command that contains the keyword <em>rev</em> means reverse or descending order.</p>
+<p>In the example, the <em>zrevrange</em> command was used to fetch the top 3 players using 0 and 2 as parameters. The <em>zrevrange</em> command can be used to fetch any range of the leaderboard with the same time complexity <sup id="fnref:16"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:16" role="doc-noteref">16</a></sup>, <sup id="fnref:17"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:17" role="doc-noteref">17</a></sup>, <sup id="fnref:18"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:18" role="doc-noteref">18</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-view-a-specific-players-rank-andscore-1"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-view-a-specific-players-rank-andscore-1"></a>How to view a specific player’s rank and score?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Ranking and score of a player&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-player-score-rank.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-player-score-rank.webp" rel="noopener noreferrer" target="_blank" title="Figure 11: Ranking and score of a player">
+<img alt="Figure 11: Ranking and score of a player" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-player-score-rank.webp, /leaderboard-system-design/leaderboard-player-score-rank.webp 1.5x, /leaderboard-system-design/leaderboard-player-score-rank.webp 2x" height="460" sizes="683px" src="../assets/images/img_0d3da26e2e1d.webp" width="1413"/>
+</a><figcaption class="image-caption">Figure 11: Ranking and score of a player</figcaption>
+</figure>
+<p>The server can fetch the rank and score of the player from the sorted set data type through the execution of <em>zrevrank</em> and <em>zscore</em> commands respectively. The hash data type on Redis can be queried to fetch the metadata of the player. The limitations on viewing the rank and score of a particular player are the following<sup id="fnref:15"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:15" role="doc-noteref">15</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ul>
+<li>Intersection operation on hash and sorted set can be slightly expensive</li>
+<li>Lua script invocation on Redis can block the thread execution</li>
+</ul>
+<hr/>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>How to fetch the score of a player?<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>redis&gt; <strong>ZSCORE key member</strong></p>
+<p><strong>returns the score of member in the sorted set at key</strong></p>
+<p>redis&gt; ZADD leaderboard 3 “one”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZSCORE leaderboard “one”</p>
+<p>“3”</p>
+</div>
+</div>
+</div>
+<hr/>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>How to fetch the rank of a player?<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>redis&gt; <strong>ZREVRANK key member</strong></p>
+<p><strong>returns the rank of member in the sorted set stored at key, with the scores ordered from high to low. The rank is 0-based, which means that the member with the highest score has rank 0.</strong></p>
+<p>redis&gt; ZADD leaderboard 1 “one”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZADD leaderboard 2 “two”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZADD leaderboard 3 “three”</p>
+<p>(integer) 1</p>
+<p>redis&gt; ZREVRANK leaderboard “one”</p>
+<p>(integer) 2</p>
+</div>
+</div>
+</div>
+<p>The <em>key</em> parameter is used to identify the leaderboard. Any sorted set command that contains the keyword <em>rev</em> means reverse or descending order.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-view-the-surrounding-ranked-players-to-a-particular-player"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-view-the-surrounding-ranked-players-to-a-particular-player"></a>How to view the surrounding ranked players to a particular player?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: Relative leaderboard&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/relative-leaderboard.webp" href="https://systemdesign.one/leaderboard-system-design/relative-leaderboard.webp" rel="noopener noreferrer" target="_blank" title="Figure 12: Relative leaderboard">
+<img alt="Figure 12: Relative leaderboard" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/relative-leaderboard.webp, /leaderboard-system-design/relative-leaderboard.webp 1.5x, /leaderboard-system-design/relative-leaderboard.webp 2x" height="805" sizes="683px" src="../assets/images/img_dd4af24c2afd.webp" width="1463"/>
+</a><figcaption class="image-caption">Figure 12: Relative leaderboard</figcaption>
+</figure>
+<p>The relative leaderboard is used to improve player engagement. The player can see the other players who are ranked immediately higher or lower<sup id="fnref:9"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:9" role="doc-noteref">9</a></sup>. The following operations are executed to identify the surrounding ranked players of a particular player<sup id="fnref:19"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:19" role="doc-noteref">19</a></sup>, <sup id="fnref:8"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:7" role="doc-noteref">7</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ol>
+<li>fetch the rank of a particular player using the <em>zrevrank</em> command</li>
+<li>execute the <em>zrevrange</em> command with range parameters +/- 5 of the player’s rank to fetch the surrounding 10 players</li>
+</ol>
+<hr/>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>How to identify the surrounding ranked (six) players of the player named 'eleven'?<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content"><p>redis&gt; ZREVRANK leaderboard “eleven”</p>
+<p>(integer) 11</p>
+<p>redis&gt; ZREVRANGE leaderboard 8 14</p>
+<ol>
+<li>
+<p>“eight”</p>
+</li>
+<li>
+<p>“nine”</p>
+</li>
+<li>
+<p>“ten”</p>
+</li>
+<li>
+<p>“eleven”</p>
+</li>
+<li>
+<p>“twelve”</p>
+</li>
+<li>
+<p>“thirteen”</p>
+</li>
+<li>
+<p>“fourteen”</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-send-score-updates-through-push-notifications"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-send-score-updates-through-push-notifications"></a>How to send score updates through push notifications?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Push notifications in Leaderboard&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-push-notification.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-push-notification.webp" rel="noopener noreferrer" target="_blank" title="Figure 13: Push notifications in Leaderboard">
+<img alt="Figure 13: Push notifications in Leaderboard" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-push-notification.webp, /leaderboard-system-design/leaderboard-push-notification.webp 1.5x, /leaderboard-system-design/leaderboard-push-notification.webp 2x" height="883" sizes="683px" src="../assets/images/img_801356e850e1.webp" width="1451"/>
+</a><figcaption class="image-caption">Figure 13: Push notifications in Leaderboard</figcaption>
+</figure>
+<p>The database <a href="https://hevodata.com/learn/postgresql-triggers/" rel="noopener noreferrer" target="_blank">trigger</a> or database <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/change-feed" rel="noopener noreferrer" target="_blank">change feed</a> can be used to send push notifications to a player when the player’s score has been beaten by another player<sup id="fnref:9"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:9" role="doc-noteref">9</a></sup>. The database trigger can invoke the serverless function on ranking changes. The serverless function can write the ranking change data on the message queue for asynchronous processing and scalability. <a class="offline-link" href="../fundamentals/bloom-filters-explained.html" rel="noopener noreffer">Bloom filter</a> can be used to ensure that a player receives a notification on the ranking change only once by storing the player ID.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-configure-a-global-leaderboard"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-configure-a-global-leaderboard"></a>How to configure a global leaderboard?</h3>
+<p>Multiple sorted sets can be managed for distinct gaming scenarios. The global level sorted set can include the aggregated scores across all gaming scenarios. The <a href="https://redis.io/commands/zunionstore/" rel="noopener noreferrer" target="_blank">zunionstore</a> command can be used for union operations between sorted sets<sup id="fnref:2"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-view-the-historical-leaderboards"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-view-the-historical-leaderboards"></a>How to view the historical leaderboards?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 14: How to view the historical leaderboard?&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-historical-data.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-historical-data.webp" rel="noopener noreferrer" target="_blank" title="Figure 14: How to view the historical leaderboard?">
+<img alt="Figure 14: How to view the historical leaderboard?" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-historical-data.webp, /leaderboard-system-design/leaderboard-historical-data.webp 1.5x, /leaderboard-system-design/leaderboard-historical-data.webp 2x" height="1908" sizes="683px" src="../assets/images/img_00d1f18221f3.webp" width="2749"/>
+</a><figcaption class="image-caption">Figure 14: How to view the historical leaderboard?</figcaption>
+</figure>
+<p>The completed games can switch to REST instead of WebSocket streaming <sup id="fnref:20"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:20" role="doc-noteref">20</a></sup>. The historical leaderboard can leverage a long TTL cache for scalability<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The following operations are performed when a player wants to view the historical leaderboard:</p>
+<ol>
+<li>The client queries the DNS for identifying the closest data center</li>
+<li>The extremely popular leaderboards can be queried from the CDN cache</li>
+<li>The load balancer delegates the client’s request to a web server using the weighted-round robin algorithm</li>
+<li>The web server invokes the serverless function to fetch the historical leaderboard</li>
+<li>The serverless function queries the dedicated cache</li>
+<li>The serverless function queries the read replica of the relational database on a cache miss</li>
+<li>The profile image of the players can be fetched from the object storage</li>
+</ol>
+<p><a href="https://redis.io/docs/data-types/streams-tutorial/" rel="noopener noreferrer" target="_blank">Redis Streams</a> can be used to store historical leaderboard data with very low memory overhead. Redis Streams support range queries to paginate the historical leaderboard or check the games played at a given instant in the past <sup id="fnref:21"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:21" role="doc-noteref">21</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-configure-leaderboards-based-on-gameplay-on-a-daily-weekly-or-monthlybasis"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-configure-leaderboards-based-on-gameplay-on-a-daily-weekly-or-monthlybasis"></a>How to configure leaderboards based on gameplay on a daily, weekly, or monthly basis?</h3>
+<p>A new sorted set for the leaderboard can be created for different time ranges (daily, weekly, or monthly). The (historical) sorted sets can be moved to cold storage for saving costs. The popular filters on the leaderboard can be precomputed for scalability.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-configure-the-leaderboard-for-the-friendcircles"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-configure-the-leaderboard-for-the-friendcircles"></a>How to configure the leaderboard for the friend circles?</h3>
+<p>The following operations are performed to configure the leaderboard for the friend circles<sup id="fnref:15"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:15" role="doc-noteref">15</a></sup>:</p>
+<ol>
+<li>keep the <em>friend list</em> as a sorted set initialized with zero values</li>
+<li>perform the intersection of the <em>friend list</em> sorted set with the leaderboard sorted set using the <a href="https://redis.io/commands/zinterstore/" rel="noopener noreferrer" target="_blank">zinterstore</a> command</li>
+</ol>
+<p>Alternatively, the client can locally calculate the leaderboard for the friend circle by merging the friend list and global leaderboard to decrease the server load. The utilization of the client computing capacity and client caching allows scaling of the leaderboard for the friend circles proportional to the total count of players<sup id="fnref:14"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:14" role="doc-noteref">14</a></sup>.</p>
+<p>Dedicated leaderboards can be configured for different gameplays. The front page can display a consolidated leaderboard. The load balancer will redirect the client to a specific leaderboard using the <a href="https://en.wikipedia.org/wiki/Virtual_IP_address" rel="noopener noreferrer" target="_blank">virtual IP address</a> of the leaderboard<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-shard-the-leaderboard-cacheserver"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-to-shard-the-leaderboard-cacheserver"></a>How to shard the leaderboard cache server?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 15: Cache partitioning in the leaderboard&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-cache-partitioning.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-cache-partitioning.webp" rel="noopener noreferrer" target="_blank" title="Figure 15: Cache partitioning in the leaderboard">
+<img alt="Figure 15: Cache partitioning in the leaderboard" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-cache-partitioning.webp, /leaderboard-system-design/leaderboard-cache-partitioning.webp 1.5x, /leaderboard-system-design/leaderboard-cache-partitioning.webp 2x" height="2176" sizes="683px" src="../assets/images/img_1cd932ee4f6e.webp" width="3667"/>
+</a><figcaption class="image-caption">Figure 15: Cache partitioning in the leaderboard</figcaption>
+</figure>
+<p>An extremely popular leaderboard can cause the daily QPS to exceed the threshold that a Redis node can handle. The Redis node should be partitioned for scalability. The leaderboards cache server can be partitioned by score as the <strong>shard</strong> (partition) key. The score is chosen as the shard key for supporting queries to fetch the top 10 players on the leaderboard and surrounding ranked players of a particular player. However, fetching the score and ranking of a specific player can be difficult to implement with the score as the shard key.</p>
+<p>The players' metadata cache can be used to fetch the score of a specific player. The data schema (hash) of the players' metadata cache can be modified to include the score of the player as well. The hash data type stores the player-id as the key and the score as the value. The players' cache can be partitioned by player-id as the <a class="offline-link" href="./mysql-sharding.html" rel="noopener noreffer">shard</a> key. The caching layer with player-id as the shard key makes fetching the score and ranking of a specific player trivial. The following operations are executed to fetch the ranking of a player:</p>
+<ol>
+<li>The players' cache is queried to fetch the score of the player</li>
+<li>The leaderboards cache is queried with the fetched score to identify the ranking of a player</li>
+</ol>
+<p>The potential partitioning schemes for the leaderboard are the following:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Partition_%28database%29" rel="noopener noreferrer" target="_blank">range partitioning</a></li>
+<li><a href="https://www.ibm.com/docs/en/iis/8.5?topic=partitioning-modulus-partitioner" rel="noopener noreferrer" target="_blank">modulus partitioning</a></li>
+<li><a href="https://redis.io/docs/management/scaling/" rel="noopener noreferrer" target="_blank">redis cluster</a></li>
+<li><a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a></li>
+</ul>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="redis-cluster"><a class="header-mark offline-link" href="./leaderboard-system-design.html#redis-cluster"></a>Redis cluster</h4>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 16: Hash slots in the Redis cluster&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-redis-cluster.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-redis-cluster.webp" rel="noopener noreferrer" target="_blank" title="Figure 16: Hash slots in the Redis cluster">
+<img alt="Figure 16: Hash slots in the Redis cluster" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-redis-cluster.webp, /leaderboard-system-design/leaderboard-redis-cluster.webp 1.5x, /leaderboard-system-design/leaderboard-redis-cluster.webp 2x" height="1072" sizes="683px" src="../assets/images/img_d8edd74c1a97.webp" width="1836"/>
+</a><figcaption class="image-caption">Figure 16: Hash slots in the Redis cluster</figcaption>
+</figure>
+<p>The Redis cluster can be used for the automatic partitioning of the cache server. The Redis cluster internally makes use of algorithmic sharding and hash slots to distribute the data. The Redis client can invoke the <em>rebalance</em> subcommand to redistribute the hash slots when a node is added or removed. The Redis client can invoke the <em>reshard</em> subcommand to ensure the contiguous distribution of data keys across nodes in the cluster at the expense of increased operational complexity. In addition, ensuring contiguous hash slots in the Redis cluster causes increased data movement when a node is added or removed, resulting in degraded performance<sup id="fnref:22"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:22" role="doc-noteref">22</a></sup>, <sup id="fnref:23"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:23" role="doc-noteref">23</a></sup>.</p>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="consistent-hashing"><a class="header-mark offline-link" href="./leaderboard-system-design.html#consistent-hashing"></a>Consistent hashing</h4>
+<p><a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">Consistent hashing</a> results in the non-contiguous distribution of data keys. The scatter-gather pattern can be used for calculating the rank and score of a player at the expense of read performance.</p>
+<p>The player record should be removed and reinserted into the corresponding shard whenever the score changes to ensure data persistence in the correct shard. The rank of a player can be fetched by calculating the rank of the player in the shard and the boundary ranking values of other shards. The total count of items in the sorted set in a shard can be found by using the <a href="https://redis.io/commands/zcount/" rel="noopener noreferrer" target="_blank">zcount</a> command.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 17: The scatter-gather pattern on the leaderboard&lt;/h2&gt;" data-thumbnail="/leaderboard-system-design/leaderboard-scatter-gather.webp" href="https://systemdesign.one/leaderboard-system-design/leaderboard-scatter-gather.webp" rel="noopener noreferrer" target="_blank" title="Figure 17: The scatter-gather pattern on the leaderboard">
+<img alt="Figure 17: The scatter-gather pattern on the leaderboard" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/leaderboard-system-design/leaderboard-scatter-gather.webp, /leaderboard-system-design/leaderboard-scatter-gather.webp 1.5x, /leaderboard-system-design/leaderboard-scatter-gather.webp 2x" height="1330" sizes="683px" src="../assets/images/img_b70b72a4dc91.webp" width="2356"/>
+</a><figcaption class="image-caption">Figure 17: The scatter-gather pattern on the leaderboard</figcaption>
+</figure>
+<p>When the client requests to display the top 10 players on the leaderboard, the following operations are executed using the scatter-gather pattern:</p>
+<ol>
+<li>the server queries all the shards to fetch the top players on each shard</li>
+<li>the server merges the result</li>
+<li>the server sorts the result</li>
+</ol>
+<p>The queries to the shards can be parallelized to improve the latency. However, the overall latency is the query time of the slowest shard. The popular shards (top 10 players) can be replicated through leader-follower topology to prevent hot spots. On top of that, auto-repartitioning can be triggered based on autoscaling alerts to handle increasing load<sup id="fnref:6"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:6" role="doc-noteref">6</a></sup>. The tradeoffs of each partitioning scheme are the following:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Scheme</th>
+<th>Tradeoff</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>range partitioning</td>
+<td>increased data movement when the number of nodes changes</td>
+</tr>
+<tr>
+<td></td>
+<td>operational complexity</td>
+</tr>
+<tr>
+<td>modulus partitioning</td>
+<td>increased data movement when the number of nodes changes</td>
+</tr>
+<tr>
+<td></td>
+<td>non-contiguous data distribution results in complex queries</td>
+</tr>
+<tr>
+<td>redis cluster</td>
+<td>increased data movement when the number of nodes changes</td>
+</tr>
+<tr>
+<td></td>
+<td>operational complexity</td>
+</tr>
+<tr>
+<td>consistent hashing</td>
+<td>non-contiguous data distribution results in complex queries</td>
+</tr>
+<tr>
+<td></td>
+<td>operational complexity</td>
+</tr>
+</tbody>
+</table></div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-leaderboard-handle-massive-concurrency"><a class="header-mark offline-link" href="./leaderboard-system-design.html#how-leaderboard-handle-massive-concurrency"></a>How leaderboard handle massive concurrency?</h3>
+<p>The reverse proxy server can perform <a href="https://wiki.squid-cache.org/Features/CollapsedForwarding" rel="noopener noreferrer" target="_blank">collapse forwarding</a> on <a class="offline-link" href="./shopify-flash-sale.html" rel="noopener noreffer">concurrent</a> read requests to improve the read performance<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The single-threaded architecture of Redis makes it easy to handle concurrent score updates. The score update operation should be atomic. Additional ranking logic and capture of differential updates can be implemented using Lua scripting on Redis<sup id="fnref:15"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>The Redis implements multi-threading to accept network connections and write the command string into a memory buffer. The commands can be issued concurrently on Redis but the command execution is sequential. The Redis cache can be partitioned to overcome memory limitations. The latency in Redis is caused by network limitations and not by CPU<sup id="fnref:24"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:24" role="doc-noteref">24</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="redis-sorted-set-explained"><a class="header-mark offline-link" href="./leaderboard-system-design.html#redis-sorted-set-explained"></a>Redis sorted set explained</h3>
+<p>The sorted sets in Redis are a built-in data structure that makes it simple to create and modify the leaderboard<sup id="fnref:2"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:2" role="doc-noteref">2</a></sup>. The sorted set data type is a mapping between a key of type string and a score of type number. The key must be unique, and the score can be any number. The sorted set will store the total score of each player. The key of the sorted set is the player ID as the player ID is a unique field<sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>. The time complexity of sorted set commands for the leaderboard are the following <sup id="fnref:16"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:16" role="doc-noteref">16</a></sup>, <sup id="fnref:17"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:17" role="doc-noteref">17</a></sup>, <sup id="fnref:18"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:18" role="doc-noteref">18</a></sup>:</p>
+<hr/>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Redis Command</th>
+<th>Description</th>
+<th>Time Complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ZADD</td>
+<td>Add a new player</td>
+<td>O(log(n))</td>
+</tr>
+<tr>
+<td>ZINCRBY</td>
+<td>Increment the score of a player</td>
+<td>O(log(n))</td>
+</tr>
+<tr>
+<td>ZSCORE</td>
+<td>Fetch the score of a player</td>
+<td>O(1)</td>
+</tr>
+<tr>
+<td>ZREVRANK</td>
+<td>Fetch the rank of a player</td>
+<td>O(log(n))</td>
+</tr>
+<tr>
+<td>ZREVRANGE</td>
+<td>Fetch the top m players on the leaderboard</td>
+<td>O(log(n) + m)</td>
+</tr>
+<tr>
+<td>ZREM</td>
+<td>Remove a player from the leaderboard</td>
+<td>O(k*log(n))</td>
+</tr>
+</tbody>
+</table></div>
+<p>with <em>n</em> being the number of elements in the sorted set, <em>k</em> being the number of elements to be removed, and <em>m</em> the number of elements returned.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="redis-sorted-set-implementation"><a class="header-mark offline-link" href="./leaderboard-system-design.html#redis-sorted-set-implementation"></a>Redis sorted set implementation</h3>
+<p>The sorted sets in Redis are implemented internally as a dual data structure through the combination of hash and <a href="https://en.wikipedia.org/wiki/Skip_list" rel="noopener noreferrer" target="_blank">skip list</a>. The hash maps players to scores while the skip list maps score to players. The players are sorted by the score. The skip list enables most operations with an average time complexity of O(log(n)). The source code of the Redis skip list can be found on <a href="https://github.com/redis/redis/blob/unstable/src/t_zset.c" rel="noopener noreferrer" target="_blank">github.com/redis</a> <sup id="fnref:16"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:16" role="doc-noteref">16</a></sup>, <sup id="fnref:17"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:17" role="doc-noteref">17</a></sup>, <sup id="fnref:18"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:18" role="doc-noteref">18</a></sup>.</p>
+<p>The sorted set in Redis is optimized for small-size data sets by storing only hashes until a certain threshold size is exceeded. The scores in a sorted set are double 64-bit floating point numbers, which are sorted in ascending order. The redis sorted set breaks a score tie by default using the lexicographic ascending ordering of strings (player name).</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="high-availability"><a class="header-mark offline-link" href="./leaderboard-system-design.html#high-availability"></a>High availability</h3>
+<p>The services (API, database) can be designed as degradable components for high availability. The degraded service should <a class="offline-link" href="./rate-limiter.html" rel="noopener noreffer">rate limit</a> errors and throttle service usage to prevent latency and performance degradation in the whole system. The degraded service should be turned off in the worst case.</p>
+<p>The services can be categorized as critical services and non-critical services based on the functional requirements. The non-critical services should be throttled during peak hours. Autoscaling should be enabled to handle the anticipated spikes in traffic<sup id="fnref:25"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:25" role="doc-noteref">25</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="low-latency"><a class="header-mark offline-link" href="./leaderboard-system-design.html#low-latency"></a>Low latency</h3>
+<p>The servers can be deployed in multiple availability zones within the same region to keep the servers closer to the client for improving latency. The asynchronous writes to the database on score changes and caching leaderboard data on the client, and CDN further improves the latency<sup id="fnref:14"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:14" role="doc-noteref">14</a></sup>.</p>
+<p>The sorted set data type in Redis provides logarithmic time complexity on most operations resulting in low latency on most queries<sup id="fnref:4"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:4" role="doc-noteref">4</a></sup>. The popular filters on the leaderboard can be precomputed for scalability. Alternatively, the filters on the leaderboard can be computed on the client and cached to improve latency<sup id="fnref:15"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>The <em>zrevrange</em> command is used to fetch the top 10 players on the leaderboard. The <em>zrevrange</em> command execution takes O(log(n) + m) time complexity, where n is the number of items in the sorted set and m is the number of items returned. The time complexity of the <em>zrevrange</em> command can be linear in the worst case when the query returns the entire list of items on the leaderboard. The leaderboard data can be served in a paginated manner using the <em>zrevrange</em> command to improve the latency<sup id="fnref:19"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:19" role="doc-noteref">19</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./leaderboard-system-design.html#scalability"></a>Scalability</h3>
+<p>The caching layer is added for scaling read-heavy loads such as clients viewing the leaderboard. The write-heavy load of the leaderboard can be scaled by partitioning the data store or using an in-memory architecture<sup id="fnref:25"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:25" role="doc-noteref">25</a></sup>. The Redis node can handle 40 thousand QPS at peak load<sup id="fnref:26"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:26" role="doc-noteref">26</a></sup>. The data can be denormalized for faster read operations<sup id="fnref:1"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:1" role="doc-noteref">1</a></sup>. The read path and write path can be segregated to further improve the performance of the leaderboard<sup id="fnref:25"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:25" role="doc-noteref">25</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="reliability"><a class="header-mark offline-link" href="./leaderboard-system-design.html#reliability"></a>Reliability</h3>
+<p>A time series database such as Prometheus with a dashboard such as Grafana can be deployed to monitor the services and APIs. The internal caching layer can protect all services from the load<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The cache server should be check-pointed on disk for persistence and fault tolerance<sup id="fnref:15"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:15" role="doc-noteref">15</a></sup>. The cache server can be configured in the leader-follower topology for supporting failover. The snapshot of the relational database can be taken for increased reliability.</p>
+<p>The API endpoints can enable TTL cache on the reverse proxy server and CDN for fault tolerance. The rate limiter can be configured for throttling the requests to the leaderboard<sup id="fnref:10"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker" rel="noopener noreferrer" target="_blank">circuit breaker pattern</a> can be used for improved fault tolerance. Set the replication factor of the storage layer to a value of at least three for improved durability and disaster recovery.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="minimal-operational-overhead"><a class="header-mark offline-link" href="./leaderboard-system-design.html#minimal-operational-overhead"></a>Minimal operational overhead</h3>
+<p>The operational overhead can be minimized by the following:</p>
+<ul>
+<li>run serverless functions</li>
+<li>configure fully managed services on the cloud</li>
+<li>enable autoscaling based on alerts</li>
+<li>configure monitoring</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="security"><a class="header-mark offline-link" href="./leaderboard-system-design.html#security"></a>Security</h3>
+<p>The following actions can be taken to prevent fake score updates by malicious players and improve the security of the leaderboard<sup id="fnref:9"><a class="footnote-ref offline-link" href="./leaderboard-system-design.html#fn:9" role="doc-noteref">9</a></sup>:</p>
+<ul>
+<li>encrypt the communication to prevent packet sniffing</li>
+<li>telemetry can be used on the server to detect anomalies in the score</li>
+<li><a href="https://en.wikipedia.org/wiki/Shadow_banning" rel="noopener noreferrer" target="_blank">shadow ban</a> the malicious player</li>
+<li>use JWT token for authorization</li>
+<li>rate limit the requests</li>
+<li>use the principle of <a href="https://en.wikipedia.org/wiki/Principle_of_least_privilege" rel="noopener noreferrer" target="_blank">least privilege</a></li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./leaderboard-system-design.html#summary"></a>Summary</h2>
+<p>The relational database can be used to build a small-scale real-time leaderboard. However, an internet-scale real-time leaderboard requires an in-memory solution like sorted sets data type in Redis.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./leaderboard-system-design.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./leaderboard-system-design.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./leaderboard-system-design.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p>Kehinde Otubamowo, Kevin Leong, <a href="https://www.youtube.com/watch?v=l7nBGp_Q1S4" rel="noopener noreferrer" target="_blank">Scaling Real-time Gaming Leaderboards for Millions of Players</a> (2021), youtube.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p><a href="https://redis.com/solutions/use-cases/leaderboards/" rel="noopener noreferrer" target="_blank">Real-time leaderboard &amp; ranking solutions</a>, redis.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p><a href="http://oldblog.antirez.com/post/take-advantage-of-redis-adding-it-to-your-stack.html" rel="noopener noreferrer" target="_blank">How to take advantage of Redis just adding it to your stack</a> (2011), oldblog.antirez.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Juan Manuel Villegas, <a href="https://levelup.gitconnected.com/how-we-created-a-real-time-leaderboard-for-a-million-users-555aaa3ccf7b" rel="noopener noreferrer" target="_blank">How we created a real-time Leaderboard for a million Users</a> (2020), levelup.gitconnected.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p>Dimitris-Ilias Gkanatsios, <a href="https://github.com/dgkanatsios/AzureFunctionsNodeLeaderboards-Cosmos" rel="noopener noreferrer" target="_blank">AzureFunctionsNodeLeaderboards Cosmos</a>, GitHub.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Jan Michael Go Tan, <a href="https://aws.amazon.com/blogs/database/building-a-real-time-gaming-leaderboard-with-amazon-elasticache-for-redis/" rel="noopener noreferrer" target="_blank">Build a real-time gaming leaderboard with Amazon ElastiCache for Redis</a> (2019), aws.amazon.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Sandeep Verma, <a href="https://medium.com/@sandeep4.verma/building-real-time-leaderboard-with-redis-82c98aa47b9f" rel="noopener noreferrer" target="_blank">Building a real-time Leaderboard with Redis</a> (2019), medium.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p><a href="https://www.youtube.com/watch?v=MUKlxdBQZ7g" rel="noopener noreferrer" target="_blank">Redis Sorted Sets Explained</a> (2021), youtube.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p><a href="https://learn.microsoft.com/en-us/gaming/azure/reference-architectures/leaderboard" rel="noopener noreferrer" target="_blank">Leaderboard Reference Architecture</a> (2022), learn.microsoft.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2013/11/4/espns-architecture-at-scale-operating-at-100000-duh-nuh-nuhs.html" rel="noopener noreferrer" target="_blank">ESPN’s Architecture At Scale - Operating At 100,000 Duh Nuh Nuhs Per Second</a> (2013), highscalability.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p>Alex DeBrie, <a href="https://www.dynamodbguide.com/leaderboard-write-sharding/" rel="noopener noreferrer" target="_blank">Leaderboard &amp; Write Sharding</a>, dynamodbguide.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p><a href="https://www.youtube.com/watch?v=SmvP2W2seYI" rel="noopener noreferrer" target="_blank">How to build a real-time leaderboard for the Soccer World Cup with Azure SQL &amp; Redis</a> (2022), youtube.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Matthew Clark, <a href="https://www.infoq.com/presentations/bbc-website-architecture/" rel="noopener noreferrer" target="_blank">BBC Online: Architecting for Scale with the Cloud and Serverless</a> (2021), infoq.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2010/9/21/playfishs-social-gaming-architecture-50-million-monthly-user.html" rel="noopener noreferrer" target="_blank">Playfish’s Social Gaming Architecture - 50 Million Monthly Users And Growing</a> (2010), highscalability.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:15" role="doc-endnote">
+<p>Kamal Joshi, <a href="https://www.slideshare.net/RedisLabs/redis-swiss-army-knife-hackerrank-kamal-joshi" rel="noopener noreferrer" target="_blank">Redis: Swiss Army Knife</a> (2019), slideshare.net <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:15" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:16" role="doc-endnote">
+<p><a href="https://scalegrid.io/blog/top-redis-use-cases-by-core-data-structure-types/" rel="noopener noreferrer" target="_blank">Top Redis Use Cases by Core Data Structure Types</a> (2019), scalegrid.io <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:16" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:17" role="doc-endnote">
+<p><a href="https://scalegrid.io/blog/introduction-to-redis-data-structures-sorted-sets/" rel="noopener noreferrer" target="_blank">Introduction to Redis Data Structures: Sorted Sets</a> (2016), scalegrid.io <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:17" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:18" role="doc-endnote">
+<p><a href="https://redis.io/docs/data-types/sorted-sets/" rel="noopener noreferrer" target="_blank">Redis sorted sets</a>, redis.io <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:18" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:19" role="doc-endnote">
+<p><a href="https://www.youtube.com/watch?v=5jwuDM6Z3F8" rel="noopener noreferrer" target="_blank">Building Highly Concurrent, Low Latency Gaming System with Redis</a> (2019), youtube.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:19" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:20" role="doc-endnote">
+<p>Erdem Gunay, <a href="https://www.infoq.com/presentations/score-app-spring-react/" rel="noopener noreferrer" target="_blank">Real-Time Live Soccer Score Streaming Application Demo with Reactive Spring Stack</a> (2020), infoq.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:20" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:21" role="doc-endnote">
+<p>Antirez, <a href="http://antirez.com/news/128" rel="noopener noreferrer" target="_blank">Redis streams as a pure data structure</a>, antirez.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:21" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:22" role="doc-endnote">
+<p><a href="https://redis.io/docs/management/scaling/" rel="noopener noreferrer" target="_blank">Scaling with Redis Cluster</a>, redis.io <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:22" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:23" role="doc-endnote">
+<p><a href="https://www.youtube.com/watch?v=3WOfXRjYnGA" rel="noopener noreferrer" target="_blank">Clustering in Redis</a> (2022), youtube.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:23" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:24" role="doc-endnote">
+<p><a href="https://www.pixelstech.net/article/1677580861-Why-is-single-threaded-Redis-so-fast" rel="noopener noreferrer" target="_blank">Why is single threaded Redis so fast</a> (2023), pixelstech.net <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:24" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:25" role="doc-endnote">
+<p>Todd Hoff, <a href="http://highscalability.com/blog/2010/2/8/how-farmville-scales-to-harvest-75-million-players-a-month.html" rel="noopener noreferrer" target="_blank">How FarmVille Scales To Harvest 75 Million Players A Month</a> (2010), highscalability.com <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:25" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:26" role="doc-endnote">
+<p><a href="https://redis.io/docs/management/optimization/benchmarks/" rel="noopener noreferrer" target="_blank">Redis benchmark</a>, redis.io <a class="footnote-backref offline-link" href="./leaderboard-system-design.html#fnref:26" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-04-03</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Leaderboard System Design" data-url="https://systemdesign.one/leaderboard-system-design/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/leaderboard-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/leaderboard-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Leaderboard System Design" data-url="https://systemdesign.one/leaderboard-system-design/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="Redis sorted set data type makes it trivial to generate a scalable real-time leaderboard" data-image="leaderboard-system-design/leaderboard.webp" data-sharer="pinterest" data-url="https://systemdesign.one/leaderboard-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="Redis sorted set data type makes it trivial to generate a scalable real-time leaderboard" data-sharer="tumblr" data-title="Leaderboard System Design" data-url="https://systemdesign.one/leaderboard-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Leaderboard System Design" data-url="https://systemdesign.one/leaderboard-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/leaderboard-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="Redis sorted set data type makes it trivial to generate a scalable real-time leaderboard" data-image="leaderboard-system-design/leaderboard.webp" data-sharer="vk" data-title="Leaderboard System Design" data-url="https://systemdesign.one/leaderboard-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="../fundamentals/quotient-filter-explained.html" rel="prev" title="Quotient Filter Explained"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Quotient Filter Explained</a>
+<a class="next offline-link" href="./live-comment-system-design.html" rel="next" title="Live Comment System Design">Live Comment System Design<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./leaderboard-system-design.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./leaderboard-system-design.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Quotient Filter Explained - System Design</title><meta content="an approximate membership query filter" name="Description"/><meta content="Quotient Filter Explained" property="og:title"/>
+<meta content="an approximate membership query filter" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/quotient-filter-explained/" property="og:url"/><meta content="https://systemdesign.one/quotient-filter-explained/quotient-filter-explained.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-03-11T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-03-11T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/quotient-filter-explained/quotient-filter-explained.webp" name="twitter:image"/>
+<meta content="Quotient Filter Explained" name="twitter:title"/>
+<meta content="an approximate membership query filter" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/quotient-filter-explained/" rel="canonical"/><link href="https://systemdesign.one/bloom-filters-explained/" rel="prev"/><link href="https://systemdesign.one/leaderboard-system-design/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/quotient-filter-explained</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./quotient-filter-explained.html#introduction">Introduction</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#requirements">Requirements</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#what-is-a-quotientfilter">What is a quotient filter?</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#how-does-a-quotient-filterwork">How does a quotient filter work?</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#how-to-add-an-item-to-the-quotientfilter">How to add an item to the quotient filter?</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#how-to-check-the-membership-of-an-item-in-the-quotientfilter">How to check the membership of an item in the quotient filter?</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#quotient-filter-falsepositive">Quotient filter false positive</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#how-to-resize-the-quotientfilter">How to resize the quotient filter?</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#what-is-the-asymptotic-complexity-of-the-quotientfilter">What is the asymptotic complexity of the quotient filter?</a>
+<ul>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#time-complexity">Time complexity</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#space-complexity">Space complexity</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#advantages-of-quotientfilter">Advantages of quotient filter</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#quotient-filter-disadvantages">Quotient filter disadvantages</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#quotient-filter-usecases">Quotient filter use cases</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#quotient-filter-implementation">Quotient filter implementation</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#variants-of-quotientfilter">Variants of quotient filter</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./quotient-filter-explained.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Quotient Filter Explained</h1><h2 class="single-subtitle">Probabilistic Data Structure To Check Membership</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/fundamentals/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Fundamentals</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-03-11">2023-03-11</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 2144 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 11 minutes </div>
+</div><div class="featured-image"><img alt="/quotient-filter-explained/quotient-filter-explained.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/quotient-filter-explained.webp, /quotient-filter-explained/quotient-filter-explained.webp 1.5x, /quotient-filter-explained/quotient-filter-explained.webp 2x" height="961" sizes="699px" src="../assets/images/img_b206e21891dd.webp" title="an approximate membership query filter" width="1459"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>The prerequisite to reading this article is fundamental knowledge of data structures and algorithms. This article does not cover an in-depth guide on probabilistic data structures.</em></p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="introduction"><a class="header-mark offline-link" href="./quotient-filter-explained.html#introduction"></a>Introduction</h2>
+<p>Data structures such as HashSet can be used in a small data set to test if an item is a member of the data set. However, the operation to test if an item is a member of a large dataset can be expensive. The time complexity and space complexity can be linear in the worst case.</p>
+<p>Probabilistic data structures offer constant time complexity and constant space complexity at the expense of providing a probabilistic answer.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./quotient-filter-explained.html#requirements"></a>Requirements</h2>
+<p>Design a data structure with the following characteristics:</p>
+<ul>
+<li>constant time complexity to test membership of items in a large dataset</li>
+<li>constant space complexity to test membership of items in a large dataset</li>
+<li>test membership may yield approximate results</li>
+<li>items can be deleted</li>
+<li>the data structure can be resized</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-a-quotientfilter"><a class="header-mark offline-link" href="./quotient-filter-explained.html#what-is-a-quotientfilter"></a>What is a quotient filter?</h2>
+<p>A quotient filter is a space-efficient probabilistic data structure that is used to test whether an item is a member of a set. The quotient filter will always say yes if an item is a set member. However, the quotient filter <strong>might</strong> still say yes although an item is not a member of the set (<a href="https://en.wikipedia.org/wiki/False_positives_and_false_negatives#False_positive_error" rel="noopener noreferrer" target="_blank">false positive</a>). The quotient filter stores only a part of the item’s hash fingerprint along with additional metadata bits. The quotient filter can be resized on demand. The quotient filter supports the following operations:</p>
+<ul>
+<li>adding an item to the set</li>
+<li>test the membership of an item in the set</li>
+<li>deletion of an item from the set</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-a-quotient-filterwork"><a class="header-mark offline-link" href="./quotient-filter-explained.html#how-does-a-quotient-filterwork"></a>How does a quotient filter work?</h2>
+<p>The quotient filter data structure is a bit array of length <em>n</em> with additional metadata bits. The <a href="https://en.wikipedia.org/wiki/Hash_function" rel="noopener noreferrer" target="_blank">hash function</a> generates a <em>p</em>-bits fingerprint as shown in Figure 1. The <em>r</em> least significant bits are called the <em>remainder</em> while the <em>q</em> = <em>p - r</em> most significant bits are called the <em>quotient</em>. The quotient filter has <em>n</em> = 2^<em>q</em> buckets.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Quotient filter partitioning&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/quotient-filter-partitioning.webp" href="https://systemdesign.one/quotient-filter-explained/quotient-filter-partitioning.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Quotient filter partitioning">
+<img alt="Figure 1: Quotient filter partitioning" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/quotient-filter-partitioning.webp, /quotient-filter-explained/quotient-filter-partitioning.webp 1.5x, /quotient-filter-explained/quotient-filter-partitioning.webp 2x" height="1574" sizes="683px" src="../assets/images/img_f81f25281174.webp" width="5611"/>
+</a><figcaption class="image-caption">Figure 1: Quotient filter partitioning</figcaption>
+</figure>
+<p>Assume the hash function output is 8-bits long. In Figure 2, the bucket position is indicated by the <em>quotient</em> bits (0–7) in <a href="https://www.mathsisfun.com/binary-number-system.html" rel="noopener noreferrer" target="_blank">binary number</a> format. All the bits in the quotient filter are set to zero on initialization (an empty quotient filter). The quotient filter utilizes only a hash function such as <a href="https://en.wikipedia.org/wiki/MurmurHash" rel="noopener noreferrer" target="_blank">MurmurHash</a>, unlike the k-hash functions in the <a class="offline-link" href="./bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Empty quotient filter&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/empty-quotient-filter.webp" href="https://systemdesign.one/quotient-filter-explained/empty-quotient-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Empty quotient filter">
+<img alt="Figure 2: Empty quotient filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/empty-quotient-filter.webp, /quotient-filter-explained/empty-quotient-filter.webp 1.5x, /quotient-filter-explained/empty-quotient-filter.webp 2x" height="2325" sizes="683px" src="../assets/images/img_e5490cc8fbff.webp" width="4238"/>
+</a><figcaption class="image-caption">Figure 2: Empty quotient filter</figcaption>
+</figure>
+<p>The hash output is split into two parts: <em>quotient</em> and <em>remainder</em>. The quotient filter does not store the item but only a part of the generated hash output. The <em>quotient</em> is used to identify the bucket position while the <em>remainder</em> gets stored in the bucket. For instance, if the output of the hash function is 8 bits (<em>p</em>), and the quotient filter size is eight, a power of two, <em>n</em> = 2^<em>q</em> = 2^3. The <em>quotient</em> (<em>q</em>) is the most significant bits (<em>q</em> = 3) and the <em>remainder</em> (<em>r</em>) is p - q = 8 - 3 = 5 bits.</p>
+<p>The original bucket to which the <em>quotient</em> of the hash output points is known as the <strong>canonical bucket</strong>. The set of fingerprints having the same <em>quotient</em> is known as <strong>run</strong>. The additional metadata bits in the quotient filter perform the following function:</p>
+<ul>
+<li><strong>is_occupied</strong>: set when a bucket is a canonical bucket for some item</li>
+<li><strong>is_continuation</strong>: set when a bucket is occupied but not by the first <em>remainder</em> in a <em>run</em></li>
+<li><strong>is_shifted</strong>: set when the <em>remainder</em> in a bucket is not in its canonical bucket</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-to-add-an-item-to-the-quotientfilter"><a class="header-mark offline-link" href="./quotient-filter-explained.html#how-to-add-an-item-to-the-quotientfilter"></a>How to add an item to the quotient filter?</h2>
+<p>In Figure 3, the hash output is 8 bits (<em>p</em>). The size of the quotient filter is 8 (<em>n</em>) yielding a <em>quotient</em> (<em>q</em>) of 3 bits and the <em>remainder</em> (<em>r</em>) of 5 bits. The following operations are executed to add an item to the quotient filter:</p>
+<ol>
+<li>the item is hashed through a hash function</li>
+<li>the <em>quotient</em> (<em>q</em>) and the <em>remainder</em> (<em>r</em>) are calculated</li>
+<li>the <em>quotient</em> is used to identify the bucket position</li>
+<li>the <em>remainder</em> is stored in the corresponding bucket</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Adding an item to the quotient filter&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/add-item-quotient-filter.webp" href="https://systemdesign.one/quotient-filter-explained/add-item-quotient-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Adding an item to the quotient filter">
+<img alt="Figure 3: Adding an item to the quotient filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/add-item-quotient-filter.webp, /quotient-filter-explained/add-item-quotient-filter.webp 1.5x, /quotient-filter-explained/add-item-quotient-filter.webp 2x" height="2466" sizes="683px" src="../assets/images/img_292084010d47.webp" width="4582"/>
+</a><figcaption class="image-caption">Figure 3: Adding an item to the quotient filter</figcaption>
+</figure>
+<p>In Figure 3, item <em>one</em> is added to the quotient filter. The bucket that should store the fingerprint for item <em>one</em> is identified by the <em>quotient</em> in the hash output.</p>
+<div class="details admonition example open">
+<div class="details-summary admonition-title">
+<i aria-hidden="true" class="icon fas fa-list-ol fa-fw"></i>quotient filter partitioning<i aria-hidden="true" class="details-icon fas fa-angle-right fa-fw"></i>
+</div>
+<div class="details-content">
+<div class="admonition-content">hash(<em>one</em>) = 00001010 = 000 (<em>quotient</em>) | 01010 (<em>remainder</em>)</div>
+</div>
+</div>
+<p>The binary number 000 (<em>quotient</em>) represents the zeroth bucket. The <em>remainder</em> 01010 is stored in the zeroth bucket.</p>
+<p><strong>Hard collisions</strong> occur in the quotient filter when multiple items result in the same hash output. The hash function output must be uniformly distributed and independent to prevent hard collisions.</p>
+<p><strong>Soft collisions</strong> occur in the quotient filter when multiple items have the same <em>quotient</em>. The metadata bits are used in the quotient filter due to the following reasons:</p>
+<ul>
+<li>resolve soft collisions in the quotient filter</li>
+<li>enable recovery of the original hash output</li>
+</ul>
+<p>In Figure 4, item <em>one</em> is added to the quotient filter. The bucket that should store the fingerprint for item <em>one</em> is identified by the <em>quotient</em> of the hash output. The following operations are executed to add item <em>one</em> to the quotient filter:</p>
+<ol>
+<li>calculate hash(<em>one</em>) = 00001010 = 000 (<em>quotient</em>) | 01010 (<em>remainder</em>)</li>
+<li>000 (<em>quotient</em>) is used to identify the bucket position</li>
+<li>01010 (<em>remainder</em>) is stored in the bucket</li>
+<li>set metadata bit <em>is_occupied</em> to 1 as the item <em>one</em> hashed into the bucket</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Soft collisions in quotient filter&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/soft-collision-quotient-filter.webp" href="https://systemdesign.one/quotient-filter-explained/soft-collision-quotient-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Soft collisions in quotient filter">
+<img alt="Figure 4: Soft collisions in quotient filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/soft-collision-quotient-filter.webp, /quotient-filter-explained/soft-collision-quotient-filter.webp 1.5x, /quotient-filter-explained/soft-collision-quotient-filter.webp 2x" height="2061" sizes="683px" src="../assets/images/img_1912062dca3b.webp" width="3710"/>
+</a><figcaption class="image-caption">Figure 4: Soft collisions in quotient filter</figcaption>
+</figure>
+<p>However, items <em>two</em> and <em>three</em> have the same <em>quotient</em> resulting in a <strong>soft collision</strong>. The following operations are executed to add item <em>two</em> to the quotient filter:</p>
+<ol>
+<li>calculate hash(<em>two</em>) = 00100111 = 001 (<em>quotient</em>) | 00111 (<em>remainder</em>)</li>
+<li>001 (<em>quotient</em>) is used to identify the bucket position</li>
+<li>00111 (<em>remainder</em>) is stored in the bucket</li>
+<li>set metadata bit <em>is_occupied</em> to 1 as item <em>two</em> hashed into the bucket</li>
+</ol>
+<p>The following operations are executed to add item <em>three</em> to the quotient filter:</p>
+<ol>
+<li>calculate hash(<em>three</em>) = 00110001 = 001 (<em>quotient</em>) | 10001 (<em>remainder</em>)</li>
+<li>001 (<em>quotient</em>) is used to identify the bucket position</li>
+<li>bucket at position 001 is already taken because the <em>is_occupied</em> metadata bit is set to 1</li>
+<li>linear probing is performed to identify the subsequent (on the right) empty bucket at position 010</li>
+<li>10001 (<em>remainder</em>) is stored in the bucket at position 010</li>
+<li>metadata bit <em>is_occupied</em> is unset as the bucket at position 010 is not the canonical bucket of item <em>three</em></li>
+<li>metadata bit <em>is_continuation</em> is set to 1 as item <em>two</em> also hashed into the same bucket as item <em>three</em></li>
+<li>metadata bit <em>is_shifted</em> is set to 1 as item <em>three</em> is not stored in the original bucket at position 001</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./quotient-filter-explained.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-to-check-the-membership-of-an-item-in-the-quotientfilter"><a class="header-mark offline-link" href="./quotient-filter-explained.html#how-to-check-the-membership-of-an-item-in-the-quotientfilter"></a>How to check the membership of an item in the quotient filter?</h2>
+<p>The following operations are executed to check if item <em>four</em> is a member of the quotient filter:</p>
+<ol>
+<li>item <em>four</em> is hashed through the same hash function</li>
+<li>calculate hash(<em>four</em>) = 01100000 = 011 (<em>quotient</em>) | 00000 (<em>remainder</em>)</li>
+<li>verify if the metadata bit <em>is_occupied</em> at the bucket position 011 (<em>quotient</em>) is set</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Check the membership of an item not in the quotient filter&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/test-absent-item-quotient-filter.webp" href="https://systemdesign.one/quotient-filter-explained/test-absent-item-quotient-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Check the membership of an item not in the quotient filter">
+<img alt="Figure 5: Check the membership of an item not in the quotient filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/test-absent-item-quotient-filter.webp, /quotient-filter-explained/test-absent-item-quotient-filter.webp 1.5x, /quotient-filter-explained/test-absent-item-quotient-filter.webp 2x" height="1991" sizes="683px" src="../assets/images/img_8ede078540e3.webp" width="3624"/>
+</a><figcaption class="image-caption">Figure 5: Check the membership of an item not in the quotient filter</figcaption>
+</figure>
+<p>In Figure 5, the metadata bit <em>is_occupied</em> is unset, which shows that item <em>four</em> is not a member of the quotient filter. The following operations are executed to test if item <em>two</em> is a member of the filter:</p>
+<ol>
+<li>item <em>two</em> is hashed through the same hash function</li>
+<li>calculate hash(<em>two</em>) = 00100111 = 001 (<em>quotient</em>) | 00111 (<em>remainder</em>)</li>
+<li>verify if the metadata bit <em>is_occupied</em> at the bucket position 001 is set</li>
+</ol>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Check the membership of an item in the quotient filter&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/test-item-quotient-filter.webp" href="https://systemdesign.one/quotient-filter-explained/test-item-quotient-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Check the membership of an item in the quotient filter">
+<img alt="Figure 6: Check the membership of an item in the quotient filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/test-item-quotient-filter.webp, /quotient-filter-explained/test-item-quotient-filter.webp 1.5x, /quotient-filter-explained/test-item-quotient-filter.webp 2x" height="2102" sizes="683px" src="../assets/images/img_943266962e81.webp" width="3666"/>
+</a><figcaption class="image-caption">Figure 6: Check the membership of an item in the quotient filter</figcaption>
+</figure>
+<p>In Figure 6, the metadata bit <em>is_occupied</em> is set to 1, which shows that item <em>two</em> <strong>might</strong> be a member of the quotient filter. The uncertainty about the membership of an item is due to the possibility of hard collisions on the hash function output. In case, the <em>is_occupied</em> bit is unset but the other metadata bits are set on the corresponding bucket, perform a linear probing operation to test the membership of an item.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="quotient-filter-falsepositive"><a class="header-mark offline-link" href="./quotient-filter-explained.html#quotient-filter-falsepositive"></a>Quotient filter false positive</h2>
+<p>The probability of a false positive can be reduced by increasing the storage size of the quotient filter. The probability of false positives increases when the load factor (the number of occupied buckets) increases.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-to-resize-the-quotientfilter"><a class="header-mark offline-link" href="./quotient-filter-explained.html#how-to-resize-the-quotientfilter"></a>How to resize the quotient filter?</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Resizing the quotient filter&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/resize-quotient-filter.webp" href="https://systemdesign.one/quotient-filter-explained/resize-quotient-filter.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Resizing the quotient filter">
+<img alt="Figure 7: Resizing the quotient filter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/resize-quotient-filter.webp, /quotient-filter-explained/resize-quotient-filter.webp 1.5x, /quotient-filter-explained/resize-quotient-filter.webp 2x" height="2106" sizes="683px" src="../assets/images/img_0aae32ab0875.webp" width="5559"/>
+</a><figcaption class="image-caption">Figure 7: Resizing the quotient filter</figcaption>
+</figure>
+<p>The most significant bit from the <em>remainder</em> is moved to the least significant bit position of the <em>quotient</em> to double the size of the quotient filter.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-the-asymptotic-complexity-of-the-quotientfilter"><a class="header-mark offline-link" href="./quotient-filter-explained.html#what-is-the-asymptotic-complexity-of-the-quotientfilter"></a>What is the asymptotic complexity of the quotient filter?</h2>
+<p>The performance of the quotient filter depends on the hash function used. The faster the computation of the hash function, the quicker the overall time of each operation on the quotient filter.</p>
+<hr/>
+<h3 class="headerLink" id="time-complexity"><a class="header-mark offline-link" href="./quotient-filter-explained.html#time-complexity"></a>Time complexity</h3>
+<p>The quotient filter offers a constant time complexity of O(1) on average for most operations. However, in the worst case, all operations might take logarithmic time complexity O(log(<em>n</em>)), where <em>n</em> is the count of buckets in the quotient filter.</p>
+<hr/>
+<h3 class="headerLink" id="space-complexity"><a class="header-mark offline-link" href="./quotient-filter-explained.html#space-complexity"></a>Space complexity</h3>
+<p>The quotient filter does not store the data items but a part of the fingerprint yielding a constant space complexity of O(1).</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="advantages-of-quotientfilter"><a class="header-mark offline-link" href="./quotient-filter-explained.html#advantages-of-quotientfilter"></a>Advantages of quotient filter</h2>
+<p>The benefits of the quotient filter are the following:</p>
+<ul>
+<li>items can be deleted</li>
+<li>quotient filter can be resized without rehashing data</li>
+<li>disk-based data structure due to sequential disk access pattern</li>
+<li>constant time complexity</li>
+<li>constant space complexity</li>
+<li>no false negatives</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="quotient-filter-disadvantages"><a class="header-mark offline-link" href="./quotient-filter-explained.html#quotient-filter-disadvantages"></a>Quotient filter disadvantages</h2>
+<p>The limitations of the bloom filter are the following:</p>
+<ul>
+<li>quotient filters consume around 20% more space than bloom filters due to metadata bits</li>
+<li>false positives rate can’t be reduced to zero</li>
+<li>quotient filter is relatively complex to implement</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="quotient-filter-usecases"><a class="header-mark offline-link" href="./quotient-filter-explained.html#quotient-filter-usecases"></a>Quotient filter use cases</h2>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Quotient filter used to reduce disk lookups in a database&lt;/h2&gt;" data-thumbnail="/quotient-filter-explained/quotient-filter-disk-lookup.webp" href="https://systemdesign.one/quotient-filter-explained/quotient-filter-disk-lookup.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Quotient filter used to reduce disk lookups in a database">
+<img alt="Figure 8: Quotient filter used to reduce disk lookups in a database" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/quotient-filter-explained/quotient-filter-disk-lookup.webp, /quotient-filter-explained/quotient-filter-disk-lookup.webp 1.5x, /quotient-filter-explained/quotient-filter-disk-lookup.webp 2x" height="2371" sizes="683px" src="../assets/images/img_6b78a0b1f929.webp" width="3657"/>
+</a><figcaption class="image-caption">Figure 8: Quotient filter used to reduce disk lookups in a database</figcaption>
+</figure>
+<p>The quotient filters are useful in high-ingestion systems to prevent expensive disk lookups. In Figure 8, for instance, the server performing a lookup of an item in a large table on the disk can degrade the throughput of the service. The quotient filter can be used to serve the lookups and reduce the unnecessary disk I/O on the database server except when the quotient filter returns a false positive.
+The applications of the quotient filter are the following:</p>
+<ul>
+<li>reducing disk lookups for the non-existing keys in a database</li>
+<li>Log-structured merge tree (<a href="https://en.wikipedia.org/wiki/Log-structured_merge-tree" rel="noopener noreferrer" target="_blank">LSM</a>) storage engine used in search engines such as <a href="https://www.elastic.co/" rel="noopener noreferrer" target="_blank">ElasticSearch</a> uses the quotient filter to check if the key exists in the SSTable</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="quotient-filter-implementation"><a class="header-mark offline-link" href="./quotient-filter-explained.html#quotient-filter-implementation"></a>Quotient filter implementation</h2>
+<p>The C language implementation of a quotient filter for academic purposes can be found on <a href="https://github.com/vedantk/quotient-filter" rel="noopener noreferrer" target="_blank">GitHub.com/vedantk</a>. In practice, a hash function with 64-bit (<em>p</em>) output can be used to generate a quotient filter, which can hold around 1 billion items. The <em>quotient</em> takes the majority of the hash output bits on partitioning.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="variants-of-quotientfilter"><a class="header-mark offline-link" href="./quotient-filter-explained.html#variants-of-quotientfilter"></a>Variants of quotient filter</h2>
+<p>There are more data structures that offer similar functionality as the quotient filter. The popular variants of the quotient filter are the following:</p>
+<ul>
+<li><a class="offline-link" href="./bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Cuckoo_filter" rel="noopener noreferrer" target="_blank">cuckoo filter</a></li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./quotient-filter-explained.html#summary"></a>Summary</h2>
+<p>The quotient filters are a useful probabilistic data structure in high-ingestion systems. The quotient filter offers constant time complexity and constant space complexity. The tradeoff is the quotient filter yielding a probabilistic result and consuming relatively more space than the <a class="offline-link" href="./bloom-filters-explained.html" rel="noopener noreffer">bloom filter</a>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./quotient-filter-explained.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./quotient-filter-explained.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./quotient-filter-explained.html#references"></a>References</h2>
+<ul>
+<li>Burton H. Bloom, <a href="https://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf" rel="noopener noreferrer" target="_blank">Space/Time Trade-offs in Hash Coding with Allowable Errors</a> (1970), uta.edu</li>
+<li>Michael A. Bender et al., <a href="https://arxiv.org/pdf/1208.0290.pdf" rel="noopener noreferrer" target="_blank">Don’t Thrash: How to Cache Your Hash on Flash</a> (2011), arxiv.org</li>
+<li>Sourav Dutta et al., <a href="https://dl.acm.org/doi/10.14778/2536354.2536359" rel="noopener noreferrer" target="_blank">Streaming Quotient Filter: A Near Optimal Approximate Duplicate Detection Approach for Data Streams</a> (2013), , dl.acm.org</li>
+<li>Dr. Andrii Gakhov, <a href="https://www.gakhov.com/articles/quotient-filters.html" rel="noopener noreferrer" target="_blank">quotient filters</a>, gakhov.com</li>
+<li>C. Titus Brown et al., <a href="https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-021-03996-x" rel="noopener noreferrer" target="_blank">MQF and buffered MQF: quotient filters for efficient storage of k-mers with their counts and metadata</a> (2021), bmcbioinformatics.biomedcentral.com</li>
+<li>Adrian Colyer, <a href="https://blog.acolyer.org/2017/08/08/a-general-purpose-counting-filter-making-every-bit-count/" rel="noopener noreferrer" target="_blank">A general purpose counting filter: making every bit count</a> (2017), blog.acolyer.org</li>
+<li>Afton Geil, <a href="https://pdfs.semanticscholar.org/7cb9/dd3562b9238fa83e5a56b503e7e72c4d7db4.pdf" rel="noopener noreferrer" target="_blank">Quotient Filters: Approximate Membership Queries on the GPU</a> (2016), semanticscholar.org</li>
+<li>Vedant Kumar, <a href="https://github.com/vedantk/quotient-filter" rel="noopener noreferrer" target="_blank">quotient-filter</a> (2014), GitHub.com</li>
+<li><a href="https://en.wikipedia.org/wiki/Quotient_filter" rel="noopener noreferrer" target="_blank">Quotient filter</a>, wikipedia.org</li>
+</ul></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-03-11</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Quotient Filter Explained" data-url="https://systemdesign.one/quotient-filter-explained/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/quotient-filter-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/quotient-filter-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Quotient Filter Explained" data-url="https://systemdesign.one/quotient-filter-explained/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="an approximate membership query filter" data-image="quotient-filter-explained/quotient-filter-explained.webp" data-sharer="pinterest" data-url="https://systemdesign.one/quotient-filter-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="an approximate membership query filter" data-sharer="tumblr" data-title="Quotient Filter Explained" data-url="https://systemdesign.one/quotient-filter-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Quotient Filter Explained" data-url="https://systemdesign.one/quotient-filter-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/quotient-filter-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="an approximate membership query filter" data-image="quotient-filter-explained/quotient-filter-explained.webp" data-sharer="vk" data-title="Quotient Filter Explained" data-url="https://systemdesign.one/quotient-filter-explained/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="./bloom-filters-explained.html" rel="prev" title="Bloom Filters Explained"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Bloom Filters Explained</a>
+<a class="next offline-link" href="../case-studies/leaderboard-system-design.html" rel="next" title="Leaderboard System Design">Leaderboard System Design<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./quotient-filter-explained.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./quotient-filter-explained.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>

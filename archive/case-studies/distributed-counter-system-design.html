@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="noodp" name="robots"/>
+<title>Distributed Counter System Design - System Design</title><meta content="CRDT-based distributed counter that is eventually consistent" name="Description"/><meta content="Distributed Counter System Design" property="og:title"/>
+<meta content="CRDT-based distributed counter that is eventually consistent" property="og:description"/>
+<meta content="article" property="og:type"/>
+<meta content="https://systemdesign.one/distributed-counter-system-design/" property="og:url"/><meta content="https://systemdesign.one/distributed-counter-system-design/distributed-counter.webp" property="og:image"/><meta content="posts" property="article:section"/>
+<meta content="2023-04-30T00:00:00+00:00" property="article:published_time"/>
+<meta content="2023-04-30T00:00:00+00:00" property="article:modified_time"/><meta content="System Design" property="og:site_name"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://systemdesign.one/distributed-counter-system-design/distributed-counter.webp" name="twitter:image"/>
+<meta content="Distributed Counter System Design" name="twitter:title"/>
+<meta content="CRDT-based distributed counter that is eventually consistent" name="twitter:description"/>
+<meta content="System Design" name="application-name"/>
+<meta content="System Design" name="apple-mobile-web-app-title"/><meta content="#ffffff" name="theme-color"/><meta content="#da532c" name="msapplication-TileColor"/><link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png"/><link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/><link color="#5bbad5" href="/safari-pinned-tab.svg" rel="mask-icon"/><link href="/site.webmanifest" rel="manifest"/><link href="https://systemdesign.one/distributed-counter-system-design/" rel="canonical"/><link href="https://systemdesign.one/real-time-presence-platform-system-design/" rel="prev"/><link href="https://systemdesign.one/back-of-the-envelope/" rel="next"/><link href="../assets/css/style_e3021b2f3a11.css" rel="stylesheet"/><link href="../assets/css/style_1c18b23e3d26.css" rel="stylesheet"/>
+<link href="../assets/css/style_bea7071da9f6.css" rel="stylesheet"/>
+<meta content="FD39F28F92F811F282452AC196AB113C" name="msvalidate.01"/><meta content="b2096c1f054386e1" name="yandex-verification"/><style></style><link href="../assets/css/offline_overrides.css" rel="stylesheet"/></head>
+<body data-header-desktop="fixed" data-header-mobile="auto" theme="dark">
+<div style="background-color: #3b82f6; color: white; text-align: center; padding: 10px; font-family: sans-serif; font-size: 14px; position: sticky; top: 0; z-index: 10000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        💾 <strong>Offline Archive Mode</strong> — You are viewing a local copy of <em>https://systemdesign.one/distributed-counter-system-design</em>. <a href="../index.html" style="color: white; text-decoration: underline; margin-left: 10px; font-weight: bold;">Back to Library Dashboard</a>
+</div>
+
+<div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu">
+<div class="menu-inner"><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter"> Join Newsletter </a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive"> Archive </a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About"> About </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+<span class="algolia-autocomplete" style="position: relative; display: inline-block; direction: ltr;"><input aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" autocomplete="off" class="input" dir="auto" id="search-input-desktop" placeholder="Search titles or contents..." role="combobox" spellcheck="false" style="position: relative; vertical-align: top;" type="text"/><pre aria-hidden="true" style='position: absolute; visibility: hidden; white-space: pre; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Emoji, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; word-spacing: 0px; letter-spacing: normal; text-indent: 0px; text-rendering: auto; text-transform: none;'></pre></span>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-desktop" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-desktop" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-desktop">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</span><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</div>
+</header><header class="mobile animate__animated animate__faster animate__fadeInDown" id="header-mobile">
+<div class="header-container">
+<div class="header-wrapper">
+<div class="header-title">
+<a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank" title="System Design">System Design</a>
+</div>
+<div class="menu-toggle" id="menu-toggle-mobile">
+<span></span><span></span><span></span>
+</div>
+</div>
+<div class="menu" id="menu-mobile"><div class="search-wrapper">
+<div class="search mobile" id="search-mobile">
+<input id="search-input-mobile" placeholder="Search titles or contents..." type="text"/>
+<a class="search-button search-toggle" href="javascript:void(0);" id="search-toggle-mobile" rel="noopener noreferrer" target="_blank" title="Search">
+<i aria-hidden="true" class="fas fa-search fa-fw"></i>
+</a>
+<a class="search-button search-clear" href="javascript:void(0);" id="search-clear-mobile" rel="noopener noreferrer" target="_blank" title="Clear">
+<i aria-hidden="true" class="fas fa-times-circle fa-fw"></i>
+</a>
+<span class="search-button search-loading" id="search-loading-mobile">
+<i aria-hidden="true" class="fas fa-spinner fa-fw fa-spin"></i>
+</span>
+</div>
+<a class="search-cancel" href="javascript:void(0);" id="search-cancel-mobile" rel="noopener noreferrer" target="_blank">
+                        Cancel
+                    </a>
+</div><a class="menu-item" href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank" title="Newsletter">Join Newsletter</a><a class="menu-item" href="https://systemdesign.one/categories/" rel="noopener noreferrer" target="_blank" title="Archive">Archive</a><a class="menu-item" href="https://systemdesign.one/about/" rel="noopener noreferrer" target="_blank" title="About">About</a><a class="menu-item theme-switch" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Switch Theme">
+<i aria-hidden="true" class="fas fa-adjust fa-fw"></i>
+</a></div>
+</div>
+</header><div class="search-dropdown desktop">
+<div id="search-dropdown-desktop" style="position: relative;"><span class="dropdown-menu" id="algolia-autocomplete-listbox-0" role="listbox" style="position: absolute; z-index: 100; display: none; top: 0px; left: 0px; right: auto;"><div class="dataset-search"></div></span></div>
+</div>
+<div class="search-dropdown mobile">
+<div id="search-dropdown-mobile"></div>
+</div><main class="main">
+<div class="container"><div class="toc" id="toc-auto">
+<h2 class="toc-title">Contents</h2>
+<div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+<ul>
+<li class="has-active"><a class="active offline-link" href="./distributed-counter-system-design.html#how-does-the-distributed-counterwork">How Does the Distributed Counter Work?</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#terminology">Terminology</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#what-is-a-distributed-counter">What Is a Distributed Counter?</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#questions-to-ask-the-interviewer">Questions to Ask the Interviewer</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#candidate">Candidate</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#interviewer">Interviewer</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#requirements">Requirements</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#functional-requirements">Functional Requirements</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#non-functional-requirements">Non-Functional Requirements</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#distributed-counter-apidesign">Distributed Counter API Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#how-to-fetch-the-value-of-the-distributed-counter">How to fetch the value of the distributed counter?</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#how-to-update-the-distributed-counter">How to update the distributed counter?</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#further-system-design-learning-resources">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#distributed-counter-datastorage">Distributed Counter Data Storage</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#distributed-counter-data-schemadesign">Distributed Counter Data Schema Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#write-a-sql-query-to-fetch-the-count-for-a-particular-web-page">Write a SQL query to fetch the count for a particular web page</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#write-a-sql-query-to-update-the-counter">Write a SQL query to update the counter</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#type-of-datastore">Type of Data Store</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#distributed-counter-high-level-design">Distributed Counter High-Level Design</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#probabilistic-data-structures">Probabilistic Data Structures</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#relational-database">Relational Database</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#nosql-database">NoSQL Database</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#message-queue">Message Queue</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#lambda-architecture">Lambda Architecture</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#redis">Redis</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#further-system-design-learning-resources-1">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#crdt-distributed-counter">CRDT Distributed Counter</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#g-counter">G-Counter</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#pn-counter">PN-Counter</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#handoff-counter">Handoff Counter</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#how-does-crdtwork">How does CRDT work?</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#what-is-the-workflow-of-the-distributed-counter">What Is the Workflow of the Distributed Counter?</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#further-system-design-learning-resources-2">Further system design learning resources</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#distributed-counter-design-deepdive">Distributed Counter Design Deep Dive</a>
+<ul>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#what-is-the-cross-data-center-workflow-for-distributed-counter">What Is the Cross-Data Center Workflow for Distributed Counter?</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#unread-notification-counterdesign">Unread Notification Counter Design</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#fault-tolerance">Fault Tolerance</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#high-availability">High Availability</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#scalability">Scalability</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#concurrency">Concurrency</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#low-latency">Low Latency</a></li>
+</ul>
+</li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#summary">Summary</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#what-to-learn-next">What to learn next?</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#license">License</a></li>
+<li class=""><a class="offline-link" href="./distributed-counter-system-design.html#references">References</a></li>
+</ul>
+</nav></div>
+</div><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Distributed Counter System Design</h1><h2 class="single-subtitle">Sharded Counter</h2><div class="post-meta">
+<div class="post-meta-line"><span class="post-author"><a class="author" href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank" title="Author"><i aria-hidden="true" class="fas fa-user-circle fa-fw"></i>Neo Kim</a></span> <span class="post-category">included in <a href="https://systemdesign.one/categories/deep-dive/" rel="noopener noreferrer" target="_blank"><i aria-hidden="true" class="far fa-folder fa-fw"></i>Deep Dive</a></span></div>
+<div class="post-meta-line"><i aria-hidden="true" class="far fa-calendar-alt fa-fw"></i> <time datetime="2023-04-30">2023-04-30</time> <i aria-hidden="true" class="fas fa-pencil-alt fa-fw"></i> 6262 words 
+            <i aria-hidden="true" class="far fa-clock fa-fw"></i> 30 minutes </div>
+</div><div class="featured-image"><img alt="/distributed-counter-system-design/distributed-counter.webp" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter.webp, /distributed-counter-system-design/distributed-counter.webp 1.5x, /distributed-counter-system-design/distributed-counter.webp 2x" height="984" sizes="699px" src="../assets/images/img_9d804f1bb928.webp" title="CRDT-based distributed counter that is eventually consistent" width="1456"/></div><div class="details toc" data-kept="" id="toc-static">
+<div class="details-summary toc-title">
+<span>Contents</span>
+<span><i aria-hidden="true" class="details-icon fas fa-angle-right"></i></span>
+</div>
+<div class="details-content toc-content" id="toc-content-static"></div>
+</div><div class="content" id="content"><hr/>
+<p><em>The target audience for this article falls into the following roles:</em></p>
+<ul>
+<li><em>Tech workers</em></li>
+<li><em>Students</em></li>
+<li><em>Engineering managers</em></li>
+</ul>
+<p><em>Disclaimer: The system design questions are subjective. This article is written based on the research I have done on the topic and might differ from real-world implementations. Feel free to share your feedback and ask questions in the comments.</em></p>
+<p>The system design of the Distributed Counter depends on the design of the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">Real-Time Platform</a> and <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">Real Time Presence Platform</a>. I highly recommend reading the related articles to improve your system design skills.</p>
+<hr/>
+<hr/>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="how-does-the-distributed-counterwork"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#how-does-the-distributed-counterwork"></a>How Does the Distributed Counter Work?</h2>
+<p>At a high level, the distributed counter performs the following operations:</p>
+<ul>
+<li>gateway server shows the distributed counter to the users through <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API" rel="noopener noreferrer" target="_blank">WebSocket</a></li>
+<li>heartbeat signal can be used to drain the inactive WebSocket connections</li>
+<li>counter data type in a <a href="https://crdt.tech/" rel="noopener noreferrer" target="_blank">CRDT</a>-based database is used to implement the distributed counter</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="terminology"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#terminology"></a>Terminology</h2>
+<p>The following terminology might be helpful for you:</p>
+<ul>
+<li>Node: a server that provides functionality to other services</li>
+<li>Data replication: a technique of storing multiple copies of the same data on different nodes to improve the availability and durability of the system</li>
+<li>Data partitioning: a technique of distributing data across multiple nodes to improve the performance and <a class="offline-link" href="../fundamentals/micro-frontends.html" rel="noopener noreffer">scalability</a> of the system</li>
+<li>High availability: the ability of a service to remain reachable and not lose data even when a failure occurs</li>
+<li>Fault tolerance: the ability of a service to recover from a failure without losing data</li>
+<li><a class="offline-link" href="../fundamentals/gossip-protocol.html" rel="noopener noreffer">Gossip protocol</a>: peer-to-peer communication protocol that is based on the way epidemics spread</li>
+<li>Vector clock: data structure used to determine the causality of the events in a distributed system</li>
+<li>Quorum: minimum number of votes that a distributed transaction has to obtain before its execution in a distributed system</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-is-a-distributed-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#what-is-a-distributed-counter"></a>What Is a Distributed Counter?</h2>
+<p>Social networking platforms such as Reddit show the total count of users currently viewing a particular post in real-time using a distributed counter. The value of the distributed counter changes when users enter or exit the website.</p>
+<p>
+</p><div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+
+</div>
+<div id="id-1">Distributed Counter; Active user count on a website</div><p></p>
+<p>The distributed counter should be scalable for use in an <a class="offline-link" href="./scalable-software-architecture.html" rel="noopener noreffer">internet-scale</a> website. The eventual <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a> of the distributed counter does not affect the user experience. The distributed counter is a versatile data structure and is typically used for the following use cases <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>:</p>
+<ul>
+<li>count the active users of a website or Facebook live video</li>
+<li>count the Facebook likes or reactions</li>
+<li>count the followers of a user on a social networking platform such as Twitter</li>
+<li>count the comments on a post on a social networking platform</li>
+<li>count the events in a monitoring service</li>
+<li>count the recent user activity in the fraud detection system</li>
+<li>count the visits by a particular user for rate-limiting</li>
+<li>count the items viewed or bought by a user in the recommendation service</li>
+<li>count the total visits on every web page of a website to identify the trending web pages</li>
+<li>count the cars available on ride-sharing platforms such as Uber</li>
+<li>count the votes in a real-time voting system</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="questions-to-ask-the-interviewer"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#questions-to-ask-the-interviewer"></a>Questions to Ask the Interviewer</h2>
+<h3 class="headerLink" id="candidate"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#candidate"></a>Candidate</h3>
+<ol>
+<li>What are the primary use cases of the distributed counter?</li>
+<li>Is the website public facing?</li>
+<li>What is the total count of users on the platform?</li>
+<li>Is the system highly concurrent?</li>
+<li>What is the average amount of concurrent online users?</li>
+<li>What is the expected peak traffic?</li>
+<li>What is the anticipated read: write ratio of the distributed counter?</li>
+<li>Should the distributed counter be strongly consistent?</li>
+<li>Should the value of the distributed counter be approximate?</li>
+<li>Are there any limitations to the storage of the distributed counter?</li>
+<li>What should be the operational complexity of the distributed counter?</li>
+</ol>
+<hr/>
+<h3 class="headerLink" id="interviewer"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#interviewer"></a>Interviewer</h3>
+<ol>
+<li>The distributed counter should display the active users on a website in near real-time</li>
+<li>Yes, the website is general public-facing</li>
+<li>1 billion</li>
+<li>Yes, the system must support extremely high concurrency for write and read operations</li>
+<li>100 million</li>
+<li>300 million <a class="offline-link" href="./hotstar-scaling.html" rel="noopener noreffer">concurrent</a> users</li>
+<li>10: 1</li>
+<li>No, the distributed counter can be eventually consistent as it does not affect the user experience</li>
+<li>No, the distributed counter should be accurate</li>
+<li>The storage used by the distributed counter should be as low as possible</li>
+<li>The operational complexity should be kept minimum</li>
+</ol>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="requirements"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#requirements"></a>Requirements</h2>
+<h3 class="headerLink" id="functional-requirements"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#functional-requirements"></a>Functional Requirements</h3>
+<ul>
+<li>The total count of users currently viewing the website or a particular web page should be shown by the distributed counter in real-time</li>
+<li>The value of the distributed must decrement when a user exits the website</li>
+<li>The user receives the count of unread notifications when the subscribed web pages are modified</li>
+</ul>
+<h3 class="headerLink" id="non-functional-requirements"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#non-functional-requirements"></a>Non-Functional Requirements</h3>
+<ul>
+<li>Highly Available</li>
+<li>Eventually Consistent</li>
+<li>Accurate</li>
+<li>Reliable</li>
+<li>Scalable</li>
+<li>Low Latency</li>
+</ul>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="distributed-counter-apidesign"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#distributed-counter-apidesign"></a>Distributed Counter API Design</h2>
+<p>The distributed counter exposes the Application Programming Interface (<strong>API</strong>) endpoints through Representational State Transfer (<a href="https://en.wikipedia.org/wiki/Representational_state_transfer" rel="noopener noreferrer" target="_blank">REST</a>). The <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API" rel="noopener noreferrer" target="_blank">WebSockets</a> or Server-Sent Events (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" rel="noopener noreferrer" target="_blank">SSE</a>) can be used as the real-time communication protocol <sup id="fnref:4"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:4" role="doc-noteref">4</a></sup>, <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<h3 class="headerLink" id="how-to-fetch-the-value-of-the-distributed-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#how-to-fetch-the-value-of-the-distributed-counter"></a>How to fetch the value of the distributed counter?</h3>
+<p>The client executes an HTTP GET request to fetch the value of the distributed counter.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="/:webpage-id/counter
+method: GET
+accept: application/json, text/html
+" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/:webpage-id/counter</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">GET</span>
+<span class="nx">accept</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span><span class="p">,</span> <span class="nx">text</span><span class="o">/</span><span class="nx">html</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code 200 OK on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+content-encoding: gzip
+content-type: application/json
+cache-control: no-store
+{
+  count: 715,
+  updated_at: "2030-10-10T12:11:42Z"
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+<span class="nx">cache</span><span class="o">-</span><span class="nx">control</span><span class="o">:</span> <span class="nx">no</span><span class="o">-</span><span class="nx">store</span>
+<span class="p">{</span>
+  <span class="nx">count</span><span class="o">:</span> <span class="mi">715</span><span class="p">,</span>
+  <span class="nx">updated_at</span><span class="o">:</span> <span class="s2">"2030-10-10T12:11:42Z"</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<h3 class="headerLink" id="how-to-update-the-distributed-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#how-to-update-the-distributed-counter"></a>How to update the distributed counter?</h3>
+<p>The client executes an HTTP PUT request to update the distributed counter. The PUT method is used because of idempotency.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='/:webpage-id/counter
+method: PUT
+content-length: 15
+{
+  action: "increment"
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="err">/:webpage-id/counter</span>
+<span class="nx">method</span><span class="o">:</span> <span class="nx">PUT</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">length</span><span class="o">:</span> <span class="mi">15</span>
+<span class="p">{</span>
+  <span class="nx">action</span><span class="o">:</span> <span class="s2">"increment"</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The server responds with status code 200 OK on success.</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='status code: 200 OK
+content-encoding: gzip
+content-type: application/json
+{
+  count: 812,
+  updated_at: "2030-10-10T12:11:42Z"
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="nx">status</span> <span class="nx">code</span><span class="o">:</span> <span class="mi">200</span> <span class="nx">OK</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">encoding</span><span class="o">:</span> <span class="nx">gzip</span>
+<span class="nx">content</span><span class="o">-</span><span class="nx">type</span><span class="o">:</span> <span class="nx">application</span><span class="o">/</span><span class="nx">json</span>
+<span class="p">{</span>
+  <span class="nx">count</span><span class="o">:</span> <span class="mi">812</span><span class="p">,</span>
+  <span class="nx">updated_at</span><span class="o">:</span> <span class="s2">"2030-10-10T12:11:42Z"</span>
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#further-system-design-learning-resources"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="distributed-counter-datastorage"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#distributed-counter-datastorage"></a>Distributed Counter Data Storage</h2>
+<p>A 64-bit signed integer can be used to initialize the distributed counter. The key of the distributed counter can be a string of up to 128 printable characters <sup id="fnref:4"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:4" role="doc-noteref">4</a></sup>.</p>
+<h3 class="headerLink" id="distributed-counter-data-schemadesign"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#distributed-counter-data-schemadesign"></a>Distributed Counter Data Schema Design</h3>
+<p>The major entities of the relational database are the users table, the pages table, and the counter table. The users table contains information about the author of the web page. The pages table stores the metadata of a particular web page. The counter table persists the count statistics. The relationship between the users and the pages' tables is <strong>1-to-many</strong>. The relationship between the pages and the counter tables is <strong>1-to-many</strong> <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 1: Distributed counter; Relational database schema&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-relational-database-schema.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-relational-database-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 1: Distributed counter; Relational database schema">
+<img alt="Figure 1: Distributed counter; Relational database schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-relational-database-schema.webp, /distributed-counter-system-design/distributed-counter-relational-database-schema.webp 1.5x, /distributed-counter-system-design/distributed-counter-relational-database-schema.webp 2x" height="693" sizes="683px" src="../assets/images/img_d388160a9639.webp" width="2294"/>
+</a><figcaption class="image-caption">Figure 1: Distributed counter; Relational database schema</figcaption>
+</figure>
+<p>The data stored in a relational database is normalized to reduce data redundancy and save storage costs. The drawback of data normalization is that the read operation is relatively expensive due to the need for table JOIN operations.</p>
+<h4 class="headerLink" id="write-a-sql-query-to-fetch-the-count-for-a-particular-web-page"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#write-a-sql-query-to-fetch-the-count-for-a-particular-web-page"></a>Write a SQL query to fetch the count for a particular web page</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="SELECT count AS latest_count
+FROM counter
+WHERE page_id='42';" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">SELECT</span><span class="w"> </span><span class="k">count</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">latest_count</span><span class="w">
+</span><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">counter</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">page_id</span><span class="o">=</span><span class="s1">'42'</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<h4 class="headerLink" id="write-a-sql-query-to-update-the-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#write-a-sql-query-to-update-the-counter"></a>Write a SQL query to update the counter</h4>
+<div class="highlight"><div class="chroma open"><div class="code-header language-sql"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text="UPDATE counter
+SET count=latest_count+1
+WHERE page_id='42' AND count=latest_count;" title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-sql" data-lang="sql"><span class="k">UPDATE</span><span class="w"> </span><span class="n">counter</span><span class="w">
+</span><span class="w"></span><span class="k">SET</span><span class="w"> </span><span class="k">count</span><span class="o">=</span><span class="n">latest_count</span><span class="o">+</span><span class="mi">1</span><span class="w">
+</span><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">page_id</span><span class="o">=</span><span class="s1">'42'</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="k">count</span><span class="o">=</span><span class="n">latest_count</span><span class="p">;</span></code></pre></td></tr></tbody></table></div>
+</div>
+</div>
+<p>On the contrary, the data persisted in a NoSQL database such as Apache Cassandra is denormalized. The query operations are faster at the expense of data redundancy <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 2: Distributed counter; NoSQL database schema&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-nosql-database-schema.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-nosql-database-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 2: Distributed counter; NoSQL database schema">
+<img alt="Figure 2: Distributed counter; NoSQL database schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-nosql-database-schema.webp, /distributed-counter-system-design/distributed-counter-nosql-database-schema.webp 1.5x, /distributed-counter-system-design/distributed-counter-nosql-database-schema.webp 2x" height="338" sizes="683px" src="../assets/images/img_8a09ba25e4b7.webp" width="2107"/>
+</a><figcaption class="image-caption">Figure 2: Distributed counter; NoSQL database schema</figcaption>
+</figure>
+<p>A row in Cassandra can persist the count statistics for a particular web page. A new column based on the timestamp is appended to the Cassandra table to store the recent counter value.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 3: Distributed counter; Redis data schema&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-redis-data-schema.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-redis-data-schema.webp" rel="noopener noreferrer" target="_blank" title="Figure 3: Distributed counter; Redis data schema">
+<img alt="Figure 3: Distributed counter; Redis data schema" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-redis-data-schema.webp, /distributed-counter-system-design/distributed-counter-redis-data-schema.webp 1.5x, /distributed-counter-system-design/distributed-counter-redis-data-schema.webp 2x" height="660" sizes="683px" src="../assets/images/img_70bf601db286.webp" width="1640"/>
+</a><figcaption class="image-caption">Figure 3: Distributed counter; Redis data schema</figcaption>
+</figure>
+<p>Redis is an in-memory distributed key-value database. The <a href="https://redis.io/docs/data-types/hashes/" rel="noopener noreferrer" target="_blank">hash</a> data type in Redis can be used to store the count statistics for a particular web page <sup id="fnref:5"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="type-of-datastore"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#type-of-datastore"></a>Type of Data Store</h3>
+<p>The following design considerations should be kept in mind for choosing a database to implement the distributed counter <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>The database offers high <a class="offline-link" href="../fundamentals/what-is-code-splitting-in-react.html" rel="noopener noreffer">performance</a> on reads and writes</li>
+<li>The database is scalable, durable, and highly available</li>
+<li>The database should support a flexible data model for easy future upgrades</li>
+<li>The learning and development costs should be minimum</li>
+</ul>
+<p>The database is a critical component of the distributed counter. The potential types of data stores for building the distributed counter will be discussed in the next section.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="distributed-counter-high-level-design"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#distributed-counter-high-level-design"></a>Distributed Counter High-Level Design</h2>
+<p>The domain-driven design principles should be followed to build the distributed counter. In layman’s terms, the optimal technology should be used to construct the distributed counter instead of choosing the technology you are most familiar with. For example, you should not use MapReduce to create a production-ready distributed counter only because you are experienced with MapReduce. The development and operational costs should also be considered when designing the distributed counter <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<h3 class="headerLink" id="probabilistic-data-structures"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#probabilistic-data-structures"></a>Probabilistic Data Structures</h3>
+<p>A naive approach is to initialize a hash set for each web page to track the count of active users. The user IDs can be persisted in the hash set. The hash set offers constant time complexity to fetch the cardinality (count) at the expense of increased memory usage. The <a href="https://redis.io/docs/data-types/bitmaps/" rel="noopener noreferrer" target="_blank">bitmaps</a> data type in Redis drastically reduces the storage requirements. A new bitmap can be initialized every minute to track the count of active users. However, bitmaps will also consume a considerable amount of memory when the cardinality is significantly high <sup id="fnref:6"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:7"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:7" role="doc-noteref">7</a></sup>.</p>
+<p>The <a href="https://redis.io/docs/data-types/hyperloglogs/" rel="noopener noreferrer" target="_blank">HyperLogLog</a> data type can be initialized as the counter for a space-efficient but inaccurate counter. The major limitation of HyperLogLog is that the deletion operation is not supported <sup id="fnref:6"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:6" role="doc-noteref">6</a></sup>. Alternatively, the <a href="https://redis.com/blog/count-min-sketch-the-art-and-science-of-estimating-stuff/" rel="noopener noreferrer" target="_blank">count-min sketch</a> data type in Redis can be used to determine the count of active users across multiple web pages in a space-efficient method. However, the counter returned by the count-min sketch is also approximate and the counter cannot be decremented.</p>
+<p>In summary, probabilistic data structures offer a space-efficient but inaccurate counter. Hence, probabilistic data structures should not be used to construct the distributed counter.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="relational-database"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#relational-database"></a>Relational Database</h3>
+<p>The most trivial implementation of a counter is using the relational database. A low-traffic website can use a counter built with a single instance of the relational database such as Postgres.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 4: Implementation of the counter using locks&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-lock.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-lock.webp" rel="noopener noreferrer" target="_blank" title="Figure 4: Implementation of the counter using locks">
+<img alt="Figure 4: Implementation of the counter using locks" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-lock.webp, /distributed-counter-system-design/distributed-counter-lock.webp 1.5x, /distributed-counter-system-design/distributed-counter-lock.webp 2x" height="1368" sizes="683px" src="../assets/images/img_7c6e3fd7a7b9.webp" width="1914"/>
+</a><figcaption class="image-caption">Figure 4: Implementation of the counter using locks</figcaption>
+</figure>
+<p>A naive implementation of the counter in the relational database uses a <strong>lock</strong> (mutex). The lock must be acquired before the count is incremented. Alternatively, the <a href="https://en.wikipedia.org/wiki/Readers%E2%80%93writer_lock" rel="noopener noreferrer" target="_blank">readers-writer lock</a> can be used to reduce the lock granularity and improve the performance of reads. The relational database with locks offers strong consistency. On the downside, this approach is not scalable when there are extremely high concurrent writes <sup id="fnref:8"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:9"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:9" role="doc-noteref">9</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 5: Batch update of the counter&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-batch-update.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-batch-update.webp" rel="noopener noreferrer" target="_blank" title="Figure 5: Batch update of the counter">
+<img alt="Figure 5: Batch update of the counter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-batch-update.webp, /distributed-counter-system-design/distributed-counter-batch-update.webp 1.5x, /distributed-counter-system-design/distributed-counter-batch-update.webp 2x" height="1305" sizes="683px" src="../assets/images/img_bd9d29194408.webp" width="1751"/>
+</a><figcaption class="image-caption">Figure 5: Batch update of the counter</figcaption>
+</figure>
+<p>The local <a class="offline-link" href="../fundamentals/caching-patterns.html" rel="noopener noreffer">cache</a> (memory) of the server can aggregate the count update events. The server can perform a batch update to the database server at periodic intervals. The concurrency and idempotence of data queries can be handled through optimistic locks <sup id="fnref:5"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:5" role="doc-noteref">5</a></sup>. This approach reduces the latency and storage costs.</p>
+<p>The limitation of this method is that there will be a delay in updating the counter resulting in an inaccurate count. The fault tolerance is also reduced because the counter cannot be recalculated when the server crashes before writing to the database server. On top of that, the locks are still required to handle high-concurrency scenarios resulting in degraded performance <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:10" role="doc-noteref">10</a></sup>, <sup id="fnref:11"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:11" role="doc-noteref">11</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 6: Storing count in distinct records of the database&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-distinct-records.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-distinct-records.webp" rel="noopener noreferrer" target="_blank" title="Figure 6: Storing count in distinct records of the database">
+<img alt="Figure 6: Storing count in distinct records of the database" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-distinct-records.webp, /distributed-counter-system-design/distributed-counter-distinct-records.webp 1.5x, /distributed-counter-system-design/distributed-counter-distinct-records.webp 2x" height="1342" sizes="683px" src="../assets/images/img_cb1e91e09db7.webp" width="1665"/>
+</a><figcaption class="image-caption">Figure 6: Storing count in distinct records of the database</figcaption>
+</figure>
+<p>The server can persist the count update events on distinct records of the database. This approach supports extremely high <a class="offline-link" href="./shopify-flash-sale.html" rel="noopener noreffer">concurrent</a> writes because there is no need for locks. The tradeoff of this approach is slower read queries due to a full table scan and also increased storage costs <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>. An optimization to prevent a full table scan on reads is to generate an index on the <em>updated_at</em> (timestamp) column at the expense of slower writes <sup id="fnref:12"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:12" role="doc-noteref">12</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 7: Partitioning the relational database for scalability&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-partition-relational-database.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-partition-relational-database.webp" rel="noopener noreferrer" target="_blank" title="Figure 7: Partitioning the relational database for scalability">
+<img alt="Figure 7: Partitioning the relational database for scalability" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-partition-relational-database.webp, /distributed-counter-system-design/distributed-counter-partition-relational-database.webp 1.5x, /distributed-counter-system-design/distributed-counter-partition-relational-database.webp 2x" height="1162" sizes="683px" src="../assets/images/img_74c2a9c2f16a.webp" width="1633"/>
+</a><figcaption class="image-caption">Figure 7: Partitioning the relational database for scalability</figcaption>
+</figure>
+<p>The database should be partitioned (sharded) to scale the distributed counter <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>. The <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> algorithm can be used to partition the database. The partitioning of the database only reduces the load on a database instance. In addition, the database instances must be replicated for high availability.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 8: Distributed counter; Database replication for high availability&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-database-replication.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-database-replication.webp" rel="noopener noreferrer" target="_blank" title="Figure 8: Distributed counter; Database replication for high availability">
+<img alt="Figure 8: Distributed counter; Database replication for high availability" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-database-replication.webp, /distributed-counter-system-design/distributed-counter-database-replication.webp 1.5x, /distributed-counter-system-design/distributed-counter-database-replication.webp 2x" height="1567" sizes="683px" src="../assets/images/img_395e3529517e.webp" width="2121"/>
+</a><figcaption class="image-caption">Figure 8: Distributed counter; Database replication for high availability</figcaption>
+</figure>
+<p>The relational database offers the leader-follower replication topology with failover support. The load on the database can be further evenly distributed among replicas through the segregation of database reads and writes. The writes are routed to the leader instance while the reads are redirected to the follower instances.</p>
+<p>A sharding proxy service such as <a href="https://shardingsphere.apache.org/document/legacy/3.x/document/en/manual/sharding-proxy/" rel="noopener noreferrer" target="_blank">Apache ShardingSphere</a> can be introduced to route traffic between the leader and follower instances. The sharding proxy should be replicated for high availability. The sharding proxy queries the <a href="https://microservices.io/patterns/service-registry.html" rel="noopener noreferrer" target="_blank">service registry</a> to identify the available instances of the database <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 9: Sharded counter&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/sharded-counter.webp" href="https://systemdesign.one/distributed-counter-system-design/sharded-counter.webp" rel="noopener noreferrer" target="_blank" title="Figure 9: Sharded counter">
+<img alt="Figure 9: Sharded counter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/sharded-counter.webp, /distributed-counter-system-design/sharded-counter.webp 1.5x, /distributed-counter-system-design/sharded-counter.webp 2x" height="1310" sizes="683px" src="../assets/images/img_bd0499d1ae3d.webp" width="1952"/>
+</a><figcaption class="image-caption">Figure 9: Sharded counter</figcaption>
+</figure>
+<p>A distributed system offers scalability and high availability at the expense of increased complexity <sup id="fnref:12"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:12" role="doc-noteref">12</a></sup>. The counter should be partitioned across multiple nodes for scalability. The database server is replicated to prevent a single point of failure (<strong>SPOF</strong>) <sup id="fnref:10"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:10" role="doc-noteref">10</a></sup>. The distributed counter is also known as a <strong>sharded counter</strong>. The probability of lock conflicts is reduced through partitioning. The user ID can be used as the partition key for an even load distribution when a particular web page becomes extremely popular. The high-level workflow of a sharded counter is the following <sup id="fnref:8"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:8" role="doc-noteref">8</a></sup>, <sup id="fnref:12"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:12" role="doc-noteref">12</a></sup>, <sup id="fnref:5"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:10"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:10" role="doc-noteref">10</a></sup>, <sup id="fnref:6"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:6" role="doc-noteref">6</a></sup>, <sup id="fnref:4"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:4" role="doc-noteref">4</a></sup>:</p>
+<ol>
+<li>multiple counters are initialized in parallel</li>
+<li>updates to the counter are applied on a random <a class="offline-link" href="./mysql-sharding.html" rel="noopener noreffer">shard</a> using the round-robin algorithm</li>
+<li>the counter is fetched by summing up the count on every shard through parallel queries</li>
+</ol>
+<p>Despite improved writes, the reads slow down due to the need for querying every shard. This technique is known as the scatter and gather pattern. This approach is optimal only when the data access volume is relatively low <sup id="fnref:5"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:5" role="doc-noteref">5</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<p>The leader instance of the database accepts the writes and the written data will be asynchronously replicated to follower database instances deployed across multiple data centers. The relational database is transactional. The writes require disk access and are expensive due to data serialization for storage <sup id="fnref:8"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:8" role="doc-noteref">8</a></sup>.</p>
+<p>The distributed counter should support extremely high concurrency and write-heavy load. The leader-follower replication topology of the relational database will result in write congestion and poor latency. The leader-leader replication topology needs an additional service for conflict resolution. On top of that, transaction support is unnecessary for the distributed counter because high availability should be favored against strong consistency <sup id="fnref:13"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:13" role="doc-noteref">13</a></sup>. It is also difficult to implement idempotency in the replication of count updates across different data centers. In summary, do not use the relational database to build a scalable distributed counter.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 10: High-performance counter&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/high-performance-counter.webp" href="https://systemdesign.one/distributed-counter-system-design/high-performance-counter.webp" rel="noopener noreferrer" target="_blank" title="Figure 10: High-performance counter">
+<img alt="Figure 10: High-performance counter" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/high-performance-counter.webp, /distributed-counter-system-design/high-performance-counter.webp 1.5x, /distributed-counter-system-design/high-performance-counter.webp 2x" height="648" sizes="683px" src="../assets/images/img_b318c9ccb4c3.webp" width="1422"/>
+</a><figcaption class="image-caption">Figure 10: High-performance counter</figcaption>
+</figure>
+<p>The count of active users in the past is not needed because the counter is supposed to be real-time. The asymptotic complexity for reads of the counter can be improved by removing unnecessary functionality <sup id="fnref:12"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:12" role="doc-noteref">12</a></sup>. The space complexity becomes constant with an integer counter instead of a relational database counter. The time complexity for writes is constant for both the relational database counter and the integer counter. The primary benefit is that the time complexity for reads becomes constant when an integer counter is used instead of the relational database counter <sup id="fnref:5"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="nosql-database"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#nosql-database"></a>NoSQL Database</h3>
+<p>Apache Cassandra is an <a class="offline-link" href="./open-source-guidelines.html" rel="noopener noreffer">open-source</a> distributed NoSQL database that supports time series data. The nodes in Cassandra communicate with each other using the <a class="offline-link" href="../fundamentals/gossip-protocol.html" rel="noopener noreffer">gossip protocol</a>. Apache Cassandra supports automatic partitioning of the database using <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a>. Besides, the leaderless replication makes the database highly available <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>. The storage engine of Cassandra uses Log-structure merge (<strong>LSM</strong>) tree. The LSM tree-based storage engine offers high-performance writes but slower reads.</p>
+<p>Frequent disk access can become a potential performance bottleneck for reads of the distributed counter using Cassandra. An additional cache layer using Redis can be provisioned with the cache-aside pattern to improve the reads. The downside of this approach is that the data <a class="offline-link" href="../fundamentals/consistency-patterns.html" rel="noopener noreffer">consistency</a> of the distributed counter cannot be guaranteed. The probability of an inaccurate counter is higher when the writes to the database succeed but the cache update fails <sup id="fnref:2"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:14"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:14" role="doc-noteref">14</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 11: Distributed counter; Apache Cassandra&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-cassandra.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-cassandra.webp" rel="noopener noreferrer" target="_blank" title="Figure 11: Distributed counter; Apache Cassandra">
+<img alt="Figure 11: Distributed counter; Apache Cassandra" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-cassandra.webp, /distributed-counter-system-design/distributed-counter-cassandra.webp 1.5x, /distributed-counter-system-design/distributed-counter-cassandra.webp 2x" height="1663" sizes="683px" src="../assets/images/img_f4d2008618ef.webp" width="3090"/>
+</a><figcaption class="image-caption">Figure 11: Distributed counter; Apache Cassandra</figcaption>
+</figure>
+<p>The counter data type in Cassandra can be leveraged to build a distributed counter. Apache Cassandra offers a race-free counter with local latency across multiple data centers. Despite a good choice from the theoretical point of view, the <a href="https://ably.com/blog/cassandra-counter-columns-nice-in-theory-hazardous-in-practice" rel="noopener noreferrer" target="_blank">case study at Ably</a> <sup id="fnref:14"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:14" role="doc-noteref">14</a></sup> shows that distributed counter in Cassandra shows degraded performance. The problems with the Cassandra counter are the following <sup id="fnref:14"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:14" role="doc-noteref">14</a></sup>:</p>
+<ul>
+<li>the counter column can only exist in a separate table with entirely counter columns</li>
+<li>the counter table with at least one counter column can never be deleted</li>
+<li>the counter update operations are not idempotent</li>
+</ul>
+<p>The lack of idempotency on the update operations of the counter is a showstopper. Moreover, the operational complexity of Cassandra is high <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>. In summary, do not use Cassandra to build the scalable distributed counter.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="message-queue"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#message-queue"></a>Message Queue</h3>
+<p>The database is updated on every count update event. This approach is known as the <strong>push model</strong>. The push model is trivial to implement and offers real-time performance. However, the performance might degrade on extremely high writes <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 12: Distributed counter; Push model and Pull model&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-push-pull-model.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-push-pull-model.webp" rel="noopener noreferrer" target="_blank" title="Figure 12: Distributed counter; Push model and Pull model">
+<img alt="Figure 12: Distributed counter; Push model and Pull model" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-push-pull-model.webp, /distributed-counter-system-design/distributed-counter-push-pull-model.webp 1.5x, /distributed-counter-system-design/distributed-counter-push-pull-model.webp 2x" height="1053" sizes="683px" src="../assets/images/img_32a507d0c971.webp" width="2282"/>
+</a><figcaption class="image-caption">Figure 12: Distributed counter; Push model and Pull model</figcaption>
+</figure>
+<p>The message queue can be used to buffer the count update events emitted by the client. The database is asynchronously updated at periodic intervals. This approach is known as the <strong>pull model</strong>. The message queue should be replicated and checkpointed for high availability and improved fault tolerance. The serverless function will query the message queue at periodic intervals and subsequently update the database. A dead-letter queue is introduced for improved fault tolerance. The messages are persisted in the dead-letter queue when the database server is unavailable <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>, <sup id="fnref:2"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:2" role="doc-noteref">2</a></sup>.</p>
+<div class="twitter-tweet twitter-tweet-rendered" style="display: flex; max-width: 550px; width: 100%; margin-top: 10px; margin-bottom: 10px;"></div>
+
+<p>The data aggregation through buffering of the count update events in the message queue will reduce bandwidth usage across data centers and improve the throughput of the service <sup id="fnref:9"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:9" role="doc-noteref">9</a></sup>. The message queue decouples the server and the database to reduce the database load and offer high availability <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>. The drawbacks of the pull model are increased operational complexity and inaccurate counter due to the asynchronous processing of data. It is also difficult to implement an exactly one-time delivery on the message queue resulting in an inaccurate distributed counter <sup id="fnref:9"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:9" role="doc-noteref">9</a></sup>, <sup id="fnref:15"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:15" role="doc-noteref">15</a></sup>.</p>
+<p>Alternatively, the message queue can be configured as a publish-subscribe (<strong>pub-sub</strong>) server to replicate the counter across multiple data centers. However, it is challenging to implement idempotency on count update events causing  an inaccurate counter.</p>
+<hr/>
+<hr/>
+<h4 class="headerLink" id="lambda-architecture"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#lambda-architecture"></a>Lambda Architecture</h4>
+<p>The individual count update events and aggregated count can be stored separately to get the best of both worlds at the expense of increased storage costs <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>. The individual count update events are considered the source of truth. The batch service can make use of batch processing services such as Apache Spark to recompute the counter accurately at periodic intervals. The real-time service can take advantage of stream processing services such as Apache Flink to calculate the counter in real time. The real-time distributed counter is fetched by merging the results from both the batch service and real-time service on the fly to calculate  an accurate count <sup id="fnref:9"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:9" role="doc-noteref">9</a></sup>. This architecture is known as <a href="https://en.wikipedia.org/wiki/Lambda_architecture" rel="noopener noreferrer" target="_blank">Lambda Architecture</a>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 13: Distributed counter; Lambda architecture&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-lambda-architecture.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-lambda-architecture.webp" rel="noopener noreferrer" target="_blank" title="Figure 13: Distributed counter; Lambda architecture">
+<img alt="Figure 13: Distributed counter; Lambda architecture" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-lambda-architecture.webp, /distributed-counter-system-design/distributed-counter-lambda-architecture.webp 1.5x, /distributed-counter-system-design/distributed-counter-lambda-architecture.webp 2x" height="1698" sizes="683px" src="../assets/images/img_2fe574532a98.webp" width="2286"/>
+</a><figcaption class="image-caption">Figure 13: Distributed counter; Lambda architecture</figcaption>
+</figure>
+<p>An additional cache layer can be deployed to reduce the load on read queries and improve the latency. The lambda architecture offers scalability and improved fault tolerance. The tradeoffs with lambda architecture are increased operational complexity and elevated storage costs. Alternatively, <a href="https://www.kai-waehner.de/blog/2021/09/23/real-time-kappa-architecture-mainstream-replacing-batch-lambda/" rel="noopener noreferrer" target="_blank">Kappa architecture</a> can be used to implement the distributed counter but with similar tradeoffs. In summary, do not use the message queue to implement the distributed counter.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="redis"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#redis"></a>Redis</h3>
+<p>Redis offers extremely high performance and throughput with its in-memory data types. The distributed counter is very write-intensive. So, Redis might be a potential choice to build the distributed counter.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 14: Distributed counter; Redis&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-redis.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-redis.webp" rel="noopener noreferrer" target="_blank" title="Figure 14: Distributed counter; Redis">
+<img alt="Figure 14: Distributed counter; Redis" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-redis.webp, /distributed-counter-system-design/distributed-counter-redis.webp 1.5x, /distributed-counter-system-design/distributed-counter-redis.webp 2x" height="1464" sizes="683px" src="../assets/images/img_6d6782d3bf02.webp" width="2197"/>
+</a><figcaption class="image-caption">Figure 14: Distributed counter; Redis</figcaption>
+</figure>
+<p>The <a href="https://redis.io/commands/incr/" rel="noopener noreferrer" target="_blank">INCR</a> Redis command is used to increment the counter atomically. Redis can be deployed in the leader-follower replication topology for improved performance. The Redis proxy can be used as the sharding proxy to route the reads to the Redis follower instances and redirect the writes to the Redis leader instance. The hot standby configuration of Redis using replicas improves the fault tolerance of the distributed counter <sup id="fnref:16"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:16" role="doc-noteref">16</a></sup>. The write-behind cache pattern can be used to asynchronously persist the counter in the relational database for improved durability.</p>
+<p>Alternatively, Redis can be deployed in an active-active topology for low latency and high availability. Instead of aggregating the count by querying every shard on read operations, the shards can communicate with each other using the <a class="offline-link" href="../fundamentals/gossip-protocol.html" rel="noopener noreffer">gossip protocol</a> to prevent the read operation overhead. However, this approach will result in unnecessary bandwidth usage and increased storage needs <sup id="fnref:5"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:5" role="doc-noteref">5</a></sup>.</p>
+<p>The count update operations must be idempotent for conflict-free count synchronization across multiple data centers. The drawback of using native data types in Redis is that the count update operations are not idempotent and it is also non-trivial to check whether a command execution on Redis was successful during a network failure, which might result in an inaccurate counter. As a workaround to network failures, the Lua script can be executed on the Redis server to store the user IDs or keep the user IDs in a Redis set data type <sup id="fnref:5"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:5" role="doc-noteref">5</a></sup>. In conclusion, do not use native data types in Redis to create the distributed counter.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="further-system-design-learning-resources-1"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#further-system-design-learning-resources-1"></a>Further system design learning resources</h3>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="crdt-distributed-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#crdt-distributed-counter"></a>CRDT Distributed Counter</h3>
+<p>The distributed counter is a replicated integer. The primary benefit of the eventual consistency model is that the database will remain available despite network partitions. The eventual consistency model typically handles conflicts due to concurrent writes on the same item through the following methods <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:13"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Conflict resolution</th>
+<th>Description</th>
+<th>Tradeoffs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>last write wins (<strong>LWW</strong>)</td>
+<td>timestamp-based synchronization</td>
+<td>difficult to synchronize the system clocks</td>
+</tr>
+<tr>
+<td>quorum-based eventual consistency</td>
+<td>wait for an acknowledgment from a majority of the replicas</td>
+<td>increased network latency</td>
+</tr>
+<tr>
+<td>merge replication</td>
+<td>merge service resolves the conflicts</td>
+<td>prone to bugs and slow in real-time</td>
+</tr>
+<tr>
+<td>conflict-free replicated data type (<strong>CRDT</strong>)</td>
+<td>mathematical properties for data convergence</td>
+<td>conflict resolution semantics are predefined and cannot be overridden</td>
+</tr>
+</tbody>
+</table></div>
+<p>The Conflict-free Replicated Data Type (<a href="https://crdt.tech/" rel="noopener noreferrer" target="_blank">CRDT</a>) is a potential option for implementing the distributed counter. The CRDTs are also known as Convergent Replicated Data Types and  Commutative Replicated Data Types. The CRDT is a replicated data type that enables operations to always converge to a consistent state among all replicas nodes <sup id="fnref:17"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:17" role="doc-noteref">17</a></sup>. The CRDT allows lock-free concurrent reads and writes to the distributed counter on any replica node <sup id="fnref:18"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:18" role="doc-noteref">18</a></sup>. The CRDT internally uses mathematically proven rules for automatic and deterministic conflict resolution. The CRDT strictly employs the following mathematical properties <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:13"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Formula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>commutative</td>
+<td>a * b = b * a</td>
+</tr>
+<tr>
+<td>associative</td>
+<td>a * ( b * c ) = ( a * b ) * c</td>
+</tr>
+<tr>
+<td>idempotence</td>
+<td>a * a = a</td>
+</tr>
+</tbody>
+</table></div>
+<p>The idempotence property in CRDT prevents duplicating items on replication <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:13"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:13" role="doc-noteref">13</a></sup>. The order of replication does not matter because the commutative property in CRDT prevents race conditions <sup id="fnref:18"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:18" role="doc-noteref">18</a></sup>.</p>
+<p>CRDT-based consistency is a popular approach for multi-leader support because the CRDT offers high throughput, low latency for reads and writes, and tolerates network partitions <sup id="fnref:13"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:13" role="doc-noteref">13</a></sup>, <sup id="fnref:19"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:19" role="doc-noteref">19</a></sup>, <sup id="fnref:20"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:20" role="doc-noteref">20</a></sup>. The CRDT achieves high availability by relaxing consistency constraints <sup id="fnref:21"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:21" role="doc-noteref">21</a></sup>, <sup id="fnref:22"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:22" role="doc-noteref">22</a></sup>. The CRDT can even accept writes on the nodes that are disconnected from the cluster because the data updates will eventually get merged with other nodes when the network connection is re-established <sup id="fnref:17"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:17" role="doc-noteref">17</a></sup>.</p>
+<p>The internal implementation of CRDT is independent of the underlying network layer. For example, the communication layer can use <a class="offline-link" href="../fundamentals/gossip-protocol.html" rel="noopener noreffer">gossip protocol</a> for an efficient replication across CRDT replicas <sup id="fnref:23"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:23" role="doc-noteref">23</a></sup>, <sup id="fnref:24"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:24" role="doc-noteref">24</a></sup>. The CRDT replication exchanges not only the data but also the operations performed on the data including their ordering and causality. The merging technique in CRDT will execute the received operations on the data. The following are the benefits of using CRDT to build the distributed counter <sup id="fnref:18"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:18" role="doc-noteref">18</a></sup>, <sup id="fnref:23"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:23" role="doc-noteref">23</a></sup>, <sup id="fnref:22"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:22" role="doc-noteref">22</a></sup>, <sup id="fnref:21"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:21" role="doc-noteref">21</a></sup>:</p>
+<ul>
+<li>offers local latency on read and write operations through multi-leader replication</li>
+<li>enables automatic and deterministic conflict resolution</li>
+<li>tolerant to network partitions</li>
+<li>allow concurrent count updates without coordination between replica nodes</li>
+<li>achieves eventual consistency through asynchronous data updates</li>
+</ul>
+<p>An active-active architecture is a data-resilient architecture that enables data access over different data centers. An active-active architecture can be accomplished in production by leveraging the CRDT-based data types in <a href="https://redis.com/redis-enterprise/technology/active-active-geo-distribution/" rel="noopener noreferrer" target="_blank">Redis Enterprise</a> <sup id="fnref:18"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:18" role="doc-noteref">18</a></sup>, <sup id="fnref:19"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:19" role="doc-noteref">19</a></sup>, <sup id="fnref:17"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:17" role="doc-noteref">17</a></sup>. The CRDTs in Redis are based on an alternative implementation of most Redis commands and native data types. Some of the popular CRDTs used in the industry are the following <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:13"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:13" role="doc-noteref">13</a></sup>:</p>
+<ul>
+<li>G-counters (Grow-only)</li>
+<li>PN-counters (Positive-Negative)</li>
+<li>G-sets (Grow-only sets)</li>
+</ul>
+<hr/>
+<h4 class="headerLink" id="g-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#g-counter"></a>G-Counter</h4>
+<p>The <strong>G-Counter</strong> (Grow-only) is an increment-only CRDT counter. The major limitations of the G-Counter are that the counter can only be incremented and the number of replicas must be known beforehand. The G-Counter will not be able to satisfy the elastic scalability requirements <sup id="fnref:23"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:23" role="doc-noteref">23</a></sup>, <sup id="fnref:22"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:22" role="doc-noteref">22</a></sup>.</p>
+<hr/>
+<h4 class="headerLink" id="pn-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#pn-counter"></a>PN-Counter</h4>
+<p>The <strong>PN-Counter</strong> (Positive-Negative) is a distributed counter that supports increment and decrement operations. The PN-Counter internally uses two count variables for the increments and decrements respectively <sup id="fnref:25"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:25" role="doc-noteref">25</a></sup>. The PN-Counter supports read-your-writes (<strong>RYW</strong>) and monotonic reads for strong eventual consistency <sup id="fnref:22"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:22" role="doc-noteref">22</a></sup>, <sup id="fnref:21"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:21" role="doc-noteref">21</a></sup>. In addition, the PN-Counter supports an arbitrary number of replicas for elastic scalability <sup id="fnref:25"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:25" role="doc-noteref">25</a></sup>. In summary, the PN-Counter can be used to build the distributed counter.</p>
+<hr/>
+<h4 class="headerLink" id="handoff-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#handoff-counter"></a>Handoff Counter</h4>
+<p>The Handoff Counter is a distributed counter, which is eventually consistent. The Handoff Counter is relatively more scalable than PN-Counter by preventing the identity explosion problem. The state of the G-Counter is linear to the number of independent replicas that incremented the counter. In other words, each replica in CRDT has a unique identity, and CRDTs work by keeping the identities of the participating replicas.</p>
+<p>The set of identities kept on each replica grows over time and might hinder scalability. The Handoff Counter prevents the global propagation of identities and performs garbage collection of transient entries. The Handoff Counter assigns a tier number to each replica to promote a hierarchical structure for scalability <sup id="fnref:24"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:24" role="doc-noteref">24</a></sup>. In summary, the Handoff Counter can also be used to build the distributed counter.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="how-does-crdtwork"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#how-does-crdtwork"></a>How does CRDT work?</h3>
+<p>The CRDT-based counter support count synchronization across multiple data centers with reduced storage, low latency, and high performance. The updates on the counter are stored on the CRDT database in the local data center and asynchronously replicated to the CRDT database in peer data centers <sup id="fnref:22"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:22" role="doc-noteref">22</a></sup>, <sup id="fnref:26"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:26" role="doc-noteref">26</a></sup>. The CRDT replicas will converge to a consistent state as time elapses <sup id="fnref:22"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:22" role="doc-noteref">22</a></sup>, <sup id="fnref:21"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:21" role="doc-noteref">21</a></sup>. Every count update operation is transferred to all replicas to achieve eventual consistency.</p>
+<p>The commutative property of CRDT operations ensures count accuracy among replicas. The following set of guidelines can be followed to ensure a consistent user experience by taking the best advantage of the CRDT-based database <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>:</p>
+<ul>
+<li>keep the application service stateless</li>
+<li>choose the correct CRDT data type</li>
+</ul>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 15: CRDT counter replicas across multiple data centers&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-crdt.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-crdt.webp" rel="noopener noreferrer" target="_blank" title="Figure 15: CRDT counter replicas across multiple data centers">
+<img alt="Figure 15: CRDT counter replicas across multiple data centers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-crdt.webp, /distributed-counter-system-design/distributed-counter-crdt.webp 1.5x, /distributed-counter-system-design/distributed-counter-crdt.webp 2x" height="1878" sizes="683px" src="../assets/images/img_188d1d1c0569.webp" width="3108"/>
+</a><figcaption class="image-caption">Figure 15: CRDT counter replicas across multiple data centers</figcaption>
+</figure>
+<p>Each replica will keep only its count and count update operations instead of the total count. A replica would never increment the count contained in another replica. The count updates on a particular replica are assumed to occur in a monotonic fashion. The <a href="https://en.wikipedia.org/wiki/Vector_clock" rel="noopener noreferrer" target="_blank">vector clock</a> is used to identify the causality of count update operations among CRDT replicas <sup id="fnref:18"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:18" role="doc-noteref">18</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>, <sup id="fnref:13"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:13" role="doc-noteref">13</a></sup>. The following is the rough data schema of the counter CRDT <sup id="fnref:27"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:27" role="doc-noteref">27</a></sup>, <sup id="fnref:28"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:28" role="doc-noteref">28</a></sup>, <sup id="fnref:22"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:22" role="doc-noteref">22</a></sup>:</p>
+<div class="highlight"><div class="chroma open"><div class="code-header language-js"><span class="code-title"><i aria-hidden="true" class="arrow fas fa-chevron-right fa-fw"></i></span><span class="ellipses"><i aria-hidden="true" class="fas fa-ellipsis-h fa-fw"></i></span><span class="copy" data-clipboard-text='{ 
+  "replica-1": { "increments": 2500, "decrements": 817 }, 
+  "replica-2": { "increments": 21000, "decrements": 9919 } 
+}
+' title="Copy to clipboard"><i aria-hidden="true" class="far fa-copy fa-fw"></i></span></div>
+<div class="table-wrapper"><table class="lntable"><tbody><tr><td class="lntd">
+<pre class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre class="chroma"><code class="language-js" data-lang="js"><span class="p">{</span> 
+  <span class="s2">"replica-1"</span><span class="o">:</span> <span class="p">{</span> <span class="s2">"increments"</span><span class="o">:</span> <span class="mi">2500</span><span class="p">,</span> <span class="s2">"decrements"</span><span class="o">:</span> <span class="mi">817</span> <span class="p">},</span> 
+  <span class="s2">"replica-2"</span><span class="o">:</span> <span class="p">{</span> <span class="s2">"increments"</span><span class="o">:</span> <span class="mi">21000</span><span class="p">,</span> <span class="s2">"decrements"</span><span class="o">:</span> <span class="mi">9919</span> <span class="p">}</span> 
+<span class="p">}</span>
+</code></pre></td></tr></tbody></table></div>
+</div>
+</div><p>The total count is calculated by summing up all the count values. The total count would equal 2500 + 21000 - 817 - 9919.</p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="what-is-the-workflow-of-the-distributed-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#what-is-the-workflow-of-the-distributed-counter"></a>What Is the Workflow of the Distributed Counter?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 16: Distributed counter; High-level design&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-high-level-design.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-high-level-design.webp" rel="noopener noreferrer" target="_blank" title="Figure 16: Distributed counter; High-level design">
+<img alt="Figure 16: Distributed counter; High-level design" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-high-level-design.webp, /distributed-counter-system-design/distributed-counter-high-level-design.webp 1.5x, /distributed-counter-system-design/distributed-counter-high-level-design.webp 2x" height="1116" sizes="683px" src="../assets/images/img_29265086f746.webp" width="1553"/>
+</a><figcaption class="image-caption">Figure 16: Distributed counter; High-level design</figcaption>
+</figure>
+<p>The <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> should be leveraged to build a real-time distributed counter. At a very high level, the following operations are executed by the distributed counter:</p>
+<ol>
+<li>the subscriber (user) queries the counter service to fetch the count over the HTTP GET method</li>
+<li>the counter service queries the counter database to determine the count</li>
+<li>the user subscribes to the count of a particular web page through the real-time platform and establishes a WebSocket connection</li>
+<li>the publisher (user) establishes a WebSocket connection with the real-time platform</li>
+<li>the real-time platform emits heartbeat signals to the counter service over UDP at periodic intervals</li>
+<li>the Lua script in the counter database emits an event using the pub-sub pattern whenever there is any update to the distributed counter</li>
+<li>the counter service publishes an event to the real-time platform over the HTTP PUT method</li>
+<li>the real-time platform broadcasts the counter to the subscribers over WebSocket</li>
+</ol>
+<p>The <a href="https://en.wikipedia.org/wiki/Actor_model" rel="noopener noreferrer" target="_blank">actor programming model</a> can be used to implement the counter service. The handler of the actor will decrement the distributed counter when a client WebSocket connection expires. <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">Consistent hashing</a> can be used to redirect the heartbeats from a particular client to the same set of nodes (sticky routing) of the counter service to prevent the creation of duplicate delayed triggers. The hash data type in Redis can be used to store the user IDs <sup id="fnref:29"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:29" role="doc-noteref">29</a></sup>.</p>
+<p>The Redis keyspace notifications can be used instead of the Lua script for notifications at the expense of more CPU power and increased delay. The heartbeat signals must be replaced with HTTP events to publish Facebook likes or reactions through the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a>. The article on the <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">real-time presence platform</a> describes in-depth the handling of jittery client connections <sup id="fnref:30"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:30" role="doc-noteref">30</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="further-system-design-learning-resources-2"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#further-system-design-learning-resources-2"></a>Further system design learning resources</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="distributed-counter-design-deepdive"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#distributed-counter-design-deepdive"></a>Distributed Counter Design Deep Dive</h2>
+<h3 class="headerLink" id="what-is-the-cross-data-center-workflow-for-distributed-counter"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#what-is-the-cross-data-center-workflow-for-distributed-counter"></a>What Is the Cross-Data Center Workflow for Distributed Counter?</h3>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 17: Deploying the distributed counter across multiple data centers&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-crdt-multi-dc.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-crdt-multi-dc.webp" rel="noopener noreferrer" target="_blank" title="Figure 17: Deploying the distributed counter across multiple data centers">
+<img alt="Figure 17: Deploying the distributed counter across multiple data centers" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-crdt-multi-dc.webp, /distributed-counter-system-design/distributed-counter-crdt-multi-dc.webp 1.5x, /distributed-counter-system-design/distributed-counter-crdt-multi-dc.webp 2x" height="1181" sizes="683px" src="../assets/images/img_c80600bdde50.webp" width="1878"/>
+</a><figcaption class="image-caption">Figure 17: Deploying the distributed counter across multiple data centers</figcaption>
+</figure>
+<p>The CRDT counter must be replicated across different data centers for scalability, low latency, and high availability. The CRDT is quite useful in distributed computing and real-time applications where network partitions might occur <sup id="fnref:31"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:31" role="doc-noteref">31</a></sup>. The CRDT offers predictable outcomes on concurrent write operations because the dataset will eventually converge to a consistent state <sup id="fnref:18"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:18" role="doc-noteref">18</a></sup>.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 18: Publishing changes on the distributed counter across data centers through CRDT replication&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-crdt-replication.webp" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-crdt-replication.webp" rel="noopener noreferrer" target="_blank" title="Figure 18: Publishing changes on the distributed counter across data centers through CRDT replication">
+<img alt="Figure 18: Publishing changes on the distributed counter across data centers through CRDT replication" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-crdt-replication.webp, /distributed-counter-system-design/distributed-counter-crdt-replication.webp 1.5x, /distributed-counter-system-design/distributed-counter-crdt-replication.webp 2x" height="2424" sizes="683px" src="../assets/images/img_e44562b8dcdb.webp" width="2786"/>
+</a><figcaption class="image-caption">Figure 18: Publishing changes on the distributed counter across data centers through CRDT replication</figcaption>
+</figure>
+<p>The article on the <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">real-time platform</a> describes in-depth the multi-data center real-time delivery of data. The following operations are executed when the distributed counter is updated <sup id="fnref:29"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:29" role="doc-noteref">29</a></sup>:</p>
+<ol>
+<li>the dispatcher in the local data center queries the local endpoint store to check if there are any subscribed gateway servers for the particular web page</li>
+<li>the subscribed gateway server queries the local in-memory subscription store to identify the subscribed clients (users)</li>
+<li>the gateway server fans out the distributed counter to the subscribed clients over WebSocket</li>
+<li>the CRDT database replicates changes on the distributed counter to peer data centers</li>
+<li>the Lua script on the CRDT database in the peer data center notifies the counter service whenever there is any update to the distributed counter on replication</li>
+</ol>
+<p>The application logic should focus on client connection management and real-time delivery of the distributed counter. The data management and synchronization complexity is delegated to the underlying CRDT database <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup></p>
+<hr/>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="unread-notification-counterdesign"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#unread-notification-counterdesign"></a>Unread Notification Counter Design</h3>
+<p>There should be a distributed counter initialized for each user for tracking the unread notification. The user ID can be used as the key for the unread notification distributed counter. The distributed counter should be incremented whenever there are any changes to the subscribed web pages.</p>
+<figure><a class="lightgallery" data-sub-html="&lt;h2&gt;Figure 19: Distributed counter; Unread notifications&lt;/h2&gt;" data-thumbnail="/distributed-counter-system-design/distributed-counter-unread-notifications.gif" href="https://systemdesign.one/distributed-counter-system-design/distributed-counter-unread-notifications.gif" rel="noopener noreferrer" target="_blank" title="Figure 19: Distributed counter; Unread notifications">
+<img alt="Figure 19: Distributed counter; Unread notifications" class="lazyautosizes lazyloaded" data-sizes="auto" data-srcset="/distributed-counter-system-design/distributed-counter-unread-notifications.gif, /distributed-counter-system-design/distributed-counter-unread-notifications.gif 1.5x, /distributed-counter-system-design/distributed-counter-unread-notifications.gif 2x" height="234" sizes="683px" src="../assets/images/img_be2ecebd14c8.gif" width="705"/>
+</a><figcaption class="image-caption">Figure 19: Distributed counter; Unread notifications</figcaption>
+</figure>
+<p>The distributed counter for the respective user must be reset to zero when the user clicks the unread notification button. The set of web pages that a user is subscribed to can be kept in the cache for quick processing <sup id="fnref:2"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:2" role="doc-noteref">2</a></sup>, <sup id="fnref:32"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:32" role="doc-noteref">32</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="fault-tolerance"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#fault-tolerance"></a>Fault Tolerance</h3>
+<p>Monitoring and health checks on the distributed counter should be implemented. The following entities should be monitored <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>number of invocations of the counter service</li>
+<li>hardware resources used such as the CPU and memory</li>
+</ul>
+<p>Chaos engineering can be used to test the resiliency of the distributed counter and identify any single point of failure (<strong>SPOF</strong>). The CRDT database should be tested against the partitioned network scenario. A sample test case for the partitioned network in the CRDT database is the following <sup id="fnref:17"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:17" role="doc-noteref">17</a></sup>, <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>:</p>
+<ol>
+<li>isolate the CRDT database replicas</li>
+<li>deploy the CRDT counter across multiple data centers and increment all of them</li>
+<li>stop the counter and observe the individual counter on each data center</li>
+<li>the counter should only show the local increment</li>
+<li>re-establish the network</li>
+<li>the distributed counter on every data center should show the total count</li>
+</ol>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="high-availability"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#high-availability"></a>High Availability</h3>
+<p>The entire traffic to the distributed counter should be routed through the <a href="https://learn.microsoft.com/en-us/dotnet/architecture/microservices/architect-microservice-container-applications/direct-client-to-microservice-communication-versus-the-api-gateway-pattern" rel="noopener noreferrer" target="_blank">API Gateway</a>. The API Gateway handles the following cross-cutting concerns <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>response caching and logging</li>
+<li>authorization and SSL termination</li>
+<li>circuit breaking and <a class="offline-link" href="./rate-limiter.html" rel="noopener noreffer">rate limiting</a></li>
+<li>load balancing</li>
+</ul>
+<p>The database can be partitioned using <a class="offline-link" href="../fundamentals/consistent-hashing-explained.html" rel="noopener noreffer">consistent hashing</a> to prevent hot spots. The page ID can be used as the partition key <sup id="fnref:2"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:2" role="doc-noteref">2</a></sup>. The skewed load on a particular partition due to an extremely popular web page can be avoided by appending a random two-digit decimal number to the page ID (key). The random number would split the writes on the particular key evenly across 100 different keys. The 100 different keys generated will distribute the write load across different partitions. However, the tradeoff is that the read operations will have to query all the keys in different partitions. There is also an additional overhead to maintain the keys.</p>
+<p>The services should be stateless and replicated for high availability. New CRDT nodes can be dynamically added to the cluster by backing up an existing node and restoring it as the new node <sup id="fnref:4"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:4" role="doc-noteref">4</a></sup>. The CRDT database can continue to read and write even if some of the CRDT instances fail providing high availability and disaster recovery. The users can be diverted to another data center when the local data center fails <sup id="fnref:18"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:18" role="doc-noteref">18</a></sup>.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="scalability"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#scalability"></a>Scalability</h3>
+<p>The round-trip time for concurrent clients can be reduced by using <a href="https://redis.io/docs/manual/pipelining/" rel="noopener noreferrer" target="_blank">Redis pipelining</a> to batch the requests. The performance tests and stress tests should be executed on the distributed counter for the following reasons <sup id="fnref:1"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:1" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>identify performance bottlenecks</li>
+<li>estimate capacity for production deployment</li>
+</ul>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="concurrency"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#concurrency"></a>Concurrency</h3>
+<p><a href="https://developer.fastly.com/learning/concepts/request-collapsing/" rel="noopener noreferrer" target="_blank">Request coalescing</a> can be performed when concurrent clients try to fetch the distributed counter. Locks should be prevented as locks can become a performance bottleneck on extremely high concurrency <sup id="fnref:12"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:12" role="doc-noteref">12</a></sup>. Redis is single-threaded and the operations are atomic. Hence, there are no locks or concurrency issues while updating the distributed counter.</p>
+<hr/>
+<hr/>
+<h3 class="headerLink" id="low-latency"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#low-latency"></a>Low Latency</h3>
+<p>The CRDT database is deployed across multiple data centers. The client connection should be routed to the local data center for low latency and reduced network traffic <sup id="fnref:3"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:3" role="doc-noteref">3</a></sup>.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="summary"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#summary"></a>Summary</h2>
+<p>The counter is the most primitive distributed object and is a crucial abstraction in distributed computing <sup id="fnref:24"><a class="footnote-ref offline-link" href="./distributed-counter-system-design.html#fn:24" role="doc-noteref">24</a></sup>. The different approaches to implementing the distributed counter were uncovered in this article.</p>
+<hr/>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="what-to-learn-next"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#what-to-learn-next"></a>What to learn next?</h2>
+<p><strong>Download my system design playbook for free on newsletter signup:</strong></p>
+<div class="newsletter-container">
+
+</div>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="license"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#license"></a>License</h2>
+<p><a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a>: This license allows reusers to copy and distribute the content in this article in any medium or format in unadapted form only, for noncommercial purposes, and only so long as attribution is given to the creator. The original article must be backlinked.</p>
+<hr/>
+<hr/>
+<hr/>
+<h2 class="headerLink" id="references"><a class="header-mark offline-link" href="./distributed-counter-system-design.html#references"></a>References</h2>
+<section class="footnotes" role="doc-endnotes">
+<hr/>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="https://www.cnblogs.com/traditional/p/12618375.html" rel="noopener noreferrer" target="_blank">How to design a distributed counting service?</a> (2020), cnblogs.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:1" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p><a href="https://zq99299.github.io/note-architect/hc/07/01.html#%E8%AE%A1%E6%95%B0%E5%9C%A8%E4%B8%9A%E5%8A%A1%E4%B8%8A%E7%9A%84%E7%89%B9%E7%82%B9" rel="noopener noreferrer" target="_blank">How to deal with counters with massive data?</a> (2022), zq99299.github.io <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:2" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:3" role="doc-endnote">
+<p>Roshan Kumar, <a href="https://www.infoworld.com/article/3305321/when-to-use-a-crdt-based-database.html" rel="noopener noreferrer" target="_blank">When to use a CRDT-based database</a> (2018), infoworld.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:3" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:4" role="doc-endnote">
+<p>Oren Eini, <a href="https://dzone.com/articles/distributed-counters-feature" rel="noopener noreferrer" target="_blank">Distributed Counters Feature Design</a> (2014), dzone.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:4" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:5" role="doc-endnote">
+<p><a href="https://www.51cto.com/article/705970.html" rel="noopener noreferrer" target="_blank">Distributed counter in system design</a> (2022), 51cto.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:5" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:6" role="doc-endnote">
+<p>Matt Abrams, <a href="http://highscalability.com/blog/2012/4/5/big-data-counting-how-to-count-a-billion-distinct-objects-us.html" rel="noopener noreferrer" target="_blank">Big Data Counting: How To Count A Billion Distinct Objects Using Only 1.5KB Of Memory</a> (2012), highscalability.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:6" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:7" role="doc-endnote">
+<p>Avichal, <a href="https://blog.getspool.com/2011/11/29/fast-easy-realtime-metrics-using-redis-bitmaps/" rel="noopener noreferrer" target="_blank">Redis Bitmaps - Fast, Easy, Realtime Metrics</a> (2011), blog.getspool.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:7" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:8" role="doc-endnote">
+<p>Brett Slatkin, <a href="https://sites.google.com/site/io/building-scalable-web-applications-with-google-app-engine" rel="noopener noreferrer" target="_blank">Building Scalable Web Applications with Google App Engine</a> (2008), sites.google.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:8" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:9" role="doc-endnote">
+<p><a href="https://medium.com/@morefree7/design-a-system-that-tracks-the-number-of-likes-ea69fdb41cf2" rel="noopener noreferrer" target="_blank">Design a system that tracks the number of likes</a> (2019), medium.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:9" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:10" role="doc-endnote">
+<p><a href="https://etki.medium.com/poor-mans-distributed-counter-25a279949d1d" rel="noopener noreferrer" target="_blank">Poor man’s distributed counter</a> (2016), medium.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:10" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:11" role="doc-endnote">
+<p><a href="http://highscalability.com/blog/2008/4/2/how-to-update-video-views-count-effectively.html" rel="noopener noreferrer" target="_blank">How To Update Video Views Count Effectively?</a> (2008), highscalability.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:11" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:12" role="doc-endnote">
+<p><a href="https://wizardforcel.gitbooks.io/gainlo-interview-guide/content/sd21.html" rel="noopener noreferrer" target="_blank">Designing a Click Counter</a>, wizardforcel.gitbooks.io <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:12" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:13" role="doc-endnote">
+<p>Bartosz Sypytkowski, <a href="https://www.bartoszsypytkowski.com/the-state-of-a-state-based-crdts/" rel="noopener noreferrer" target="_blank">An introduction to state-based CRDTs</a> (2017), bartoszsypytkowski.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:13" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:14" role="doc-endnote">
+<p>Paddy Byers, <a href="https://ably.com/blog/cassandra-counter-columns-nice-in-theory-hazardous-in-practice" rel="noopener noreferrer" target="_blank">Cassandra counter columns: Nice in theory, hazardous in practice</a> (2022), ably.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:14" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:15" role="doc-endnote">
+<p>Neha Narkhede, <a href="https://www.confluent.io/blog/exactly-once-semantics-are-possible-heres-how-apache-kafka-does-it/" rel="noopener noreferrer" target="_blank">Exactly-Once Semantics Are Possible: Here’s How Kafka Does It</a> (2017), confluent.io <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:15" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:16" role="doc-endnote">
+<p><a href="https://www.alibabacloud.com/help/en/apsaradb-for-redis/latest/read-or-write-splitting-in-redis" rel="noopener noreferrer" target="_blank">Read/write splitting in Redis</a> (2022), alibabacloud.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:16" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:17" role="doc-endnote">
+<p><a href="https://redis.com/blog/diving-into-crdts/" rel="noopener noreferrer" target="_blank">Diving into Conflict-Free Replicated Data Types (CRDTs)</a> (2022), redis.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:17" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:18" role="doc-endnote">
+<p><a href="https://redis.com/redis-enterprise/technology/active-active-geo-distribution/" rel="noopener noreferrer" target="_blank">Redis Active-Active Geo-Distribution (CRDTs-Based)</a>, redis.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:18" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:19" role="doc-endnote">
+<p>Roshan Kumar, <a href="https://www.infoq.com/articles/database-merge-replication-crdt/" rel="noopener noreferrer" target="_blank">Picking an Active-Active Geo Distribution Strategy: Comparing Merge Replication and CRDT</a> (2018), infoq.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:19" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:20" role="doc-endnote">
+<p><a href="https://redis.com/redis-enterprise/advantages/" rel="noopener noreferrer" target="_blank">Redis Enterprise vs. Redis Open Source: Why Make the Switch?</a>, redis.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:20" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:21" role="doc-endnote">
+<p><a href="https://docs.hazelcast.com/imdg/4.2/data-structures/pn-counter" rel="noopener noreferrer" target="_blank">PN Counter</a>, hazelcast.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:21" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:22" role="doc-endnote">
+<p>Aviral Goel, <a href="https://www.cs.utexas.edu/~rossbach/cs380p/papers/Counters.html" rel="noopener noreferrer" target="_blank">Counters</a>, cs.utexas.edu <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:22" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:23" role="doc-endnote">
+<p>Federico Kauffman, <a href="https://www.streaver.com/blog/posts/crdts-and-distributed-consistency-part-1-building-a-distributed-counter" rel="noopener noreferrer" target="_blank">CRDTs and Distributed Consistency - Part 1: Building a distributed counter</a> (2022), streaver.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:23" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:24" role="doc-endnote">
+<p>Paulo Sergio Almeida, Carlos Baquero, <a href="https://arxiv.org/pdf/1307.3207v1.pdf" rel="noopener noreferrer" target="_blank">Scalable Eventually Consistent Counters over Unreliable Networks</a> (2013), arxiv.org <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:24" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:25" role="doc-endnote">
+<p>Federico Kauffman, <a href="https://www.streaver.com/blog/posts/crdts-and-distributed-consistency-part-2-building-a-distributed-counter" rel="noopener noreferrer" target="_blank">CRDTs and Distributed Consistency - Part 2: Building a distributed counter</a> (2022), streaver.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:25" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:26" role="doc-endnote">
+<p>Martin Kleppmann, <a href="https://www.infoq.com/presentations/crdt-distributed-consistency/" rel="noopener noreferrer" target="_blank">CRDTs and the Quest for Distributed Consistency</a> (2018),  infoq.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:26" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:27" role="doc-endnote">
+<p>Mathias Meyer, <a href="https://www.paperplanes.de/2012/6/27/playing-with-riak-and-crdts.html" rel="noopener noreferrer" target="_blank">Playing with Riak and CRDTs - Counters</a> (2012), paperplanes.de <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:27" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:28" role="doc-endnote">
+<p>Marc Shapiro, Nuno Preguiça, Carlos Baquero, Marek Zawirski, <a href="https://inria.hal.science/file/index/docid/555588/filename/techreport.pdf" rel="noopener noreferrer" target="_blank">A comprehensive study of Convergent and Commutative Replicated Data Types</a> (2011), inria.hal.science <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:28" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:29" role="doc-endnote">
+<p>Neo Kim, <a class="offline-link" href="./live-comment-system-design.html" rel="noopener noreffer">Live Comment System Design</a> (2023), systemdesign.one <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:29" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:30" role="doc-endnote">
+<p>Neo Kim, <a class="offline-link" href="./real-time-presence-platform-system-design.html" rel="noopener noreffer">Real-Time Presence Platform System Design</a> (2023), systemdesign.one <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:30" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:31" role="doc-endnote">
+<p>Federico Kauffman, <a href="https://www.streaver.com/blog/posts/crdts-and-distributed-consistency-part-3-building-a-distributed-counter" rel="noopener noreferrer" target="_blank">CRDTs and Distributed Consistency - Part 3: Building a distributed counter</a> (2022), streaver.com <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:31" role="doc-backlink">↩︎</a></p>
+</li>
+<li id="fn:32" role="doc-endnote">
+<p><a href="https://zq99299.github.io/note-architect/hc/07/02.html#%E7%B3%BB%E7%BB%9F%E9%80%9A%E7%9F%A5%E7%9A%84%E6%9C%AA%E8%AF%BB%E6%95%B0%E8%A6%81%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1" rel="noopener noreferrer" target="_blank">How to design a non-counting system under 500,000 QPS?</a> (2022), zq99299.github.io <a class="footnote-backref offline-link" href="./distributed-counter-system-design.html#fnref:32" role="doc-backlink">↩︎</a></p>
+</li>
+</ol>
+</section></div><div class="post-footer" id="post-footer">
+<div class="post-info">
+<div class="post-info-line">
+<div class="post-info-mod">
+<span>Updated on 2023-04-30</span>
+</div><div class="post-info-license">
+<span>CC BY-NC 4.0</span>
+</div></div>
+<div class="post-info-line">
+<div class="post-info-md"></div>
+<div class="post-info-share">
+<span><a data-sharer="twitter" data-title="Distributed Counter System Design" data-url="https://systemdesign.one/distributed-counter-system-design/" data-via="systemdesignone" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Twitter"><i aria-hidden="true" class="fab fa-twitter fa-fw"></i></a><a data-sharer="facebook" data-url="https://systemdesign.one/distributed-counter-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Facebook"><i aria-hidden="true" class="fab fa-facebook-square fa-fw"></i></a><a data-sharer="linkedin" data-url="https://systemdesign.one/distributed-counter-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Linkedin"><i aria-hidden="true" class="fab fa-linkedin fa-fw"></i></a><a data-sharer="whatsapp" data-title="Distributed Counter System Design" data-url="https://systemdesign.one/distributed-counter-system-design/" data-web="" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on WhatsApp"><i aria-hidden="true" class="fab fa-whatsapp fa-fw"></i></a><a data-description="CRDT-based distributed counter that is eventually consistent" data-image="distributed-counter-system-design/distributed-counter.webp" data-sharer="pinterest" data-url="https://systemdesign.one/distributed-counter-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Pinterest"><i aria-hidden="true" class="fab fa-pinterest fa-fw"></i></a><a data-caption="CRDT-based distributed counter that is eventually consistent" data-sharer="tumblr" data-title="Distributed Counter System Design" data-url="https://systemdesign.one/distributed-counter-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Tumblr"><i aria-hidden="true" class="fab fa-tumblr fa-fw"></i></a><a data-sharer="hackernews" data-title="Distributed Counter System Design" data-url="https://systemdesign.one/distributed-counter-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Hacker News"><i aria-hidden="true" class="fab fa-hacker-news fa-fw"></i></a><a data-sharer="reddit" data-url="https://systemdesign.one/distributed-counter-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on Reddit"><i aria-hidden="true" class="fab fa-reddit fa-fw"></i></a><a data-caption="CRDT-based distributed counter that is eventually consistent" data-image="distributed-counter-system-design/distributed-counter.webp" data-sharer="vk" data-title="Distributed Counter System Design" data-url="https://systemdesign.one/distributed-counter-system-design/" href="javascript:void(0);" rel="noopener noreferrer" target="_blank" title="Share on VK"><i aria-hidden="true" class="fab fa-vk fa-fw"></i></a></span>
+</div>
+</div>
+</div>
+<div class="post-info-more">
+<section class="post-tags"></section>
+<section>
+<span><a href="javascript:void(0);" rel="noopener noreferrer" target="_blank">Back</a></span> | <span><a href="https://systemdesign.one/" rel="noopener noreferrer" target="_blank">Home</a></span>
+</section>
+</div>
+<div class="post-nav"><a class="prev offline-link" href="./real-time-presence-platform-system-design.html" rel="prev" title="Real Time Presence Platform System Design"><i aria-hidden="true" class="fas fa-angle-left fa-fw"></i>Real Time Presence Platform System Design</a>
+<a class="next offline-link" href="../fundamentals/back-of-the-envelope.html" rel="next" title="Back of the Envelope">Back of the Envelope<i aria-hidden="true" class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+<div id="comments"><div class="comment" id="disqus_thread"></div></div></article>
+
+</div>
+</main><footer class="footer">
+<div class="footer-container"><div class="footer-line" itemscope="" itemtype="http://schema.org/CreativeWork"><i aria-hidden="true" class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022 - 2025</span><span class="author" itemprop="copyrightHolder"> <a href="https://www.linkedin.com/in/nk-systemdesign-one/" rel="noopener noreferrer" target="_blank">Neo Kim</a></span> | <span class="newsletter"><a href="https://newsletter.systemdesign.one/subscribe" rel="noopener noreferrer" target="_blank">Newsletter</a></span> | <span class="youtube"><a href="https://www.youtube.com/@systemdesignone?sub_confirmation=1" rel="noopener noreferrer" target="_blank">YouTube</a></span> | <span class="privacy"><a href="https://systemdesign.one/privacy-policy/" rel="noopener noreferrer" target="_blank">Privacy</a></span> | <span class="terms"><a href="https://systemdesign.one/terms-of-service/" rel="noopener noreferrer" target="_blank">Terms</a></span> | <span class="impressum"><a href="https://newsletter.systemdesign.one/p/impressum/" rel="noopener noreferrer" target="_blank">Impressum</a></span></div>
+</div>
+</footer></div>
+<div class="animate__animated animate__faster animate__fadeOut" id="fixed-buttons" style="display: none;"><a class="fixed-button offline-link" href="./distributed-counter-system-design.html" id="back-to-top" title="Back to Top">
+<i aria-hidden="true" class="fas fa-arrow-up fa-fw"></i>
+</a><a class="fixed-button offline-link" href="./distributed-counter-system-design.html#comments" id="view-comments" style="display: block;" title="View Comments">
+<i aria-hidden="true" class="fas fa-comment fa-fw"></i>
+</a>
+</div><link href="../assets/css/style_f3f41932525c.css" rel="stylesheet"/><link href="../assets/css/style_ae0d28207a26.css" rel="stylesheet"/>
+
+<script>
+        (function() {
+            // Read saved theme preference from local storage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('theme', savedTheme);
+            }
+            
+            // Bind click event to all theme-switch buttons (.theme-switch class)
+            const switches = document.querySelectorAll('.theme-switch');
+            switches.forEach(el => {
+                el.setAttribute('href', '#');
+                el.removeAttribute('target');
+                el.removeAttribute('rel');
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const currentTheme = document.body.getAttribute('theme') || 'light';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('theme', newTheme);
+                    localStorage.setItem('theme', newTheme);
+                });
+            });
+        })();
+        </script>
+</body></html>
