@@ -4,6 +4,7 @@ import urllib.parse
 import hashlib
 import requests
 from bs4 import BeautifulSoup
+from PIL import Image
 
 def get_safe_filename(url, prefix="", ext=""):
     """
@@ -55,6 +56,41 @@ def download_file(url, output_path):
                 os.remove(output_path)
             except Exception:
                 pass
+        return False
+
+def compress_image_in_place(filepath):
+    """
+    Compresses an image file in-place using Pillow.
+    Uses palette quantization for PNGs and quality reduction for JPEGs.
+    """
+    try:
+        ext = os.path.splitext(filepath)[1].lower()
+        if ext not in ['.png', '.jpg', '.jpeg', '.webp']:
+            return False
+            
+        original_size = os.path.getsize(filepath)
+        if original_size < 10240: # Skip small files (< 10 KB)
+            return False
+            
+        with Image.open(filepath) as img:
+            if img.format == 'PNG':
+                if img.mode != 'P':
+                    if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+                        # Convert to RGB then quantize
+                        img_rgb = img.convert('RGB')
+                        img_quant = img_rgb.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+                        img_quant.save(filepath, format='PNG', optimize=True)
+                    else:
+                        img_quant = img.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+                        img_quant.save(filepath, format='PNG', optimize=True)
+                else:
+                    img.save(filepath, format='PNG', optimize=True)
+            elif img.format in ['JPEG', 'MPO']:
+                img.convert('RGB').save(filepath, format='JPEG', quality=75, optimize=True)
+            elif img.format == 'WEBP':
+                img.save(filepath, format='WEBP', quality=75, method=6)
+        return True
+    except Exception:
         return False
 
 def parse_and_clean_url(url, base_url_context):
@@ -240,6 +276,9 @@ def process_assets(html_content, page_url, base_archive_dir, category_subfolder,
             img_dest_path = os.path.join(images_dir, img_filename)
             
             if download_file(absolute_img_url, img_dest_path):
+                # Compress the image in-place on the fly
+                compress_image_in_place(img_dest_path)
+                
                 img['src'] = f"{assets_rel_path}/images/{img_filename}"
                 if img.get('data-src'):
                     del img['data-src']
